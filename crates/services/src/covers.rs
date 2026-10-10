@@ -376,6 +376,33 @@ mod tests {
     use super::*;
     use wiremock::{Mock, MockServer, ResponseTemplate, matchers::path};
     #[tokio::test]
+    async fn legacy_palette_is_rebuilt_from_cached_cover_without_network() {
+        let dir = tempfile::tempdir().unwrap();
+        let cache = CoverArtCache::with_cache_dir(dir.path()).unwrap();
+        let key = "http://127.0.0.1:1/never-requested";
+        let first = cache.process_bytes(key, synthetic(64)).await.unwrap();
+        let palette_path = first.cover.with_extension("json");
+        let mut old = serde_json::to_value(&first.palette).unwrap();
+        let object = old.as_object_mut().unwrap();
+        object.remove("scrim_dark_alpha");
+        object.remove("scrim_light_alpha");
+        object.insert("veil_dark_alpha".into(), 255.into());
+        object.insert("veil_light_alpha".into(), 255.into());
+        atomic_write(&palette_path, &serde_json::to_vec(&old).unwrap()).unwrap();
+        assert!(cache.cached(&hash(key), true).await.unwrap().is_none());
+
+        // This URL cannot respond; success requires the on-disk cover fallback.
+        let rebuilt = cache.process(key).await.unwrap();
+        assert_eq!(rebuilt.cover, first.cover);
+        assert!(rebuilt.palette.veil_dark_alpha <= 140);
+        assert!(rebuilt.palette.veil_light_alpha <= 140);
+        let saved: Palette = serde_json::from_slice(&std::fs::read(palette_path).unwrap()).unwrap();
+        assert_eq!(saved, rebuilt.palette);
+        let fresh_cache = CoverArtCache::with_cache_dir(dir.path()).unwrap();
+        assert_eq!(rebuilt, fresh_cache.process(key).await.unwrap());
+    }
+
+    #[tokio::test]
     async fn flat_background_skips_blur_and_enabling_it_reuses_the_cached_cover() {
         let dir = tempfile::tempdir().unwrap();
         let cache = CoverArtCache::with_cache_dir(dir.path()).unwrap();

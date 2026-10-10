@@ -165,6 +165,7 @@ TestCase {
     }
     function test_tooltip_and_small_zoom_target() {
         Theme.zoom = 0.75
+        icon.tipSuppressed = false   // v0.9.2: an earlier test clicked it with the pointer still on it
         verify(icon.width >= Theme.size.minimumHitTarget)
         mouseMove(icon)
         tryVerify(() => findChild(icon, "iconToolTip") !== null)

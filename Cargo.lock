@@ -4505,7 +4505,7 @@ checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
 
 [[package]]
 name = "velo"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "async-trait",
  "cxx",
@@ -4537,7 +4537,7 @@ dependencies = [
 
 [[package]]
 name = "velo-domain"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "async-trait",
  "serde",
@@ -4547,7 +4547,7 @@ dependencies = [
 
 [[package]]
 name = "velo-nowplaying"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "thiserror 2.0.21",
  "tokio",
@@ -4559,7 +4559,7 @@ dependencies = [
 
 [[package]]
 name = "velo-player"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4593,7 +4593,7 @@ dependencies = [
 
 [[package]]
 name = "velo-services"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "async-trait",
  "directories",
@@ -4614,7 +4614,7 @@ dependencies = [
 
 [[package]]
 name = "velo-spotify"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -4635,7 +4635,7 @@ dependencies = [
 
 [[package]]
 name = "velo-ui"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "cxx-qt",
  "cxx-qt-build",
@@ -4643,7 +4643,7 @@ dependencies = [
 
 [[package]]
 name = "velo-viz"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "rustfft",
  "thiserror 2.0.21",

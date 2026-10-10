@@ -10,6 +10,7 @@ use velo_domain::{ArtistRef, Track};
 pub struct Occurrence {
     pub uri: String,
     pub uid: String,
+    pub queued: bool,
 }
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Snapshot {
@@ -20,6 +21,36 @@ pub struct Snapshot {
     pub revision: String,
     pub timestamp: i64,
     pub tracks: Vec<Occurrence>,
+}
+impl Snapshot {
+    pub fn same_queue(&self, other: &Self) -> bool {
+        self.current == other.current
+            && self.occurrence == other.occurrence
+            && self.context_uri == other.context_uri
+            && self.shuffle == other.shuffle
+            && self.revision == other.revision
+            && self.tracks == other.tracks
+    }
+    /// Context rows represented by the visible prefix. Manually queued duplicates must
+    /// never consume matching occurrences from the original album/playlist tail.
+    pub fn context_prefix(&self, visible: &[String]) -> Result<Vec<String>, crate::PlayerError> {
+        if visible.len() > self.tracks.len()
+            || self
+                .tracks
+                .iter()
+                .zip(visible)
+                .any(|(row, uri)| row.uri != *uri)
+        {
+            return Err(crate::PlayerError::QueueChanged);
+        }
+        Ok(self
+            .tracks
+            .iter()
+            .take(visible.len())
+            .filter(|row| !row.queued)
+            .map(|row| row.uri.clone())
+            .collect())
+    }
 }
 
 pub fn decode(update: &ClusterUpdate, device_id: &str) -> Option<Snapshot> {
@@ -48,6 +79,8 @@ pub fn decode(update: &ClusterUpdate, device_id: &str) -> Option<Snapshot> {
             .map(|t| Occurrence {
                 uri: t.uri.clone(),
                 uid: t.uid.clone(),
+                queued: t.provider == "queue"
+                    || t.metadata.get("is_queued").is_some_and(|v| v == "true"),
             })
             .collect(),
     })
@@ -118,12 +151,39 @@ pub fn reconcile(
     if cluster.active_device_id != device_id {
         return None;
     }
-    let track = cluster
-        .player_state
-        .as_ref()
-        .and_then(|p| p.track.as_ref())
-        .map(|t| t.uri.as_str());
-    (track.is_none() || track == Some(old.current.as_str())).then(|| old.clone())
+    if let Some(state) = cluster.player_state.as_ref() {
+        if state.track.as_ref().is_some_and(|t| t.uri != old.current)
+            || (!state.playback_id.is_empty() && state.playback_id != old.occurrence)
+            || (!state.queue_revision.is_empty() && state.queue_revision != old.revision)
+            || state
+                .options
+                .as_ref()
+                .is_some_and(|o| o.shuffling_context != old.shuffle)
+        {
+            return None;
+        }
+    }
+    let mut retained = old.clone();
+    retained.timestamp = cluster.changed_timestamp_ms;
+    Some(retained)
+}
+
+fn publish_snapshot(tx: &watch::Sender<Option<Snapshot>>, next: Option<Snapshot>) {
+    tx.send_if_modified(|old| {
+        if let (Some(old), Some(new)) = (old.as_ref(), next.as_ref()) {
+            if new.timestamp < old.timestamp {
+                return false;
+            }
+        }
+        let same = match (old.as_ref(), next.as_ref()) {
+            (Some(a), Some(b)) => a.same_queue(b),
+            (None, None) => true,
+            _ => false,
+        };
+        // Retain the newest watermark even if only transport/timestamp changed; no UI wake.
+        *old = next;
+        !same
+    });
 }
 
 pub async fn observe(
@@ -137,31 +197,7 @@ pub async fn observe(
     while let Some(update) = poll_fn(|cx| stream.as_mut().poll_next(cx)).await {
         let Ok(update) = update else { continue };
         let next = reconcile(tx.borrow().as_ref(), &update, session.device_id());
-        tx.send_if_modified(|old| {
-            if let (Some(old), Some(new)) = (old.as_ref(), next.as_ref()) {
-                if new.timestamp < old.timestamp {
-                    return false;
-                }
-            }
-            let same = match (old.as_ref(), next.as_ref()) {
-                (Some(a), Some(b)) => {
-                    a.current == b.current
-                        && a.occurrence == b.occurrence
-                        && a.context_uri == b.context_uri
-                        && a.shuffle == b.shuffle
-                        && a.revision == b.revision
-                        && a.tracks == b.tracks
-                }
-                (None, None) => true,
-                _ => false,
-            };
-            if same {
-                false
-            } else {
-                *old = next;
-                true
-            }
-        });
+        publish_snapshot(tx, next);
     }
     tx.send_replace(None);
     Ok(())
@@ -273,9 +309,75 @@ mod tests {
             .map(|i| Occurrence {
                 uri: A.into(),
                 uid: format!("u{i}"),
+                queued: false,
             })
             .collect();
         assert_eq!(rows(&s, &Default::default()).len(), MAX_ROWS);
+    }
+    #[test]
+    fn partial_queue_change_or_new_duplicate_occurrence_invalidates_old_rows() {
+        let good = decode(&synthetic(), "local").unwrap();
+        for field in ["occurrence", "revision", "shuffle"] {
+            let mut u = synthetic();
+            let c = u.cluster.as_mut().unwrap();
+            c.need_full_player_state = true;
+            let p = c.player_state.as_mut().unwrap();
+            match field {
+                "occurrence" => p.playback_id = "play-2".into(),
+                "revision" => p.queue_revision = "rev-2".into(),
+                _ => p.options.as_mut().unwrap().shuffling_context = false,
+            }
+            assert_eq!(reconcile(Some(&good), &u, "local"), None, "{field}");
+        }
+    }
+    #[test]
+    fn v92_transport_update_advances_watermark_without_waking_queue() {
+        let mut s = decode(&synthetic(), "local").unwrap();
+        s.timestamp = 100;
+        let tx = watch::channel(Some(s.clone())).0;
+        let rx = tx.subscribe();
+        s.timestamp = 300;
+        publish_snapshot(&tx, Some(s.clone()));
+        assert_eq!(tx.borrow().as_ref().unwrap().timestamp, 300);
+        assert!(!rx.has_changed().unwrap());
+        s.timestamp = 200;
+        s.tracks.clear();
+        publish_snapshot(&tx, Some(s));
+        assert_eq!(tx.borrow().as_ref().unwrap().tracks.len(), 3);
+        assert!(!rx.has_changed().unwrap());
+    }
+    #[test]
+    fn v92_queued_duplicate_does_not_consume_the_context_tail_when_edited() {
+        let mut u = synthetic();
+        let p = u.cluster.as_mut().unwrap().player_state.as_mut().unwrap();
+        p.options.as_mut().unwrap().shuffling_context = false;
+        p.next_tracks[0].provider = "queue".into();
+        p.next_tracks[1].provider = "context".into();
+        let s = decode(&u, "local").unwrap();
+        let context = vec![A.to_owned(), B.to_owned(), A.to_owned()];
+        let visible = vec![B.to_owned()]; // Only the manually queued occurrence fits.
+        let prefix = s.context_prefix(&visible).unwrap();
+        assert!(prefix.is_empty());
+        assert_eq!(
+            super::super::tail_after(&context, A, &prefix, false, Some(0)).unwrap(),
+            [B, A]
+        );
+        let prefix = s.context_prefix(&[B.to_owned(), B.to_owned()]).unwrap();
+        assert_eq!(prefix, [B]);
+        assert_eq!(
+            super::super::tail_after(&context, A, &prefix, false, Some(0)).unwrap(),
+            [A]
+        );
+        assert!(
+            s.context_prefix(&[A.to_owned()]).is_err(),
+            "stale rows are refused"
+        );
+        let p = u.cluster.as_mut().unwrap().player_state.as_mut().unwrap();
+        p.next_tracks[0].provider.clear();
+        p.next_tracks[0]
+            .metadata
+            .insert("is_queued".into(), "true".into());
+        assert!(decode(&u, "local").unwrap().tracks[0].queued);
     }
     #[test]
     fn synthetic_shuffle_duplicates_advance_and_empty_status() {

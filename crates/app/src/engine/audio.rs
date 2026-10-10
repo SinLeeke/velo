@@ -28,6 +28,10 @@ const SESSION_WAIT: Duration = Duration::from_secs(20);
 
 #[async_trait::async_trait]
 impl SessionSource for EngineSession {
+    fn connect_devices(&self) -> Option<Vec<velo_domain::Device>> {
+        self.0.upgrade()?.engine()?.connect_devices()
+    }
+
     async fn session(&self) -> Option<Session> {
         let audio = self.0.upgrade()?;
         let mut view = audio.view.subscribe();

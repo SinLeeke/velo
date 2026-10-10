@@ -1164,17 +1164,25 @@ FocusScope {
                             }
                         }
                         SettingRow {
-                            label: qsTr("Estilo del visualizador")
-                            dimmed: !Backend.Visualizer.enabled
+                            label: qsTr("Carátula")
                             VSegmented {
-                                name: qsTr("Estilo del visualizador")
-                                enabled: Backend.Visualizer.enabled
+                                name: qsTr("Carátula")
                                 model: [
-                                    { value: "normal", label: qsTr("Normal") },
+                                    { value: "normal", label: qsTr("Cuadrada") },
                                     { value: "circular", label: qsTr("Circular") }
                                 ]
                                 current: Backend.Visualizer.style
                                 onActivated: value => Backend.Visualizer.style = value
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Banda inferior")
+                            dimmed: !Backend.Visualizer.enabled
+                            VToggle {
+                                text: qsTr("Banda inferior")
+                                enabled: Backend.Visualizer.enabled
+                                checked: Backend.Visualizer.band
+                                onToggled: Backend.Visualizer.band = checked
                             }
                         }
                         SettingRow {

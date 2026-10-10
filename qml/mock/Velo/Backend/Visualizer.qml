@@ -1,11 +1,12 @@
 pragma Singleton
 import QtQuick
 
-// MOCK of Velo.Backend.Visualizer. Static bands; never runs.
+// MOCK of Velo.Backend.Visualizer (docs/CONTRATO.md). Static bands; never runs.
 QtObject {
     property bool enabled: true
     property string style: "normal"         // "normal" | "circular"
     property string shape: "wave"           // "bars" | "wave"
+    property bool band: true               // v0.9.2: band below Now Playing (style = cover shape)
     property real sensitivity: 1.0
     property bool running: false
     property bool simulated: false         // PCM del motor Velo; bandas estáticas en este mock

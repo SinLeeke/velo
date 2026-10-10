@@ -4,7 +4,7 @@ import QtQuick
 QtObject {
     property string state: "idle"
     property string latestVersion: ""
-    property string currentVersion: "0.9.1"
+    property string currentVersion: "0.9.2"
     property real progress: 0
     property string error: ""
     property bool portable: false

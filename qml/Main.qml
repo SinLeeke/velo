@@ -175,7 +175,8 @@ Window {
             base: Backend.Player.paletteBase, glow: Backend.Player.paletteGlow,
             veilDark: Backend.Player.paletteVeilDark, veilLight: Backend.Player.paletteVeilLight,
             inkDark: Backend.Player.paletteInkDark, inkLight: Backend.Player.paletteInkLight,
-            veilDarkOpacity: Backend.Player.paletteVeilDarkOpacity, veilLightOpacity: Backend.Player.paletteVeilLightOpacity
+            veilDarkOpacity: Backend.Player.paletteVeilDarkOpacity, veilLightOpacity: Backend.Player.paletteVeilLightOpacity,
+            scrimDarkOpacity: Backend.Player.paletteScrimDarkOpacity, scrimLightOpacity: Backend.Player.paletteScrimLightOpacity
         })
     }
     Connections {
@@ -401,6 +402,8 @@ Window {
         controlsStyle: root.controlsStyle
         ink: root.shownView === "nowplaying" ? Theme.cover.ink : Theme.text
         inkSecondary: root.shownView === "nowplaying" ? Theme.coverInkSecondary : Theme.textSecondary
+        // v0.9.2: over the light cover veil the timer gets the same local scrim as the controls.
+        timerScrimOpacity: root.shownView === "nowplaying" ? Theme.cover.scrimOpacity : 0
         // T8: the sleep timer stays left of the view's own buttons in the strip.
         trailingReserve: {
             const view = root.shownView === "nowplaying" ? npLoader.item : viewLoader.item

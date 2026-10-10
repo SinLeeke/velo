@@ -13,6 +13,7 @@
 
 pub mod artist;
 pub mod collection;
+mod connect_devices;
 pub mod descriptors;
 pub mod discover;
 pub mod dj;

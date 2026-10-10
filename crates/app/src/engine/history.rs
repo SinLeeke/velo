@@ -33,6 +33,111 @@ impl ProgressSource for Bus<ProgressSample> {
     }
 }
 
+/// Consumed audio (ms) after which a song enters Recientes: any real playback.
+pub const RECORD_AFTER_MS: u64 = 1;
+
+/// Conservative listening from existing Connect snapshots. No clock/timer is added:
+/// only continuous position advances between successful observations count.
+pub struct RemoteListeningClock {
+    session: u128,
+    sequence: u64,
+    identity: Option<(String, String, String)>,
+    previous: Option<(std::time::Instant, u64, bool)>,
+    effective_ms: u64,
+}
+impl Default for RemoteListeningClock {
+    fn default() -> Self {
+        Self {
+            session: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |t| t.as_nanos()),
+            sequence: 0,
+            identity: None,
+            previous: None,
+            effective_ms: 0,
+        }
+    }
+}
+impl RemoteListeningClock {
+    pub fn discontinuity(&mut self) {
+        self.previous = None;
+    }
+    pub fn reset(&mut self) {
+        self.identity = None;
+        self.discontinuity();
+    }
+    pub fn observe(&mut self, state: &velo_domain::PlaybackState) -> Option<ProgressSample> {
+        let Some(track) = state.track.as_ref() else {
+            self.reset();
+            return None;
+        };
+        if !track.uri.starts_with("spotify:track:") {
+            self.reset();
+            return None;
+        }
+        let context = state.context_uri.clone().unwrap_or_default();
+        let identity = (
+            track.uri.clone(),
+            context.clone(),
+            state
+                .device
+                .as_ref()
+                .and_then(|d| d.id.clone())
+                .unwrap_or_default(),
+        );
+        let repeat = self.previous.is_some_and(|(_, position, playing)| {
+            playing
+                && state.is_playing
+                && state.repeat != velo_domain::RepeatMode::Off
+                && position >= track.duration_ms.saturating_sub(6_000)
+                && state.progress_ms < 6_000
+                && state.progress_ms < position
+        });
+        if self.identity.as_ref() != Some(&identity) || repeat {
+            self.sequence = self.sequence.wrapping_add(1);
+            self.identity = Some(identity);
+            self.previous = None;
+            self.effective_ms = 0;
+        }
+        if let Some((at, position, playing)) = self.previous {
+            let elapsed = state.sampled_at.saturating_duration_since(at).as_millis() as u64;
+            let delta = state.progress_ms.saturating_sub(position);
+            // No credit for seeks, buffering, or long gaps while minimized/offline.
+            if playing
+                && state.progress_ms >= position
+                && elapsed <= 10_000
+                && delta.abs_diff(elapsed) <= 1_500
+            {
+                self.effective_ms = self.effective_ms.saturating_add(delta.min(elapsed));
+            }
+        }
+        self.previous = Some((state.sampled_at, state.progress_ms, state.is_playing));
+        Some(ProgressSample {
+            occurrence: format!("connect-{:x}-{}", self.session, self.sequence),
+            effective_ms: self.effective_ms,
+            dj_voice: false,
+            entry: Entry {
+                uri: track.uri.clone(),
+                title: track.title.clone(),
+                artist: track.artist_line(),
+                album: track.album.clone(),
+                duration_ms: track.duration_ms,
+                context_uri: context,
+                remote_image_url: velo_domain::pick_image(&track.images, 64)
+                    .map(|i| i.url.clone())
+                    .unwrap_or_default(),
+                artist_id: track
+                    .artists
+                    .first()
+                    .and_then(|a| a.id.clone())
+                    .unwrap_or_default(),
+                album_id: track.album_id.clone().unwrap_or_default(),
+                ..Entry::default()
+            },
+        })
+    }
+}
+
 #[derive(Default)]
 pub struct ListeningClock {
     current: String,
@@ -54,7 +159,9 @@ impl ListeningClock {
         if !sample.dj_voice {
             self.maximum = self.maximum.max(sample.effective_ms);
         }
-        let threshold = 30_000.min(sample.entry.duration_ms / 2);
+        // v0.9.2 (user: "debería registrar todo, hasta las que skipeo rápido"): a song counts
+        // as soon as real audio of it has played, not after 30 s.
+        let threshold = RECORD_AFTER_MS;
         if self.recorded
             || self.current.is_empty()
             || sample.entry.uri.is_empty()
@@ -162,9 +269,12 @@ impl HistoryCtl {
             }
         });
         let me = this.clone();
+        #[cfg(not(test))]
+        let data = directories::ProjectDirs::from("app", "Velo", "Velo")
+            .map(|d| d.data_dir().to_path_buf());
+        #[cfg(test)]
+        let data = Some(env.prefs.config_dir().to_path_buf());
         env.rt.spawn(async move {
-            let data = directories::ProjectDirs::from("app", "Velo", "Velo")
-                .map(|d| d.data_dir().to_path_buf());
             let mut store: Option<Arc<HistoryStore>> = None;
             let mut loaded = 0;
             while let Some(command) = rx.recv().await {
@@ -240,7 +350,7 @@ impl HistoryCtl {
                         }
                         if inserted {
                             if let Some(first) = rows.into_iter().next() {
-                                loaded += 1;
+                                loaded = (loaded + 1).min(count);
                                 me.publish_insert(first, count, loaded < count);
                             }
                         } else {
@@ -260,10 +370,11 @@ impl HistoryCtl {
 
     /// A new newest entry on an already loaded list: `Insert(0)`, no page reload.
     fn publish_insert(&self, entry: Entry, count: usize, has_more: bool) {
-        self.entries
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .insert(0, entry.clone());
+        let mut entries = self.entries.lock().unwrap_or_else(|e| e.into_inner());
+        entries.insert(0, entry.clone());
+        let overflow = entries.len() > count;
+        entries.truncate(count);
+        drop(entries);
         let view = HistoryView {
             count: count as i32,
             has_more,
@@ -274,9 +385,16 @@ impl HistoryCtl {
         self.changes.send_modify(|n| *n = n.wrapping_add(1));
         self.ui.send(HistoryUi {
             op: ModelOp::Insert(0, vec![ui_row(entry)]),
-            view,
+            view: view.clone(),
             cleared: false,
         });
+        if overflow {
+            self.ui.send(HistoryUi {
+                op: ModelOp::Remove(count),
+                view,
+                cleared: false,
+            });
+        }
     }
     fn publish_error(&self) {
         self.publish(
@@ -323,6 +441,10 @@ impl HistoryCtl {
     }
     fn request_page(&self, more: bool) {
         if !self.paging.swap(true, Ordering::SeqCst) {
+            self.view.send_modify(|v| {
+                v.loading = true;
+                v.error.clear();
+            });
             let _ = self.commands.send(Command::Load(more));
         }
     }
@@ -470,6 +592,97 @@ impl crate::engine::sidebar::HistoryReader for LocalHistoryReader {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn remote(at: std::time::Instant, position: u64) -> velo_domain::PlaybackState {
+        velo_domain::PlaybackState {
+            track: Some(velo_domain::Track {
+                id: Some("a".into()),
+                uri: "spotify:track:a".into(),
+                title: "A".into(),
+                artists: vec![],
+                album: "Album".into(),
+                album_id: Some("album".into()),
+                duration_ms: 60_000,
+                explicit: false,
+                images: vec![],
+                added_at: None,
+            }),
+            sampled_at: at,
+            progress_ms: position,
+            is_playing: true,
+            context_uri: Some("spotify:playlist:p".into()),
+            device: None,
+            shuffle: false,
+            repeat: velo_domain::RepeatMode::Track,
+        }
+    }
+    #[test]
+    fn v92_connect_records_once_at_threshold_and_records_real_repeat() {
+        let mut remote_clock = RemoteListeningClock::default();
+        let mut clock = ListeningClock::default();
+        let at = std::time::Instant::now();
+        for i in 0..=6 {
+            let s = remote_clock
+                .observe(&remote(
+                    at + std::time::Duration::from_secs(i * 5),
+                    i * 5_000,
+                ))
+                .unwrap();
+            let entry = clock.observe(&s);
+            // v0.9.2: the first observation with real progress records it (quick skips count).
+            assert_eq!(entry.is_some(), i == 1);
+            if let Some(e) = entry {
+                assert_eq!(e.context_uri, "spotify:playlist:p");
+            }
+        }
+        let first = remote_clock
+            .observe(&remote(at + std::time::Duration::from_secs(35), 35_000))
+            .unwrap();
+        assert!(clock.observe(&first).is_none());
+        remote_clock.observe(&remote(at + std::time::Duration::from_secs(59), 59_000));
+        let second = remote_clock
+            .observe(&remote(at + std::time::Duration::from_secs(61), 1_000))
+            .unwrap();
+        assert_ne!(first.occurrence, second.occurrence);
+        assert_eq!(second.effective_ms, 0);
+        for i in 1..=6 {
+            let s = remote_clock
+                .observe(&remote(
+                    at + std::time::Duration::from_secs(61 + i * 5),
+                    1_000 + i * 5_000,
+                ))
+                .unwrap();
+            assert_eq!(clock.observe(&s).is_some(), i == 1);
+        }
+    }
+    #[test]
+    fn v92_connect_excludes_seek_pause_buffering_and_unobserved_gaps() {
+        let mut clock = RemoteListeningClock::default();
+        let at = std::time::Instant::now();
+        let mut p = remote(at, 0);
+        let id = clock.observe(&p).unwrap().occurrence;
+        for (seconds, position, playing) in [
+            (5, 5_000, true),
+            (10, 45_000, true),
+            (15, 45_000, true),
+            (20, 46_000, false),
+            (100, 46_000, false),
+            (105, 46_000, true),
+            (110, 51_000, true),
+        ] {
+            p.sampled_at = at + std::time::Duration::from_secs(seconds);
+            p.progress_ms = position;
+            p.is_playing = playing;
+            let s = clock.observe(&p).unwrap();
+            assert_eq!(s.occurrence, id);
+        }
+        assert_eq!(clock.effective_ms, 10_000);
+        clock.discontinuity();
+        p.sampled_at += std::time::Duration::from_secs(5);
+        p.progress_ms = 56_000;
+        assert_eq!(clock.observe(&p).unwrap().effective_ms, 10_000);
+        clock.reset();
+        assert_ne!(clock.observe(&p).unwrap().occurrence, id);
+    }
     #[test]
     fn top_by_plays_ranks_by_count_then_recency_and_skips_non_tracks() {
         let e = |uri: &str| Entry {
@@ -520,19 +733,20 @@ mod tests {
     #[test]
     fn fake_consumed_clock_pause_buffer_seek_dedupe_repeat_clear() {
         let mut clock = ListeningClock::default();
-        assert!(clock.observe(&sample("request:1", 10_000)).is_none());
-        // Pause/buffering/seek: effective clock stays at 10 s, regardless of timeline.
-        for _ in 0..3 {
-            assert!(clock.observe(&sample("request:1", 10_000)).is_none());
-        }
-        let e = clock.observe(&sample("request:1", 30_000)).unwrap();
+        // No audio yet (loaded, buffering): not listened.
+        assert!(clock.observe(&sample("request:1", 0)).is_none());
+        // v0.9.2: the first real audio records it, once per occurrence (pause/seek/repeat events).
+        let e = clock.observe(&sample("request:1", 250)).unwrap();
         assert_eq!(e.context_uri, "spotify:playlist:p");
-        assert!(clock.observe(&sample("request:1", 35_000)).is_none());
-        assert!(clock.observe(&sample("request:2", 30_000)).is_some());
-        clock.observe(&sample("request:3", 1_000));
+        for _ in 0..3 {
+            assert!(clock.observe(&sample("request:1", 35_000)).is_none());
+        }
+        // A quick skip still counts.
+        assert!(clock.observe(&sample("request:2", 250)).is_some());
+        clock.observe(&sample("request:3", 0));
         clock.suppress_current();
         assert!(clock.observe(&sample("request:3", 30_000)).is_none());
-        assert!(clock.observe(&sample("request:4", 30_000)).is_some());
+        assert!(clock.observe(&sample("request:4", 250)).is_some());
     }
     #[test]
     fn new_entry_on_loaded_list_is_a_front_insert_not_a_replace() {
@@ -562,14 +776,31 @@ mod tests {
         assert_eq!(event.view.count, 51);
         assert_eq!(ctl.entries.lock().unwrap().len(), 2);
         assert_eq!(ctl.entries.lock().unwrap()[0].uri, "spotify:track:n");
+        // The store can evict the oldest entry at its cap: the loaded model must follow.
+        ctl.publish_insert(
+            Entry {
+                uri: "spotify:track:newer".into(),
+                ..Entry::default()
+            },
+            2,
+            false,
+        );
+        assert!(matches!(ui.try_recv().unwrap().op, ModelOp::Insert(0, _)));
+        assert!(matches!(ui.try_recv().unwrap().op, ModelOp::Remove(2)));
+        assert_eq!(ctl.entries.lock().unwrap().len(), 2);
+        ctl.load();
+        assert!(
+            ctl.view.borrow().loading,
+            "loading is visible before worker starts"
+        );
     }
     #[test]
     fn short_tracks_missing_uri_and_dj_voice() {
         let mut clock = ListeningClock::default();
-        let mut s = sample("1", 9_999);
+        let mut s = sample("1", 0);
         s.entry.duration_ms = 20_000;
         assert!(clock.observe(&s).is_none());
-        s.effective_ms = 10_000;
+        s.effective_ms = 250;
         assert!(clock.observe(&s).is_some());
         s.occurrence = "2".into();
         s.entry.uri.clear();

@@ -293,8 +293,25 @@ Rectangle {
             id: transportButtons
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: Theme.space.lg
+            // v0.9.2: shuffle and repeat flank previous/next, as in Now Playing (accent when on).
+            // Narrow windows keep only previous/play/next, so the row never runs under the title.
+            readonly property real fullWidth: 4 * Math.max(Theme.size.iconButton, Theme.size.minimumHitTarget)
+                                              + playButton.width + 4 * spacing
+            readonly property bool roomy: transport.width >= fullWidth
+            IconButton {
+                objectName: "playerBarShuffle"
+                visible: transportButtons.roomy
+                text: qsTr("Aleatorio")
+                iconSource: Qt.resolvedUrl("../../icons/shuffle.svg")
+                toggle: true
+                active: Backend.Player.shuffle
+                activeInk: Theme.accent
+                enabled: Backend.Player.canControl
+                onClicked: Backend.Player.toggleShuffle()
+            }
             IconButton { text: qsTr("Anterior"); iconSource: Qt.resolvedUrl("../../icons/skip_previous.svg"); enabled: Backend.Player.canControl; onClicked: Backend.Player.previous() }
             LibraryPlayButton {
+                id: playButton
                 objectName: "playerBarPlay"
                 text: Backend.Player.isPlaying ? qsTr("Pausar") : qsTr("Reproducir")
                 iconSource: Backend.Player.isPlaying ? Qt.resolvedUrl("../../icons/pause_fill.svg") : Qt.resolvedUrl("../../icons/play_arrow_fill.svg")
@@ -304,6 +321,20 @@ Rectangle {
                 onClicked: Backend.Player.playPause()
             }
             IconButton { text: qsTr("Siguiente"); iconSource: Qt.resolvedUrl("../../icons/skip_next.svg"); enabled: Backend.Player.canControl; onClicked: Backend.Player.next() }
+            IconButton {
+                objectName: "playerBarRepeat"
+                visible: transportButtons.roomy
+                text: Backend.Player.repeatMode === 0 ? qsTr("Repetir")
+                    : Backend.Player.repeatMode === 1 ? qsTr("Repetir canción") : qsTr("Desactivar repetición")
+                iconSource: Backend.Player.repeatMode === 2 ? Qt.resolvedUrl("../../icons/repeat_one.svg") : Qt.resolvedUrl("../../icons/repeat.svg")
+                toggle: true
+                active: Backend.Player.repeatMode > 0
+                activeInk: Theme.accent
+                enabled: Backend.Player.canControl
+                Accessible.description: Backend.Player.repeatMode === 0 ? qsTr("Repetición desactivada")
+                                      : Backend.Player.repeatMode === 1 ? qsTr("Repitiendo la lista") : qsTr("Repitiendo la canción")
+                onClicked: Backend.Player.cycleRepeat()
+            }
         }
         // m:ss, or h:mm:ss for episodes of an hour or more (R3). Both times share the width of
         // the longest one, measured once per length class (TextMetrics, no per-frame work).

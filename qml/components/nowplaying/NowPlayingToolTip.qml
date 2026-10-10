@@ -13,7 +13,7 @@ ToolTip {
     parent: button
     readonly property bool windowShown: button !== null && button.Window.window !== null
         && button.Window.visibility !== Window.Minimized && button.Window.visibility !== Window.Hidden
-    visible: windowShown && button.enabled && button.hovered && !button.pressed && text !== ""
+    visible: windowShown && button.enabled && button.hovered && !button.pressed && !button.tipSuppressed && text !== ""
     text: button ? button.text : ""
     delay: Player.isPlaying ? Theme.cover.tipDelay : 0
     timeout: -1

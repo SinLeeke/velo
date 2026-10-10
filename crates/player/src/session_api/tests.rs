@@ -148,3 +148,76 @@ async fn without_a_session_reads_fall_back_to_the_web_api_and_429_is_reported() 
         ));
     }
 }
+
+struct ConnectFixture(std::sync::Mutex<Option<Vec<Device>>>);
+#[async_trait]
+impl SessionSource for ConnectFixture {
+    async fn session(&self) -> Option<Session> {
+        None
+    }
+    fn connect_devices(&self) -> Option<Vec<Device>> {
+        self.0.lock().unwrap().clone()
+    }
+}
+
+#[tokio::test]
+async fn v92_devices_use_dealer_on_empty_429_or_401_and_drop_disconnected_snapshot() {
+    use wiremock::{Mock, MockServer, ResponseTemplate, matchers::*};
+    struct Fixed(std::sync::atomic::AtomicUsize);
+    #[async_trait]
+    impl TokenSource for Fixed {
+        async fn token(&self, _: Option<&str>) -> Result<(String, Duration)> {
+            let sequence = self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            Ok((format!("fixture-{sequence}"), Duration::from_secs(3600)))
+        }
+    }
+    for status in [200, 429, 401] {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/me/player/devices"))
+            .respond_with(
+                ResponseTemplate::new(status)
+                    .insert_header("retry-after", "30")
+                    .set_body_json(serde_json::json!({"devices":[]})),
+            )
+            .expect(if status == 401 {
+                4
+            } else if status == 200 {
+                2
+            } else {
+                1
+            })
+            .mount(&server)
+            .await;
+        let phone = Device {
+            id: Some("phone".into()),
+            name: "Pixel".into(),
+            kind: "Smartphone".into(),
+            is_active: true,
+            volume_percent: None,
+            supports_volume: false,
+        };
+        let source = Arc::new(ConnectFixture(std::sync::Mutex::new(Some(vec![
+            phone.clone(),
+        ]))));
+        let web = Arc::new(SpotifyProvider::with_token_source(
+            SpotifyConfig {
+                client_id: String::new(),
+                api_base: server.uri(),
+                accounts_base: server.uri(),
+                redirect_port: 0,
+            },
+            Arc::new(Fixed(std::sync::atomic::AtomicUsize::new(0))),
+        ));
+        let api = SessionApi::with_web(source.clone(), web);
+        assert_eq!(api.devices().await.unwrap(), vec![phone]);
+        *source.0.lock().unwrap() = None;
+        let next = api.devices().await;
+        match status {
+            200 => assert!(next.unwrap().is_empty()),
+            429 => assert!(matches!(next, Err(VeloError::RateLimited(_)))),
+            401 => assert!(matches!(next, Err(VeloError::NotAuthenticated))),
+            _ => unreachable!(),
+        }
+    }
+}

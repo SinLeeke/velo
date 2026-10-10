@@ -84,9 +84,16 @@ const LIVI_ART: &[u8] = include_bytes!("../assets/livi.png");
 #[derive(Debug)]
 pub enum PlayerUi {
     Queue(ModelOp),
-    Devices(ModelOp),
+    /// Completion is independent of model changes and the global toast policy.
+    DevicesFinished {
+        rows: Option<ModelOp>,
+        error: &'static str,
+    },
     RefreshPlaylists,
-    QueueSaved { playlist_id: String, name: String },
+    QueueSaved {
+        playlist_id: String,
+        name: String,
+    },
 }
 
 struct Inner {
@@ -101,7 +108,17 @@ struct Inner {
     /// Hay una tarea de un solo disparo esperando el fin del hold de volumen.
     volume_recheck: bool,
     devices_available: bool,
-    queue_identity: (usize, bool, String, Option<String>, bool, bool, u64, u64),
+    queue_identity: (
+        usize,
+        bool,
+        String,
+        Option<String>,
+        bool,
+        bool,
+        RepeatMode,
+        u64,
+        u64,
+    ),
     metadata_key: (String, usize, bool),
 }
 
@@ -126,6 +143,7 @@ pub struct PlayerCtl {
     queue_operation: tokio::sync::Mutex<()>,
     /// Invalida respuestas pendientes incluso si se vuelve rápidamente a la misma URI.
     queue_refresh_generation: AtomicU64,
+    devices_generation: AtomicU64,
     /// Bumped by every user playback action; a pending audio login or retry that sees it move
     /// gives up (the user asked for something else meanwhile).
     play_generation: AtomicU64,
@@ -267,12 +285,12 @@ impl RetryGuard {
 /// The playback sources, in priority order: the first one reporting an active device drives the
 /// player. Velo's own engine first, then the official app on this PC, then any other Connect
 /// device (silent while one of the first two is active).
-fn register_sources(env: &Arc<Env>) -> Vec<Arc<dyn PlaybackSource>> {
+fn register_sources(env: &Arc<Env>) -> (Vec<Arc<dyn PlaybackSource>>, Arc<RemoteSource>) {
     let velo = VeloSource::start(env);
     let local = LocalSource::start(env);
     let outranked = either_active(&env.rt, velo.state(), local.state());
     let remote = RemoteSource::start(env, outranked);
-    vec![velo, local, remote]
+    (vec![velo, local, remote.clone()], remote)
 }
 
 fn active_source_index(sources: &[Arc<dyn PlaybackSource>]) -> usize {
@@ -319,8 +337,9 @@ pub fn next_repeat(current: i32) -> RepeatMode {
 
 impl PlayerCtl {
     pub fn start(env: &Arc<Env>) -> Arc<Self> {
-        let sources = register_sources(env);
+        let (sources, remote) = register_sources(env);
         let this = Self::new(env, sources);
+        this.history.attach(&env.rt, &remote.listening);
 
         // Merge: any source or account change recomputes the view.
         let (kick, kicks) = mpsc::unbounded_channel::<()>();
@@ -399,7 +418,17 @@ impl PlayerCtl {
                 volume_set_at: None,
                 volume_recheck: false,
                 devices_available: false,
-                queue_identity: (0, false, String::new(), None, false, false, 0, 0),
+                queue_identity: (
+                    0,
+                    false,
+                    String::new(),
+                    None,
+                    false,
+                    false,
+                    RepeatMode::Off,
+                    0,
+                    0,
+                ),
                 metadata_key: (String::new(), 0, false),
             }),
             volume: watch::channel(None).0,
@@ -408,6 +437,7 @@ impl PlayerCtl {
             queue_snapshot: Mutex::new(QueueSnapshot::default()),
             queue_operation: tokio::sync::Mutex::new(()),
             queue_refresh_generation: AtomicU64::new(0),
+            devices_generation: AtomicU64::new(0),
             play_generation: AtomicU64::new(0),
         });
         this.history.attach(&env.rt, &this.listening);
@@ -497,10 +527,12 @@ impl PlayerCtl {
     }
 
     /// Asks every source to re-read its authority (after actions done outside the player).
-    pub fn resync(&self) {
+    pub fn resync(self: &Arc<Self>) {
         for s in &self.sources {
             s.refresh(Refresh::AfterAction);
         }
+        // Loading another context can keep the very same current URI/transport flags.
+        self.refresh_queue();
     }
 
     // ------------------------------------------------------------------ state
@@ -518,8 +550,11 @@ impl PlayerCtl {
         if !account.signed_in {
             st = SourceState::default();
             self.lock().devices_available = false;
-            self.ui
-                .send(PlayerUi::Devices(ModelOp::Replace(Vec::new())));
+            self.devices_generation.fetch_add(1, Ordering::SeqCst);
+            self.ui.send(PlayerUi::DevicesFinished {
+                rows: Some(ModelOp::Replace(Vec::new())),
+                error: "auth",
+            });
         }
         let new_key = st.track.as_ref().and_then(cover_key);
         let (track_changed, cover_changed, check_liked, queue_changed) = {
@@ -531,6 +566,7 @@ impl PlayerCtl {
                 st.track.as_ref().and_then(|t| t.uri.clone()),
                 account.signed_in,
                 st.shuffle,
+                st.repeat,
                 if st.own_engine {
                     self.env.audio.state.borrow().occurrence
                 } else {
@@ -767,6 +803,8 @@ impl PlayerCtl {
             .await;
             if let Err(e) = result {
                 this.env.report(&e);
+            } else {
+                this.resync();
             }
         });
     }
@@ -1188,14 +1226,18 @@ impl PlayerCtl {
                 return;
             }
             let before = this.media_state.borrow().clone();
-            match this
-                .env
-                .account
-                .queue_snapshot(before.own_engine, before.shuffle)
-                .await
-            {
+            // A hung metadata/HTTP read must release the queue operation and finish loading.
+            let result = tokio::time::timeout(
+                Duration::from_secs(10),
+                this.env
+                    .account
+                    .queue_snapshot(before.own_engine, before.shuffle),
+            )
+            .await
+            .unwrap_or(Err(VeloError::Network("queue timeout".into())));
+            match result {
                 Ok((ticket, snapshot)) => {
-                    this.env.account.commit_if_current(ticket, || {
+                    let committed = this.env.account.commit_if_current(ticket, || {
                         let _state_guard = this.lock();
                         if this.queue_refresh_generation.load(Ordering::SeqCst) != generation {
                             return;
@@ -1231,6 +1273,11 @@ impl PlayerCtl {
                         this.publish_queue(&tracks);
                         this.set_queue_status("ready", "");
                     });
+                    if !committed
+                        && this.queue_refresh_generation.load(Ordering::SeqCst) == generation
+                    {
+                        this.set_queue_status("unavailable", "");
+                    }
                 }
                 Err(e) if this.queue_refresh_generation.load(Ordering::SeqCst) == generation => {
                     tracing::debug!(error = %e, "queue snapshot unavailable");
@@ -1539,12 +1586,12 @@ impl PlayerCtl {
         let known = engine
             .known_tracks()
             .is_some_and(|k| k.iter().any(|u| u == current));
-        let context_uri = self
+        let snapshot = self
             .env
             .account
             .session_queue_snapshot()
-            .filter(|s| s.current == current)
-            .map(|s| s.context_uri);
+            .filter(|s| s.current == current);
+        let context_uri = snapshot.as_ref().map(|s| s.context_uri.clone());
         if !known && context_uri.as_ref().is_none_or(|s| s.is_empty()) {
             return Err(PlayerError::QueueContext);
         }
@@ -1554,10 +1601,14 @@ impl PlayerCtl {
             return Err(PlayerError::QueueContext);
         }
         let context = queue::context_tracks(engine, context_uri.as_deref(), current).await?;
+        let context_visible = snapshot
+            .as_ref()
+            .map(|s| s.context_prefix(visible))
+            .transpose()?;
         let tail = queue::tail_after(
             &context,
             current,
-            visible,
+            context_visible.as_deref().unwrap_or(visible),
             false,
             engine.known_occurrence(current),
         )?;
@@ -1794,21 +1845,48 @@ impl PlayerCtl {
     }
 
     pub fn refresh_devices(self: &Arc<Self>) {
+        let generation = self.devices_generation.fetch_add(1, Ordering::SeqCst) + 1;
         let Some((api, ticket)) = self.env.account.api_ticket() else {
+            self.ui.send(PlayerUi::DevicesFinished {
+                rows: Some(ModelOp::Replace(Vec::new())),
+                error: "auth",
+            });
             return;
         };
         let this = self.clone();
         self.env.rt.spawn(async move {
-            match api.devices().await {
-                Ok(devices) => {
-                    this.env.account.commit_if_current(ticket, || {
+            let result = tokio::time::timeout(Duration::from_secs(20), api.devices())
+                .await
+                .unwrap_or_else(|_| Err(VeloError::Network("devices timed out".into())));
+            if this.devices_generation.load(Ordering::SeqCst) != generation {
+                return;
+            }
+            let committed = this.env.account.commit_if_current(ticket, || {
+                if this.devices_generation.load(Ordering::SeqCst) != generation {
+                    return;
+                }
+                match result {
+                    Ok(devices) => {
                         this.lock().devices_available = devices.iter().any(|d| d.id.is_some());
                         let rows = devices.iter().map(device_row).collect();
-                        this.ui.send(PlayerUi::Devices(ModelOp::Replace(rows)));
-                    });
-                    this.recompute();
+                        this.ui.send(PlayerUi::DevicesFinished {
+                            rows: Some(ModelOp::Replace(rows)),
+                            error: "",
+                        });
+                    }
+                    Err(e) => this.ui.send(PlayerUi::DevicesFinished {
+                        rows: None,
+                        error: devices_error(&e),
+                    }),
                 }
-                Err(e) => this.env.report(&e),
+            });
+            if committed {
+                this.recompute();
+            } else if this.devices_generation.load(Ordering::SeqCst) == generation {
+                this.ui.send(PlayerUi::DevicesFinished {
+                    rows: Some(ModelOp::Replace(Vec::new())),
+                    error: "auth",
+                });
             }
         });
     }
@@ -1835,6 +1913,9 @@ impl PlayerCtl {
     }
 
     pub fn transfer_to(self: &Arc<Self>, device_id: String) {
+        if device_id.is_empty() {
+            return;
+        }
         let Some(api) = self.env.account.api() else {
             return;
         };
@@ -1861,6 +1942,15 @@ impl PlayerCtl {
 
 /// Role names of `Player.devices` (re-exported for the bridge).
 pub const DEVICES_ROLES: &str = DEVICE_ROLES;
+
+fn devices_error(error: &VeloError) -> &'static str {
+    match error {
+        VeloError::NotAuthenticated => "auth",
+        VeloError::Forbidden(_) => "forbidden",
+        VeloError::RateLimited(_) => "rateLimited",
+        _ => "network",
+    }
+}
 
 /// Joins `Engine::playback_progress` (request id, consumed PCM) with the engine state of the
 /// same request (song) into one `ProgressSample`. Samples of a stale request are dropped.
@@ -1919,6 +2009,120 @@ async fn listen_to_engine(player: std::sync::Weak<PlayerCtl>, engine: Arc<Engine
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    async fn device_result(
+        ui: &mut mpsc::UnboundedReceiver<PlayerUi>,
+    ) -> (Option<ModelOp>, &'static str) {
+        loop {
+            if let PlayerUi::DevicesFinished { rows, error } = ui.recv().await.unwrap() {
+                return (rows, error);
+            }
+        }
+    }
+
+    #[test]
+    fn v92_devices_completion_is_not_silenced_with_session_quota_toast() {
+        let rt = super::super::r4b_test_support::runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        env.account.install_session_api();
+        env.account.view.send_modify(|v| v.signed_in = true);
+        let mut errors = env.errors.subscribe();
+        let quota = VeloError::RateLimited(Duration::from_secs(30));
+        env.report(&quota);
+        assert!(errors.try_recv().is_err());
+        assert_eq!(devices_error(&quota), "rateLimited");
+    }
+
+    #[test]
+    fn v92_device_refresh_always_finishes_and_each_open_reads_again() {
+        use super::super::r4b_test_support::{ManualTime, Server, runtime};
+        let rt = runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        rt.block_on(async {
+            let _time = ManualTime::new();
+            let player = controller(&env);
+            let mut ui = player.ui.take().unwrap();
+            player.refresh_devices();
+            assert_eq!(
+                device_result(&mut ui).await,
+                (Some(ModelOp::Replace(vec![])), "auth")
+            );
+            let mut server = Server::new().await;
+            env.account.set_test_provider(server.provider());
+            // Queue discovery is outside the device-picker scenario.
+            player.lock().queue_identity.4 = true;
+            for devices in [
+                json!([]),
+                json!([
+                    {"id":"phone", "name":"Pixel", "type":"Smartphone", "is_active":true,
+                     "volume_percent":null, "supports_volume":false},
+                    {"id":"pc", "name":"Velo", "type":"Computer", "is_active":false},
+                    {"id":null, "name":"Restricted", "type":"Smartphone", "is_restricted":true}
+                ]),
+            ] {
+                player.refresh_devices();
+                let request = server.next().await;
+                assert_eq!(request.path, "/me/player/devices");
+                request.respond(200, json!({"devices":devices}));
+                let (Some(ModelOp::Replace(rows)), error) = device_result(&mut ui).await else {
+                    panic!("expected rows")
+                };
+                assert_eq!(error, "");
+                assert_eq!(rows.len(), devices.as_array().unwrap().len());
+                if !rows.is_empty() {
+                    assert_eq!(rows[0]["kind"], "Smartphone");
+                    assert_eq!(rows[0]["isActive"], true);
+                    assert_eq!(rows[2]["deviceId"], "");
+                }
+            }
+            for (status, code) in [(429, "rateLimited"), (403, "forbidden"), (401, "auth")] {
+                env.account.set_test_provider(server.provider()); // clear any previous retry-after
+                player.refresh_devices();
+                server
+                    .next()
+                    .await
+                    .respond(status, json!({"error":{"message":"denied"}}));
+                if status == 401 {
+                    server.next().await.respond(401, json!({}));
+                }
+                assert_eq!(device_result(&mut ui).await, (None, code));
+            }
+        });
+    }
+
+    #[test]
+    fn v92_device_timeout_and_old_response_cannot_leave_or_replace_loading() {
+        use super::super::r4b_test_support::{ManualTime, Server, runtime, settle};
+        let rt = runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        rt.block_on(async {
+            let _time = ManualTime::new();
+            let mut server = Server::new().await;
+            env.account.set_test_provider(server.provider());
+            let player = controller(&env);
+            player.lock().queue_identity.4 = true;
+            let mut ui = player.ui.take().unwrap();
+            player.refresh_devices();
+            let old = server.next().await;
+            player.refresh_devices();
+            server.next().await.respond(200, json!({"devices":[{"id":"new", "name":"Pixel", "type":"Smartphone", "is_active":true}]}));
+            let (Some(ModelOp::Replace(rows)), "") = device_result(&mut ui).await else { panic!("expected rows") };
+            assert_eq!(rows[0]["deviceId"], "new");
+            old.respond(200, json!({"devices":[]}));
+            settle().await;
+            assert!(ui.try_recv().is_err());
+            player.refresh_devices();
+            let pending = server.next().await;
+            tokio::time::advance(Duration::from_secs(21)).await;
+            assert_eq!(device_result(&mut ui).await, (None, "network"));
+            drop(pending);
+            player.refresh_devices();
+            let old_account = server.next().await;
+            env.account.set_test_provider(server.provider());
+            old_account.respond(200, json!({"devices":[{"id":"old", "name":"Old account"}]}));
+            assert_eq!(device_result(&mut ui).await, (Some(ModelOp::Replace(vec![])), "auth"));
+        });
+    }
 
     #[test]
     fn cover_transition_keeps_assets_until_ready_and_clears_confirmed_absence_or_failure() {
@@ -2124,6 +2328,123 @@ mod tests {
                 "el ticket de sesión invalida la respuesta"
             );
             assert_eq!(player.queue_snapshot().tracks[0].uri, "spotify:track:nueva");
+        });
+    }
+
+    #[test]
+    fn v92_remote_session_mode_and_repeat_refresh_queue() {
+        use super::super::r4b_test_support::{ManualTime, Server, runtime, settle};
+        let rt = runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        rt.block_on(async {
+            let _time = ManualTime::new();
+            let mut server = Server::new().await;
+            env.account.set_test_session_provider(server.provider());
+            assert!(env.account.session_mode());
+            let player = controller(&env);
+            let mut ui = player.ui.take().unwrap();
+            queue_state(&player, "a", false);
+            next_queue_rows(&mut ui).await;
+            server
+                .next()
+                .await
+                .respond(200, queue_json("a", &["b", "b", "c"]));
+            assert_eq!(next_queue_rows(&mut ui).await.len(), 3);
+            let mut state = player.media_state.borrow().clone();
+            state.repeat = RepeatMode::Context;
+            player.apply(0, state);
+            next_queue_rows(&mut ui).await;
+            let request = server.next().await;
+            assert_eq!(request.path, "/me/player/queue");
+            request.respond(200, queue_json("a", &["b", "b", "c", "a"]));
+            assert_eq!(next_queue_rows(&mut ui).await.len(), 4);
+            settle().await;
+        });
+    }
+
+    #[test]
+    fn v92_queue_timeout_finishes_loading_and_releases_next_refresh() {
+        use super::super::r4b_test_support::{ManualTime, Server, runtime, settle};
+        let rt = runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        rt.block_on(async {
+            let _time = ManualTime::new();
+            let mut server = Server::new().await;
+            env.account.set_test_provider(server.provider());
+            let player = controller(&env);
+            queue_state(&player, "a", false);
+            let _hung = server.next().await;
+            assert_eq!(player.view.borrow().queue_status, "loading");
+            tokio::time::advance(Duration::from_secs(11)).await;
+            settle().await;
+            assert_eq!(player.view.borrow().queue_status, "unavailable");
+            assert!(!player.view.borrow().queue_error.is_empty());
+            player.refresh_queue();
+            server.next().await.respond(200, queue_json("a", &[]));
+            settle().await;
+            assert_eq!(player.view.borrow().queue_status, "ready");
+        });
+    }
+
+    #[test]
+    fn v92_recent_click_reconciles_paused_player_and_same_song_context_reload() {
+        use super::super::r4b_test_support::{ManualTime, Server, runtime, settle};
+        struct Source(watch::Sender<SourceState>, Arc<AtomicU64>);
+        #[async_trait::async_trait]
+        impl PlaybackSource for Source {
+            fn name(&self) -> &'static str {
+                "history-test"
+            }
+            fn state(&self) -> watch::Receiver<SourceState> {
+                self.0.subscribe()
+            }
+            async fn act(&self, _: SourceAction) -> velo_domain::Result<()> {
+                Ok(())
+            }
+            fn refresh(&self, _: Refresh) {
+                self.1.fetch_add(1, Ordering::SeqCst);
+            }
+        }
+        let rt = runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        rt.block_on(async {
+            let _time = ManualTime::new();
+            let mut server = Server::new().await;
+            env.account.set_test_provider(server.provider());
+            let refreshes = Arc::new(AtomicU64::new(0));
+            let player = PlayerCtl::new(
+                &env,
+                vec![Arc::new(Source(
+                    watch::channel(SourceState {
+                        active: true,
+                        remote: true,
+                        ..SourceState::default()
+                    })
+                    .0,
+                    refreshes.clone(),
+                ))],
+            );
+            player.history.entries.lock().unwrap().push(history::Entry {
+                entry_id: "stable-entry".into(),
+                uri: "spotify:track:a".into(),
+                ..Default::default()
+            });
+            player.play_history_entry("stable-entry");
+            let play = server.next().await;
+            assert_eq!(play.path, "/me/player/play");
+            assert_eq!(play.body["uris"], json!(["spotify:track:a"]));
+            play.respond(204, json!(null));
+            let queue = server.next().await;
+            assert_eq!(refreshes.load(Ordering::SeqCst), 1);
+            assert_eq!(queue.path, "/me/player/queue");
+            queue.respond(200, queue_json("a", &["b"]));
+            settle().await;
+            player.resync();
+            let queue = server.next().await;
+            assert_eq!(refreshes.load(Ordering::SeqCst), 2);
+            assert_eq!(queue.path, "/me/player/queue");
+            queue.respond(200, queue_json("a", &["c"]));
+            settle().await;
         });
     }
 

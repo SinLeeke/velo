@@ -14,7 +14,7 @@ import "../motion"
 // Motion (S1-2): fades in + scales 0.97 -> 1 from `originCorner` (bottom-right by default, where
 // the devices button of the player bar is; Now Playing opens it under its tool pill); leaves shorter.
 // R2: while a refresh with no devices yet is on its way, static skeleton rows instead of the empty
-// state; model reset/insertion or a Player.error ends the wait. No polling or timeout.
+// state; devicesRefreshed ends the wait, including empty results and errors. No UI timer.
 T.Popup {
     id: root
 
@@ -48,6 +48,7 @@ T.Popup {
 
     function refresh() {
         refreshing = true
+        errorCode = ""
         Player.refreshDevices()
     }
     onAboutToShow: refresh()
@@ -55,14 +56,24 @@ T.Popup {
 
     // Waiting for the refresh asked on opening (only matters while the list is empty).
     property bool refreshing: false
+    property string errorCode: ""
     readonly property bool loading: refreshing && list.count === 0
-    Connections { target: Player; function onError(message) { root.refreshing = false } }
     Connections {
-        target: Player.devices
-        ignoreUnknownSignals: true
-        function onModelReset() { root.refreshing = false }
-        function onRowsInserted() { root.refreshing = false }
-        function onCountChanged() { root.refreshing = false }
+        target: Player
+        function onDevicesRefreshed(errorCode) {
+            root.errorCode = errorCode
+            root.refreshing = false
+            if (root.opened) {
+                if (errorCode !== "" || list.count === 0) retry.forceActiveFocus()
+                else list.forceActiveFocus()
+            }
+        }
+    }
+    function statusText() {
+        if (errorCode === "auth") return qsTr("Inicia sesión de nuevo en Spotify para ver tus dispositivos")
+        if (errorCode === "rateLimited") return qsTr("Espera un momento y vuelve a buscar tus dispositivos")
+        if (errorCode !== "") return qsTr("No se pudieron cargar tus dispositivos. Comprueba la conexión y reintenta")
+        return qsTr("No se encontraron dispositivos. Abre Spotify en tu celular o activa la reproducción en Velo")
     }
     onOpened: {
         let active = 0
@@ -71,7 +82,8 @@ T.Popup {
                 active = i
         list.currentIndex = active
         list.keyboardNav = false
-        list.forceActiveFocus()
+        if (!refreshing && (errorCode !== "" || list.count === 0)) retry.forceActiveFocus()
+        else list.forceActiveFocus()
     }
 
     background: Rectangle {
@@ -146,6 +158,7 @@ T.Popup {
                 Accessible.role: Accessible.Button
 
                 function activate() {
+                    if (!model.deviceId) return
                     if (!active)
                         Player.transferTo(model.deviceId)
                     root.close()
@@ -240,9 +253,10 @@ T.Popup {
             }
         }
 
-        // Empty state: Spotify is not open anywhere.
+        // Empty/error state; cached rows remain usable if a refresh fails.
         Item {
-            visible: list.count === 0 && !root.loading
+            objectName: "devicesStatus"
+            visible: !root.refreshing && (list.count === 0 || root.errorCode !== "")
             width: parent.width
             height: visible ? emptyColumn.implicitHeight + 2 * Theme.space.xl : 0
             Column {
@@ -257,10 +271,11 @@ T.Popup {
                     color: Theme.textTertiary
                 }
                 Text {
+                    objectName: "devicesStatusText"
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
-                    text: qsTr("Activa la reproducción en Velo para escuchar en este PC")
+                    text: root.statusText()
                     font.family: Theme.family
                     font.pixelSize: Theme.type.body
                     font.weight: Theme.type.medium
@@ -269,8 +284,9 @@ T.Popup {
                 }
                 T.AbstractButton {
                     id: retry
+                    objectName: "devicesRetry"
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: qsTr("Buscar de nuevo")
+                    text: root.errorCode !== "" ? qsTr("Reintentar") : qsTr("Buscar de nuevo")
                     implicitWidth: retryText.implicitWidth + 2 * Theme.space.lg
                     implicitHeight: Theme.size.iconButton + Theme.space.sm
                     focusPolicy: Qt.StrongFocus

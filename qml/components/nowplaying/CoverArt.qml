@@ -16,9 +16,11 @@ import "../motion/morph.js" as Morph
 // The whole item is the slot; in circular mode `ringSlot` (the full slot) is left free for the
 // circular visualizer (VisualizerRing, loaded by NowPlaying) and the circle sits centered inside
 // it; the ring's inner radius is artSize / 2, the circle's own radius.
+// v0.9.2: `frame` (square mode with a visualizer): the art shrinks to squareArtRatio of the slot
+// and `ringSlot` stays free for the square reactive frame around it (VisualizerRing, square).
 // T4: the art itself is a button (`artButton`, round in circular mode): a click, Enter or Space
-// emits artClicked() (NowPlaying switches the visualizer's shape). Clicks on the slot around the
-// circle fall through to whatever is behind.
+// emits artClicked() (v0.9.2: NowPlaying toggles circle ↔ square). Clicks on the slot around the
+// art fall through to whatever is behind.
 //
 // S1-NP:
 //  - Cover change (a new song, the DJ's portrait ↔ the album art): two faces take turns. The new
@@ -38,6 +40,7 @@ Item {
 
     property url source
     property bool circular: false
+    property bool frame: false           // square art with room for the reactive frame (v0.9.2)
     property alias ringSlot: ring
     property bool tiltEnabled: true      // NowPlaying turns it off while the cover is flying
     property bool playing: Player.isPlaying
@@ -55,17 +58,20 @@ Item {
     property bool artEnabled: true
     readonly property alias artButton: artButton
 
-    readonly property real artSize: circular ? Math.min(width, height) * Theme.nowPlaying.cookieRatio : Math.min(width, height)
+    readonly property real artSize: Math.min(width, height) * (circular ? Theme.nowPlaying.cookieRatio
+                                                               : frame ? Theme.nowPlaying.squareArtRatio : 1)
+    readonly property real artCorner: art.cornerRadius
 
-    // Circular visualizer ring/blob goes here (behind the circle).
+    // Visualizer ring/blob (circle) or reactive frame (square) goes here, behind the art.
     Item {
         id: ring
         objectName: "vizRingSlot"
         anchors.fill: parent
-        visible: root.circular && opacity > 0
+        visible: (root.circular || root.frame) && opacity > 0
         opacity: root.ringReveal
         scale: Morph.mix(Theme.motion.npRingFrom, 1, root.ringReveal)
-        rotation: (1 - root.ringReveal) * Theme.motion.npRingTurn
+        // The square frame does not turn: the art it hugs never does.
+        rotation: root.circular ? (1 - root.ringReveal) * Theme.motion.npRingTurn : 0
     }
 
     // ------------------------------------------------------------ tilt

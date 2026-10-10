@@ -251,7 +251,7 @@ Item {
                 width: parent.width
                 // Very narrow page (minimum window with the queue docked): tools drop to a
                 // second line instead of covering the play buttons.
-                readonly property real buttonRun: Theme.library.cardWidth + Theme.size.titleBar + Theme.space.lg
+                readonly property real buttonRun: 2 * Theme.library.cardWidth + Theme.space.lg
                     + (page.canSave ? Theme.size.titleBar + Theme.space.lg : 0)
                     + (page.listUri !== "" && !page.searchResults ? Theme.size.titleBar + Theme.space.lg : 0)
                 readonly property bool stacked: page.listTools
@@ -270,45 +270,19 @@ Item {
                         text: qsTr("Reproducir")
                         iconSource: Qt.resolvedUrl("../../icons/play_arrow_fill.svg")
                         enabled: Backend.Player.canControl
-                        // M2: like the official app, the switch next to it decides the order.
-                        onClicked: Backend.Player.shuffle ? Backend.Library.shuffleCurrent() : Backend.Library.playCurrent()
+                        // v0.9.2: always in order; «Aleatorio» next to it plays shuffled.
+                        onClicked: Backend.Library.playCurrent()
                     }
-                    // M2: shuffle is a switch (Player.shuffle), not "play shuffled": accent ink
-                    // and a dot under the icon while on, as in Spotify.
-                    IconButton {
-                        id: shuffleSwitch
-                        objectName: "shuffleSwitch"
-                        width: Theme.size.titleBar
-                        height: Theme.size.titleBar
-                        text: Backend.Player.shuffle ? qsTr("Desactivar aleatorio") : qsTr("Activar aleatorio")
+                    // v0.9.2 (user: "un botón de reproducir aleatorio además del normal"): replaces
+                    // the M2 shuffle switch. Every press loads the list again with shuffle on, so
+                    // the engine draws a new order each time.
+                    LibraryButton {
+                        objectName: "shufflePlayButton"
+                        width: Theme.library.cardWidth
+                        text: qsTr("Aleatorio")
                         iconSource: Qt.resolvedUrl("../../icons/shuffle.svg")
-                        iconSize: Theme.icon.lg
-                        ink: Theme.textSecondary
-                        active: Backend.Player.shuffle
-                        activeFill: hovered ? Theme.surface2 : Theme.library.clearPaint
-                        activeInk: Theme.accent
                         enabled: Backend.Player.canControl
-                        Accessible.checkable: true
-                        onClicked: Backend.Player.toggleShuffle()
-                        // C6: the dot grows in from half size and fades (fast, easeOut) when
-                        // shuffle turns on; it shrinks out the same way. Transform and opacity.
-                        Rectangle {
-                            opacity: shuffleSwitch.active ? 1 : 0
-                            scale: shuffleSwitch.active ? 1 : Theme.feel.dotFrom
-                            Behavior on opacity {
-                                OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
-                            }
-                            Behavior on scale {
-                                ScaleAnimator { duration: Theme.motion.fast; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
-                            }
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.bottom: parent.bottom
-                            anchors.bottomMargin: Theme.space.xxs
-                            width: Theme.space.xs
-                            height: width
-                            radius: width / 2
-                            color: shuffleSwitch.enabled ? Theme.accent : Theme.textDisabled
-                        }
+                        onClicked: Backend.Library.shuffleCurrent()
                     }
                     // R4 (P2-2): save the album / someone else's playlist, and the list's own menu
                     // (queue, radio, link), as on the artist page.

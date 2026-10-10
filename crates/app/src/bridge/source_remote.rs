@@ -16,6 +16,10 @@ use velo_domain::{PlaybackState, Result, VeloError, pick_image};
 use super::source::{PlaybackSource, Refresh, SourceAction, SourceState, SourceTrack, perform_api};
 use crate::engine::Env;
 use crate::engine::clock::{Flags, should_tick};
+use crate::engine::{
+    Bus,
+    player::history::{ProgressSample, RemoteListeningClock},
+};
 
 /// Longest wait between refreshes while playing with the window visible.
 const REFRESH_EVERY: Duration = Duration::from_secs(5);
@@ -54,6 +58,8 @@ fn refresh_delay(outranked_now: bool, flags: &Flags, state: &SourceState) -> Opt
 }
 
 pub struct RemoteSource {
+    pub listening: Bus<ProgressSample>,
+    listening_clock: Mutex<RemoteListeningClock>,
     env: Arc<Env>,
     tx: watch::Sender<SourceState>,
     trigger: mpsc::UnboundedSender<Refresh>,
@@ -81,6 +87,8 @@ impl RemoteSource {
     pub fn start(env: &Arc<Env>, outranked: watch::Receiver<bool>) -> Arc<Self> {
         let (trigger, requests) = mpsc::unbounded_channel();
         let this = Arc::new(Self {
+            listening: Bus::new(),
+            listening_clock: Mutex::new(RemoteListeningClock::default()),
             env: env.clone(),
             tx: watch::channel(SourceState::default()).0,
             trigger,
@@ -152,6 +160,7 @@ impl RemoteSource {
                     };
                     if now != identity {
                         identity = now;
+                        self.listening_clock.lock().unwrap_or_else(|e| e.into_inner()).reset();
                         if identity.0 && !outranked_now {
                             self.sync().await;
                         } else if !identity.0 {
@@ -165,6 +174,7 @@ impl RemoteSource {
                     if changed.is_err() {
                         break;
                     }
+                    self.listening_clock.lock().unwrap_or_else(|e| e.into_inner()).discontinuity();
                 }
                 () = sleep_for(delay) => {
                     self.sync().await;
@@ -174,6 +184,10 @@ impl RemoteSource {
     }
 
     fn clear(&self) {
+        self.listening_clock
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .reset();
         self.tx.send_replace(SourceState::default());
     }
 
@@ -193,25 +207,42 @@ impl RemoteSource {
             return;
         }
         let result = async {
-            let mut state = api
-                .playback()
-                .await?
+            let playback = api.playback().await?;
+            let mut state = playback
                 .as_ref()
                 .map_or_else(SourceState::default, state_of);
             if !state.active {
                 state.device_available = api.devices().await?.iter().any(|d| d.id.is_some());
             }
-            Ok::<_, VeloError>(state)
+            Ok::<_, VeloError>((state, playback))
         }
         .await;
         match result {
-            Ok(state) => {
+            Ok((state, playback)) => {
                 self.env.account.commit_if_current(ticket, || {
+                    let mut clock = self
+                        .listening_clock
+                        .lock()
+                        .unwrap_or_else(|e| e.into_inner());
+                    if state.active {
+                        if let Some(p) = playback.as_ref() {
+                            let sample = clock.observe(p);
+                            if let Some(sample) = sample {
+                                self.listening.send(sample);
+                            }
+                        }
+                    } else {
+                        clock.reset();
+                    }
                     *self.backoff.lock().unwrap_or_else(|e| e.into_inner()) = Backoff::default();
                     self.tx.send_replace(state);
                 });
             }
             Err(e) => {
+                self.listening_clock
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .discontinuity();
                 self.backoff
                     .lock()
                     .unwrap_or_else(|e| e.into_inner())
@@ -275,6 +306,11 @@ impl PlaybackSource for RemoteSource {
     }
 
     async fn act(&self, action: SourceAction) -> Result<()> {
+        // A seek/action boundary cannot be mistaken for effective listening.
+        self.listening_clock
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .discontinuity();
         perform_api(&self.env, action).await
     }
 

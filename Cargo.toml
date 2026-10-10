@@ -3,13 +3,13 @@ resolver = "3"
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.9.1"
+version = "0.9.2"
 edition = "2024"
 license = "MIT"
 rust-version = "1.85"
 
 # Shared versions. Each crate opts in with `dep = { workspace = true }`.
-# Crate-specific dependencies are declared in each crate's Cargo.toml.
+# Agents may add crate-specific dependencies in their own crate's Cargo.toml only.
 [workspace.dependencies]
 velo-domain = { path = "crates/domain" }
 tokio = { version = "1.53", features = ["rt-multi-thread", "macros", "sync", "time", "fs", "net", "io-util"] }
@@ -36,7 +36,7 @@ strip = true
 panic = "abort"
 
 [profile.dev]
-debug = "line-tables-only"   # backtraces keep file:line with smaller debug artifacts
+debug = "line-tables-only"   # backtraces keep file:line; full debug info tripled target/ (user, 2026-10-08)
 
 [profile.dev.package."*"]
 opt-level = 2   # image decoding / FFT stay fast in debug builds

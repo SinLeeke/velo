@@ -152,6 +152,9 @@ impl SpotifyProvider {
 
     pub async fn queue_snapshot(&self) -> Result<QueueSnapshot> {
         let response = self.get("/me/player/queue", &[]).await?;
+        if !response["queue"].is_array() {
+            return Err(VeloError::Other("Spotify returned an invalid queue".into()));
+        }
         Ok(QueueSnapshot {
             current: response["currently_playing"]["uri"]
                 .as_str()

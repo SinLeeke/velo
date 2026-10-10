@@ -60,11 +60,18 @@ T.AbstractButton {
     // C6: a short pop of the glyph (1 → likePop → 1, `base` in total), e.g. when a song is saved.
     function pop() { glyphPop.restart() }
 
+    // v0.9.2: after a press the tooltip stays away until the pointer leaves (a click that flips
+    // the theme changed its text mid-crossfade and the bubble showed up torn at the edge).
+    property bool tipSuppressed: false
+    onPressedChanged: if (pressed) tipSuppressed = true
+    onHoveredChanged: if (!hovered) tipSuppressed = false
+
     // Tooltip: built only while the pointer or the keyboard focus is on the button (none in
     // long lists at rest). T.ToolTip waits Theme.tip.delay
     // before showing; a press hides it. Opacity only, no timer of ours.
     Loader {
         active: control.visible && Theme.windowVisible && control.toolTip !== "" && control.enabled && !control.pressed
+                && !control.tipSuppressed
                 && (control.hovered || control.visualFocus)
         sourceComponent: T.ToolTip {
             objectName: "iconToolTip"

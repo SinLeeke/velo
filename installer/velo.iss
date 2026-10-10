@@ -1,7 +1,7 @@
 ; Mantener este AppId entre versiones para actualizar la misma instalación.
 [Setup]
 #ifndef VeloVersion
-  #define VeloVersion "0.9.1"
+  #define VeloVersion "0.9.2"
 #endif
 AppId={{F1D6AC92-628A-4B70-89EC-8E70AA1CF921}
 AppName=Velo

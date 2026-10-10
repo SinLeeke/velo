@@ -1,4 +1,4 @@
-//! `Player` singleton. A thin view of `engine::player`: state arrives through
+//! `Player` singleton (docs/CONTRATO.md). A thin view of `engine::player`: state arrives through
 //! watch channels (no polling), actions return immediately and run on the tokio runtime.
 //! `positionMs` is pushed by the engine clock: at most 4 Hz, only while playing and visible.
 
@@ -57,6 +57,8 @@ pub mod ffi {
         #[qproperty(QString, palette_ink_light, READ, NOTIFY)]
         #[qproperty(f64, palette_veil_dark_opacity, READ, NOTIFY)]
         #[qproperty(f64, palette_veil_light_opacity, READ, NOTIFY)]
+        #[qproperty(f64, palette_scrim_dark_opacity, READ, NOTIFY)]
+        #[qproperty(f64, palette_scrim_light_opacity, READ, NOTIFY)]
         #[qproperty(*mut QAbstractListModel, queue, READ, CONSTANT)]
         #[qproperty(*mut QAbstractListModel, devices, READ, CONSTANT)]
         #[qproperty(*mut QAbstractListModel, outputs, READ, CONSTANT)]
@@ -67,6 +69,9 @@ pub mod ffi {
 
         #[qsignal]
         fn error(self: Pin<&mut Player>, message: &QString);
+
+        #[qsignal]
+        fn devices_refreshed(self: Pin<&mut Player>, error_code: &QString);
 
         #[qsignal]
         fn queue_saved(self: Pin<&mut Player>, playlist_id: &QString, name: &QString);
@@ -168,6 +173,8 @@ pub struct PlayerRust {
     palette_ink_light: QString,
     palette_veil_dark_opacity: f64,
     palette_veil_light_opacity: f64,
+    palette_scrim_dark_opacity: f64,
+    palette_scrim_light_opacity: f64,
     queue: *mut crate::model::ffi::QAbstractListModel,
     devices: *mut crate::model::ffi::QAbstractListModel,
     outputs: *mut crate::model::ffi::QAbstractListModel,
@@ -219,6 +226,8 @@ impl Default for PlayerRust {
             palette_ink_light: QString::from("#0D2129"),
             palette_veil_dark_opacity: 1.0,
             palette_veil_light_opacity: 1.0,
+            palette_scrim_dark_opacity: 0.0,
+            palette_scrim_light_opacity: 0.0,
             queue: std::ptr::null_mut(),
             devices: std::ptr::null_mut(),
             outputs: std::ptr::null_mut(),
@@ -475,6 +484,8 @@ impl ffi::Player {
             rust.palette_ink_light = QString::from(p.ink_light.as_str());
             rust.palette_veil_dark_opacity = f64::from(p.veil_dark_alpha) / 255.0;
             rust.palette_veil_light_opacity = f64::from(p.veil_light_alpha) / 255.0;
+            rust.palette_scrim_dark_opacity = f64::from(p.scrim_dark_alpha) / 255.0;
+            rust.palette_scrim_light_opacity = f64::from(p.scrim_light_alpha) / 255.0;
             rust.applied_palette = Some(p.clone());
         }
         self.as_mut().palette_base_changed();
@@ -485,6 +496,8 @@ impl ffi::Player {
         self.as_mut().palette_ink_light_changed();
         self.as_mut().palette_veil_dark_opacity_changed();
         self.as_mut().palette_veil_light_opacity_changed();
+        self.as_mut().palette_scrim_dark_opacity_changed();
+        self.as_mut().palette_scrim_light_opacity_changed();
         self.as_mut().palette_ready();
     }
 
@@ -507,10 +520,11 @@ impl ffi::Player {
                     m.apply(op);
                 }
             }
-            PlayerUi::Devices(op) => {
-                if let Some(m) = &self.devices_model {
+            PlayerUi::DevicesFinished { rows, error } => {
+                if let (Some(m), Some(op)) = (&self.devices_model, rows) {
                     m.apply(op);
                 }
+                self.devices_refreshed(&QString::from(error));
             }
         }
     }

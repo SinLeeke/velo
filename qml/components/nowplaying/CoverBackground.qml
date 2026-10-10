@@ -168,8 +168,8 @@ Item {
         readonly property alias status: image.status
         property color veilColor: Theme.cover.veil
         property real veilAlpha: 1
-        width: room.width
-        height: room.height
+        width: canvas.width
+        height: canvas.height
         z: root.front === layer ? 1 : 0
         visible: root.front === layer || root.under === layer
 
@@ -191,11 +191,26 @@ Item {
         }
     }
 
+    // v0.9.2: the layers overscan the room by driftOverscan on every side, so the drift's shift
+    // never uncovers an edge whatever the scale is at that moment (an Animator can be stopped or
+    // reset at scale 1 while x/y keep their offset, which left bare stripes). Clipped to the view.
+    clip: true
+    readonly property real overscanX: Math.ceil(root.width * Theme.nowPlaying.driftOverscan)
+    readonly property real overscanY: Math.ceil(root.height * Theme.nowPlaying.driftOverscan)
     Item {
         id: room
+        objectName: "driftRoom"
         width: root.width
         height: root.height
-        Layer { id: layerA }
-        Layer { id: layerB; opacity: 0 }
+        Item {
+            id: canvas
+            objectName: "driftCanvas"
+            x: -root.overscanX
+            y: -root.overscanY
+            width: root.width + 2 * root.overscanX
+            height: root.height + 2 * root.overscanY
+            Layer { id: layerA }
+            Layer { id: layerB; opacity: 0 }
+        }
     }
 }

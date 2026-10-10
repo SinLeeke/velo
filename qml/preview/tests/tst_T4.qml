@@ -39,6 +39,7 @@ TestCase {
         Visualizer.enabled = true
         Visualizer.style = "normal"
         Visualizer.shape = "wave"
+        Visualizer.band = true
     }
     function cleanupTestCase() {
         Settings.playerBarVisualizer = savedBarViz
@@ -46,6 +47,7 @@ TestCase {
         Visualizer.enabled = true
         Visualizer.style = "normal"
         Visualizer.shape = "wave"
+        Visualizer.band = true
         Theme.reduceMotion = false
     }
     function make(component) {
@@ -61,7 +63,7 @@ TestCase {
                 if (ok(x, y)) return Qt.point(x, y)
         return null
     }
-    function vizState() { return [Visualizer.enabled, Visualizer.style, Visualizer.shape].join("/") }
+    function vizState() { return [Visualizer.enabled, Visualizer.style, Visualizer.shape, Visualizer.band].join("/") }
 
     // ---- library player bar
     function test_bar_free_click_cycles() {
@@ -110,54 +112,58 @@ TestCase {
         })
     }
     function test_background_click_rotates() {
+        Visualizer.shape = "bars"
         const np = make(npComponent)
         const p = backgroundPoint(np)
         verify(p !== null, "Now Playing has free background")
         mouseClick(np, p.x, p.y)
-        compare(vizState(), "true/circular/wave")
-        compare(np.circular, true)
+        compare(vizState(), "true/normal/wave/true")
+        compare(np.circular, false)
         mouseClick(np, p.x, p.y)
-        compare(Visualizer.enabled, false)
-        compare(np.vizOn, false)
+        compare(vizState(), "true/normal/wave/false")
+        compare(np.vizOn, true)
+        compare(np.bandShown, false)
         mouseClick(np, p.x, p.y)
-        compare(vizState(), "true/normal/wave")
+        compare(vizState(), "true/normal/bars/true")
         compare(np.bandShown, true)
     }
-    function test_cover_click_toggles_shape() {
+    function test_cover_click_toggles_style() {
         const np = make(npComponent)
         mouseClick(np.coverArt)
-        compare(vizState(), "true/normal/bars")
+        compare(vizState(), "true/circular/wave/true")
         mouseClick(np.coverArt)
-        compare(vizState(), "true/normal/wave")
+        compare(vizState(), "true/normal/wave/true")
         // Round cover: the centre is the art, the slot's corner (ring area) is background.
-        Visualizer.style = "circular"
+        Visualizer.style = "normal"
         wait(0)
         mouseClick(np.coverArt)
-        compare(vizState(), "true/circular/bars")
+        compare(vizState(), "true/circular/wave/true")
         mouseClick(np.coverArt, 2, 2)
-        compare(vizState(), "false/circular/bars")
+        compare(vizState(), "true/circular/wave/false")
     }
     function test_cover_keyboard_and_name() {
         const np = make(npComponent)
         const button = findChild(np, "npCoverButton")
-        verify(button.Accessible.name.length > 0)
+        compare(button.Accessible.name, qsTr("Carátula: cambiar a circular"))
         button.forceActiveFocus(Qt.TabFocusReason)
         keyClick(Qt.Key_Return)
-        compare(Visualizer.shape, "bars")
+        compare(vizState(), "true/circular/wave/true")
+        compare(button.Accessible.name, qsTr("Carátula: cambiar a cuadrada"))
         keyClick(Qt.Key_Space)
-        compare(Visualizer.shape, "wave")
+        compare(vizState(), "true/normal/wave/true")
+        compare(button.Accessible.name, qsTr("Carátula: cambiar a circular"))
     }
     function test_buttons_do_not_rotate() {
         const np = make(npComponent)
         mouseClick(findChild(np, "npCloseButton"))
-        compare(vizState(), "true/normal/wave")
+        compare(vizState(), "true/normal/wave/true")
         // Disabled transport, progress and volume let the press through: still not background.
         Player.canControl = false
         for (const name of ["npSeekBar", "npTransport", "npVolume"]) {
             const it = findChild(np, name)
             verify(it !== null, name)
             mouseClick(it, it.width / 2, it.height / 2)
-            compare(vizState(), "true/normal/wave", name)
+            compare(vizState(), "true/normal/wave/true", name)
         }
     }
     function test_click_that_closes_menu_does_not_rotate() {
@@ -167,28 +173,28 @@ TestCase {
         tryCompare(np.songMenu, "opened", true)
         mouseClick(np, p.x, p.y)
         tryCompare(np.songMenu, "visible", false)
-        compare(vizState(), "true/normal/wave")
+        compare(vizState(), "true/normal/wave/true")
         wait(0)                            // the next click comes after an event loop turn
         mouseClick(np, p.x, p.y)
-        compare(vizState(), "true/circular/wave")
+        compare(vizState(), "true/normal/wave/false")
     }
     // T4b: the press that closes a popup is neither a cover click nor a background click.
-    function test_click_on_cover_that_closes_popup_keeps_shape() {
+    function test_click_on_cover_that_closes_popup_keeps_style() {
         const np = make(npComponent)
         np.songMenu.popup(np, np.width / 2, np.height / 2)
         tryCompare(np.songMenu, "opened", true)
         mouseClick(np.coverArt)
         tryCompare(np.songMenu, "visible", false)
-        compare(vizState(), "true/normal/wave")
+        compare(vizState(), "true/normal/wave/true")
         wait(0)
         // The device picker (a non-modal T.Popup) too.
         mouseClick(findChild(np, "npDevicesButton"))
         wait(0)
         mouseClick(np.coverArt)
-        compare(vizState(), "true/normal/wave")
+        compare(vizState(), "true/normal/wave/true")
         wait(0)
         mouseClick(np.coverArt)
-        compare(vizState(), "true/normal/bars")
+        compare(vizState(), "true/circular/wave/true")
     }
     function test_lifted_cover_rim_is_the_cover() {
         const np = make(npComponent)
@@ -198,7 +204,7 @@ TestCase {
         const ext = cover.artSize * (Theme.motion.tiltLift - 1) / 2
         verify(ext >= 2)
         mouseClick(cover, (cover.width - cover.artSize) / 2 - ext / 2, cover.height / 2)
-        compare(vizState(), "true/normal/bars")
+        compare(vizState(), "true/circular/wave/true")
     }
     function test_bar_click_that_closes_popup_does_not_cycle() {
         const bar = make(barComponent)
@@ -230,10 +236,10 @@ TestCase {
         compare(np.vizOn, false)
         const p = backgroundPoint(np)
         mouseClick(np, p.x, p.y)
-        compare(vizState(), "true/normal/wave")
+        compare(vizState(), "true/normal/wave/true")
         Settings.performanceKeepVisualizer = true
         mouseClick(np, p.x, p.y)
-        compare(vizState(), "true/circular/wave")
+        compare(vizState(), "true/normal/wave/false")
     }
     function test_volume_track_lines_up_with_progress_track() {
         const np = make(npComponent)

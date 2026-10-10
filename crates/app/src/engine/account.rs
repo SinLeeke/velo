@@ -273,7 +273,12 @@ impl Account {
                 let tracks =
                     velo_player::queue::connect_snapshot::describe(engine.session(), &snapshot)
                         .await;
-                if self.session_queue.borrow().as_ref() != Some(&snapshot) {
+                if !self
+                    .session_queue
+                    .borrow()
+                    .as_ref()
+                    .is_some_and(|latest| latest.same_queue(&snapshot))
+                {
                     return Err(VeloError::NotFound);
                 }
                 return Ok((
@@ -285,7 +290,7 @@ impl Account {
                 ));
             }
         }
-        if own_engine || self.session_mode() {
+        if own_engine {
             return Err(VeloError::NotFound);
         }
         let (provider, ticket) = {
@@ -327,6 +332,15 @@ impl Account {
             v.signed_in = true;
             v.is_premium = true;
         });
+    }
+
+    #[cfg(test)]
+    pub(super) fn set_test_session_provider(&self, provider: Arc<SpotifyProvider>) {
+        self.set_test_provider(provider.clone());
+        *self.session_api.write().unwrap() = Some(Arc::new(SessionApi::with_web(
+            self.audio.session_source(),
+            provider,
+        )));
     }
 
     fn make_provider(self: &Arc<Self>, client_id: &str) -> Arc<SpotifyProvider> {

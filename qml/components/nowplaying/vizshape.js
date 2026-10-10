@@ -187,6 +187,57 @@ function ringInto(out, bands, cx, cy, inner, outer, m, floor, gain) {
     return out
 }
 
+// v0.9.2: point of a rounded square's outline (half side `h`, corner radius `rc`, centred on 0,0)
+// at perimeter fraction t (0 = top centre, clockwise) and its outward normal, written into `out`
+// ({x, y, nx, ny}). Each quarter runs from one side's centre, round the corner, to the next.
+function squareSpot(out, t, h, rc) {
+    const r = Math.max(0, Math.min(rc, h))
+    const half = h - r                        // half of a side's straight part
+    const arc = Math.PI * r / 2
+    const quarter = 2 * half + arc
+    const u = ((t % 1) + 1) % 1 * 4
+    const q = Math.min(3, Math.floor(u))
+    const s = (u - q) * quarter
+    let x, y, nx, ny
+    if (s < half) {
+        x = s; y = -h; nx = 0; ny = -1
+    } else if (s < half + arc) {
+        const a = (s - half) / Math.max(r, 1e-6)
+        nx = Math.sin(a); ny = -Math.cos(a)
+        x = half + r * nx; y = -half + r * ny
+    } else {
+        x = h; y = -half + (s - half - arc); nx = 1; ny = 0
+    }
+    for (let k = 0; k < q; ++k) {             // a quarter turn clockwise on screen: (x, y) → (-y, x)
+        const tx = x; x = -y; y = tx
+        const tn = nx; nx = -ny; ny = tn
+    }
+    out.x = x; out.y = y; out.nx = nx; out.ny = ny
+    return out
+}
+var spotScratch = { x: 0, y: 0, nx: 0, ny: 0 }
+// v0.9.2: the blob of ringInto around a rounded square: the outline at half side `inner` pushed
+// out along its normal by band * (outer - inner); same sampling and mirroring as the ring.
+function squareInto(out, bands, cx, cy, inner, outer, m, floor, gain, rc) {
+    const n = bands ? bands.length : 0
+    const g = gain === undefined ? 1 : gain
+    if (n === 0 || outer <= inner) {
+        out.length = 0
+        return out
+    }
+    for (let j = 0; j <= m; ++j) {
+        const u = (j % m) / m * 2
+        const p = (u <= 1 ? u : 2 - u) * (n - 1)
+        const lo = sample(bands, Math.max(0, p - 0.7)), hi = sample(bands, Math.min(n - 1, p + 0.7))
+        const v = Math.max(floor, g * (lo + 2 * sample(bands, p) + hi) / 4)
+        const d = v * (outer - inner)
+        const s = squareSpot(spotScratch, (j % m) / m, inner, rc)
+        put(out, j, cx + s.x + d * s.nx, cy + s.y + d * s.ny)
+    }
+    out.length = m + 1
+    return out
+}
+
 // S9/N1: top edge only of the horizontal wave (same points as wave(), without the closing
 // corners), for the outline stroke of the player-bar curve.
 function crest(bands, w, h, sub, floor, passes, inset, knee) {

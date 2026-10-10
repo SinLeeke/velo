@@ -43,6 +43,7 @@ FocusScope {
     function open() {
         Player.refreshQueue()
         opened = true
+        if (showRecents) { nowMs = Date.now(); if (History.error !== "") History.load() }
         closeButton.forceActiveFocus()
     }
     function close() {
@@ -154,7 +155,7 @@ FocusScope {
     // Near the end of the loaded rows: ask for the next batch once.
     function maybeLoadMore() {
         const n = recentsList.count
-        if (!showRecents || !History.hasMore || History.loading || n === 0 || moreRequestedAt === n)
+        if (!opened || !showRecents || !History.hasMore || History.loading || History.error !== "" || n === 0 || moreRequestedAt === n)
             return
         if (recentsList.contentY + recentsList.height >= recentsList.contentHeight - 4 * Theme.size.trackRow) {
             moreRequestedAt = n
@@ -165,6 +166,8 @@ FocusScope {
         target: History
         function onChanged() { root.nowMs = Date.now() }
         function onCleared() { root.moreRequestedAt = -1; root.nowMs = Date.now() }
+        function onLoadingChanged() { if (!History.loading) root.maybeLoadMore() }
+        function onErrorChanged() { if (History.error !== "") root.moreRequestedAt = -1 }
     }
 
     // ---------------------------------------------------------------- editing
@@ -690,8 +693,11 @@ FocusScope {
             forceActiveFocus()
             historyMenu.openFor(rrow, atPointer)
         }
-        Keys.onReturnPressed: History.playEntry(entryId)
-        Keys.onEnterPressed: History.playEntry(entryId)
+        function activate() { History.playEntry(entryId) }
+        Keys.onReturnPressed: activate()
+        Keys.onEnterPressed: activate()
+        Keys.onSpacePressed: activate()
+        Keys.onShortcutOverride: event => { if (event.key === Qt.Key_Space) event.accepted = true }
         Keys.onMenuPressed: openMenu(false)
         Keys.onPressed: event => {
             if (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier)) {
@@ -1080,7 +1086,8 @@ FocusScope {
                 width: list.width
                 readonly property bool skeleton: list.count === 0 && Player.queueStatus === "loading"
                 readonly property bool empty: list.count === 0 && Player.queueStatus === "ready"
-                height: skeleton ? 3 * Theme.size.trackRow : empty ? emptyText.implicitHeight + 2 * Theme.space.lg : 0
+                readonly property bool failed: Player.queueStatus === "unavailable" && Player.queueError !== ""
+                height: skeleton ? 3 * Theme.size.trackRow : empty || failed ? emptyText.implicitHeight + 2 * Theme.space.lg : 0
                 Column {
                     objectName: "queueSkeleton"
                     visible: parent.skeleton
@@ -1092,11 +1099,11 @@ FocusScope {
                 Text {
                     id: emptyText
                     objectName: "queueEmptyText"
-                    visible: parent.empty
+                    visible: parent.empty || parent.failed
                     x: Theme.space.xl
                     width: parent.width - 2 * Theme.space.xl
                     wrapMode: Text.WordWrap
-                    text: qsTr("No hay nada en la cola. Añade canciones desde tu biblioteca.")
+                    text: parent.failed ? qsTr("No se pudo cargar la cola. Vuelve a abrir el panel para reintentar.") : qsTr("No hay nada en la cola. Añade canciones desde tu biblioteca.")
                     font.family: Theme.family
                     font.pixelSize: Theme.type.body
                     lineHeight: Theme.type.bodyLineHeight
@@ -1122,6 +1129,10 @@ FocusScope {
             model: History.model
             activeFocusOnTab: root.showRecents
             keyNavigationEnabled: true
+            Keys.onReturnPressed: if (currentItem) currentItem.activate()
+            Keys.onEnterPressed: if (currentItem) currentItem.activate()
+            Keys.onSpacePressed: if (currentItem) currentItem.activate()
+            Keys.onShortcutOverride: event => { if (event.key === Qt.Key_Space) event.accepted = true }
             opacity: root.showRecents && count > 0 ? 1 : 0
             visible: opacity > 0
             enabled: root.showRecents
@@ -1182,13 +1193,13 @@ FocusScope {
             anchors.topMargin: Theme.space.lg
             anchors.leftMargin: Theme.space.xl
             anchors.rightMargin: Theme.space.xl
-            opacity: root.showRecents && recentsList.count === 0 && !History.loading ? 1 : 0
+            opacity: root.showRecents && recentsList.count === 0 ? 1 : 0
             visible: opacity > 0
             Behavior on opacity {
                 NumberAnimation { duration: root.fastDuration; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut }
             }
             wrapMode: Text.WordWrap
-            text: qsTr("Lo que escuches con Velo aparecerá aquí.")
+            text: History.loading ? qsTr("Cargando…") : History.error !== "" ? qsTr("No se pudo cargar lo que escuchaste. Vuelve a abrir el panel para reintentar.") : qsTr("Lo que escuches con Velo aparecerá aquí.")
             font.family: Theme.family
             font.pixelSize: Theme.type.body
             lineHeight: Theme.type.bodyLineHeight

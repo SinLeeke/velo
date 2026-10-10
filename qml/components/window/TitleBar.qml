@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls.impl
+import QtQuick.Effects
 import "../../theme"
 import Velo.Backend as Backend
 
@@ -21,6 +22,9 @@ Item {
     // T8: distance from the right edge the view keeps for its own controls in this strip (the
     // library's Ajustes/tema buttons, Now Playing's tool pill). The timer sits left of them.
     property real trailingReserve: 0
+    // v0.9.2: alpha of a soft veil-coloured scrim behind the timer (Now Playing; Rust measures it
+    // so the ink keeps its contrast over the lighter veil). 0 elsewhere: nothing is drawn.
+    property real timerScrimOpacity: 0
 
     // `var`: under qmltestrunner the window is a QQuickView, which a `Window` property rejects.
     readonly property var window: Window.window
@@ -61,6 +65,20 @@ Item {
         anchors.top: parent.top
         height: parent.height
         ink: bar.ink
+    }
+
+    // Soft panel (RectangularShadow: one static quad) behind the timer, see timerScrimOpacity.
+    RectangularShadow {
+        objectName: "titleTimerScrim"
+        visible: timer.visible && bar.timerScrimOpacity > 0
+        x: timer.x - Theme.space.md
+        y: timer.y - Theme.space.xs
+        width: timer.width + 2 * Theme.space.md
+        height: timer.height + 2 * Theme.space.xs
+        radius: height / 2
+        blur: Theme.space.md
+        color: Theme.cover.veil
+        opacity: bar.timerScrimOpacity
     }
 
     // T2: sleep-timer indicator. Not interactive: the strip keeps dragging the window.

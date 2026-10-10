@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 
-// MOCK of Velo.Backend.Player. Preview only: no timers, positionMs never
+// MOCK of Velo.Backend.Player (docs/CONTRATO.md). Preview only: no timers, positionMs never
 // advances on its own (the real bridge pushes it at <= 4 Hz while playing and visible).
 QtObject {
     id: player
@@ -53,7 +53,7 @@ QtObject {
     property string queueStatus: "ready"
     property string queueError: ""
 
-    // E5b: DJ Livi in Velo. While Livi speaks the real backend
+    // E5b: DJ Livi in Velo (contract: docs/CONTRATO.md). While Livi speaks the real backend
     // sets title/artist ("DJ Livi") and the cover to Livi's logo; the mock imitates it.
     property bool djAvailable: true
     property bool djActive: false
@@ -101,6 +101,9 @@ QtObject {
     // R5: veil alpha computed for contrast (0..1), published with paletteReady.
     property real paletteVeilDarkOpacity: 1.0
     property real paletteVeilLightOpacity: 1.0
+    // v0.9.2: alpha of the local scrim behind text and controls (same colour as the veil).
+    property real paletteScrimDarkOpacity: 0.0
+    property real paletteScrimLightOpacity: 0.0
 
     property ListModel queue: ListModel {
         ListElement { trackId: "q1"; uri: "spotify:track:q1"; title: "Faro sin costa"; artist: "Lumen Fiel"; album: "Atlas de agua"; durationMs: 198000; imageUrl: ""; liked: false; artistId: "a1"; albumId: "al1" }
@@ -119,6 +122,7 @@ QtObject {
 
     signal paletteReady()
     signal error(string message)
+    signal devicesRefreshed(string errorCode)
     signal queueSaved(string playlistId, string name)
 
     function playPause() { if (canControl) isPlaying = !isPlaying }
@@ -162,7 +166,13 @@ QtObject {
         if (index >= 0 && index < queue.count) queue.setProperty(index, "liked", saved)
     }
     function startRadio(seedUri) {}
-    function refreshDevices() {}
+    // Preview/tests can hold a request and complete it explicitly, including empty-to-empty.
+    property bool devicesAutoComplete: true
+    property int devicesRefreshCount: 0
+    function refreshDevices() {
+        devicesRefreshCount++
+        if (devicesAutoComplete) devicesRefreshed("")
+    }
     function refreshOutputs() {}
     function setOutput(outputId) {
         for (let i = 0; i < outputs.count; ++i)

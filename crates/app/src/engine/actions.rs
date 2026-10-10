@@ -1,4 +1,4 @@
-//! M1 context-menu actions shared by every list (`Actions` singleton):
+//! M1 context-menu actions shared by every list (`Actions` singleton, docs/CONTRATO.md):
 //! library membership of any URI, "add album/playlist to queue", "go to artist/album" of the
 //! song that is playing, and the sleep timer. Network work runs on tokio; results reach QML as
 //! eventos. Minutos usan un sleep; fin local usa EOF/PCM; remoto sigue los eventos del transporte.
@@ -321,9 +321,10 @@ impl ActionsCtl {
                 Ok(())
             }
             .await;
-            match result {
-                Ok(()) => this.player.refresh_queue(),
-                Err(e) => this.env.report(&e),
+            // A later failure in the batch must still reveal already accepted additions.
+            this.player.refresh_queue();
+            if let Err(e) = result {
+                this.env.report(&e);
             }
         });
     }
@@ -597,6 +598,47 @@ async fn context_tracks(api: &dyn MusicProvider, uri: &str) -> Result<Vec<String
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn v92_partial_album_add_refreshes_accepted_queue_rows() {
+        use super::super::r4b_test_support::{ManualTime, Server, runtime, settle};
+        let rt = runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        rt.block_on(async {
+            let _time = ManualTime::new();
+            let mut server = Server::new().await;
+            env.account.set_test_provider(server.provider());
+            let player = PlayerCtl::for_test(&env);
+            let actions = ActionsCtl::start(&env, &player);
+            actions.add_context_to_queue("spotify:album:album".into());
+            let album = server.next().await;
+            assert_eq!(album.path, "/albums/album");
+            album.respond(
+                200,
+                serde_json::json!({"id":"album","uri":"spotify:album:album","name":"Album"}),
+            );
+            server.next().await.respond(
+                200,
+                serde_json::json!({"items": [
+                {"uri":"spotify:track:a","name":"A"}, {"uri":"spotify:track:b","name":"B"}
+            ],"total":2}),
+            );
+            let first = server.next().await;
+            assert!(first.path.starts_with("/me/player/queue"));
+            first.respond(204, serde_json::Value::Null);
+            server.next().await.respond(
+                403,
+                serde_json::json!({"error":{"status":403,"message":"rejected"}}),
+            );
+            let refresh = server.next().await;
+            assert_eq!(refresh.path, "/me/player/queue");
+            refresh.respond(
+                200,
+                serde_json::json!({"queue":[{"uri":"spotify:track:a","name":"A"}]}),
+            );
+            settle().await;
+            assert_eq!(player.view.borrow().queue_status, "ready");
+        });
+    }
     #[test]
     fn sleep_deadline_only_for_minutes() {
         assert_eq!(super::sleep_deadline_ms(1_000.0, 2), 121_000.0);

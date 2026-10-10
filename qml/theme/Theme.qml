@@ -83,7 +83,7 @@ QtObject {
     readonly property color focusRing:     accent
 
     // ---------------------------------------------------- cover world (Now Playing)
-    // Default teal palette until the first track arrives.
+    // Defaults approximate referencias/ref_01 (teal) until the first track arrives.
     readonly property QtObject cover: QtObject {
         readonly property int blurSourceSize: 96 // Rust's cached background; GPU scales this texture
         readonly property int tipDelay: theme.dj.tipDelay
@@ -92,6 +92,10 @@ QtObject {
         // Veil alpha over the blurred art. Rust picks it per track (with the ink) so the ink keeps
         // >= 4.5:1 against the real composite; setCoverPalette() replaces this default.
         property real  veilOpacity: 1.0
+        // v0.9.2: the veil is lighter so the blurred art shows; a local scrim of the same colour
+        // behind the text and controls (NowPlaying) adds this alpha, and Rust guarantees the ink
+        // >= 4.5:1 against blur + veil + scrim. 0 when the backend does not send it.
+        property real  scrimOpacity: 0
         property color ink:      theme.dark ? "#F4FAFC" : "#0D2129"   // primary text on veil
         readonly property color inkSoft: theme.coverInkSecondary // compatibility alias for secondary ink
         property color inkFaint: Qt.rgba(ink.r, ink.g, ink.b, 0.34) // decorative tracks and disabled controls only
@@ -102,6 +106,9 @@ QtObject {
         // Scalloped play disc and active tools: palette-tinted, or neutral without «Teñir la interfaz».
         readonly property color control:  theme.dark ? "#FFFFFF" : theme.tintUi ? inkDeep : theme.text
         readonly property color controlInk: theme.dark ? (theme.tintUi ? inkDeep : theme.bg) : "#FFFFFF"
+        // v0.9.2: active tools of the Now Playing pill: white, merged with active neighbours.
+        readonly property color toolActive: "#FFFFFF"
+        readonly property color toolActiveInk: theme.tintUi ? inkDeep : theme.dark ? theme.bg : theme.text
     }
 
     // Called from Main.qml when the backend publishes a new palette (strings "#RRGGBB").
@@ -115,6 +122,8 @@ QtObject {
         // Opaque when a caller does not pass it (contrast stays safe).
         const opacity = dark ? p.veilDarkOpacity : p.veilLightOpacity
         cover.veilOpacity = isFinite(opacity) ? Math.max(0, Math.min(1, opacity)) : 1
+        const scrim = dark ? p.scrimDarkOpacity : p.scrimLightOpacity
+        cover.scrimOpacity = isFinite(scrim) ? Math.max(0, Math.min(1, scrim)) : 0
     }
 
     // ---------------------------------------------------------------- type
@@ -246,7 +255,7 @@ QtObject {
     }
 
     // --------------------------------------------------------------- motion
-    // Shared motion values: all
+    // Final values (S1, docs/S1-plan-animaciones.md). Owned by the S1 animation pass: other
     // components only read these tokens.
     //  - `scale` multiplies every UI duration. "Reducir movimiento" and "Modo rendimiento" set it
     //    to 0, so every Behavior/Animator bound to these tokens becomes an instant change.
@@ -419,6 +428,14 @@ QtObject {
         readonly property real driftScaleMin: 1.06
         readonly property real driftScaleMax: 1.1
         readonly property real driftShift: 0.025
+        // v0.9.2: extra image beyond each edge, > driftShift, so the shift alone (even at scale 1)
+        // never uncovers the window.
+        readonly property real driftOverscan: 0.035
+        // Square cover with its reactive frame (v0.9.2): the art's side vs the slot (the slot is
+        // ringSlotRatio × the cover size, as in circular mode).
+        readonly property real squareArtRatio: 0.78
+        // Soft edge of the local scrim behind the text and controls (v0.9.2).
+        readonly property real scrimBlur: theme.px(56)
         readonly property int driftScaleMs: 46000
         readonly property int driftXMs: 62000
         readonly property int driftYMs: 54000
@@ -715,6 +732,7 @@ QtObject {
         readonly property real hoverLift: 1.03         // play disc under a mouse pointer
         readonly property real knobGrow: 1.25          // slider knob while dragged
         readonly property real likePop: 1.2           // heart when a song is saved
+        readonly property real toolMarkFrom: 0.6      // v0.9.2: active tool capsule pops in from this scale
         readonly property real dotFrom: 0.5           // shuffle dot grows in from half size (never from 0)
         readonly property int lyricJumpLines: 3        // a longer lyric jump (seek) is instant
         readonly property int lyricsShift: theme.space.xl   // lyrics column slides in by this much

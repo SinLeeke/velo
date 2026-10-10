@@ -10,6 +10,9 @@ import "vizshape.js" as Viz
 // Like VisualizerBand it only reads `bands` (only while running): no Timer and nothing at rest;
 // bars use a Scale transform, the blob is one Shapes polygon. G4: the same display-rate glide as
 // VisualizerBand when the bands arrive slower than the screen refreshes (off in Modo rendimiento).
+// v0.9.2: `square` draws the same reactive around the square cover (rounded square of half side
+// innerRadius, corners cornerRadius): spokes along the outline, perpendicular to it, and the blob
+// pushed out along the outline's normal.
 // R2: the blob and the glide blend are written into buffers this item owns (no JS allocation per
 // frame), an unchanged frame leaves the path alone, and `gain` scales the levels without a copy.
 Item {
@@ -19,7 +22,9 @@ Item {
     property real gain: 1                  // multiplies every level (the volume the user hears)
     property string shape: "wave"          // "bars" | "wave"
     property color color: Theme.cover.glow
-    property real innerRadius: 0           // radius of the round cover art, px
+    property real innerRadius: 0           // radius of the round cover art (half side if square), px
+    property bool square: false
+    property real cornerRadius: 0          // square mode: the art's corner radius, px
     property bool interpolate: !Theme.performanceMode
     property bool running: Player.isPlaying
     readonly property bool animationOn: running && Player.isPlaying && visible && Window.window !== null
@@ -65,8 +70,11 @@ Item {
         if (Viz.sameInto(builtLevels, drawn) && force !== true)
             return
         if (shape === "wave") {
-            blobPoints = Viz.ringInto(blobPoints, drawn, width / 2, height / 2, startRadius, outerRadius,
-                                      Theme.vizStyle.ringSamples, Theme.vizStyle.blobFloor, gain)
+            blobPoints = square
+                ? Viz.squareInto(blobPoints, drawn, width / 2, height / 2, startRadius, outerRadius,
+                                 Theme.vizStyle.ringSamples, Theme.vizStyle.blobFloor, gain, startCorner)
+                : Viz.ringInto(blobPoints, drawn, width / 2, height / 2, startRadius, outerRadius,
+                               Theme.vizStyle.ringSamples, Theme.vizStyle.blobFloor, gain)
             blobPath.path = blobPoints
         }
     }
@@ -77,6 +85,8 @@ Item {
     onShapeChanged: rebuild(true)
     onStartRadiusChanged: rebuild(true)
     onOuterRadiusChanged: rebuild(true)
+    onSquareChanged: rebuild(true)
+    onStartCornerChanged: rebuild(true)
     NumberAnimation {
         id: glider
         objectName: "ringGlider"
@@ -92,13 +102,14 @@ Item {
     // A shallow overlap hides gaps without swallowing quiet treble behind the cover.
     // Keep bass at the top and treble at the bottom; Rust adapts each real band.
     readonly property real startRadius: innerRadius * (1 - Theme.v1bViz.ringInsetRatio)
+    readonly property real startCorner: cornerRadius * (1 - Theme.v1bViz.ringInsetRatio)
 
     readonly property color outerColor: Qt.rgba(color.r, color.g, color.b, Theme.vizStyle.alphaOuter)
     readonly property color innerColor: Qt.rgba(color.r, color.g, color.b, Theme.vizStyle.alphaInner)
 
     // ---- bars: 2 * bands spokes, mirrored left/right
     Repeater {
-        model: root.shape === "bars" ? 2 * Theme.viz.bands : 0
+        model: root.shape === "bars" && !root.square ? 2 * Theme.viz.bands : 0
         delegate: Item {
             id: spoke
             required property int index
@@ -119,6 +130,34 @@ Item {
                     origin.y: stick.height
                     yScale: Math.max(Theme.vizStyle.ringFloor,
                                      Viz.level(root.drawn[Viz.mirrorIndex(spoke.index, Theme.viz.bands)]) * root.gain)
+                }
+            }
+        }
+    }
+
+    // ---- bars around the square: evenly along the outline, each perpendicular to it. The spot
+    // (position and normal) depends only on the size, so it is computed once per resize.
+    Repeater {
+        model: root.shape === "bars" && root.square ? 2 * Theme.viz.bands : 0
+        delegate: Item {
+            id: edgeSpoke
+            required property int index
+            readonly property var spot: Viz.squareSpot({}, index / (2 * Theme.viz.bands), root.startRadius, root.startCorner)
+            x: root.width / 2 + spot.x
+            y: root.height / 2 + spot.y
+            rotation: Math.atan2(spot.nx, -spot.ny) * 180 / Math.PI
+            Rectangle {
+                id: edgeStick
+                x: -Theme.vizStyle.ringSpokeWidth / 2
+                y: -height
+                width: Theme.vizStyle.ringSpokeWidth
+                height: root.outerRadius - root.startRadius
+                radius: width / 2
+                color: root.outerColor
+                transform: Scale {
+                    origin.y: edgeStick.height
+                    yScale: Math.max(Theme.vizStyle.ringFloor,
+                                     Viz.level(root.drawn[Viz.mirrorIndex(edgeSpoke.index, Theme.viz.bands)]) * root.gain)
                 }
             }
         }

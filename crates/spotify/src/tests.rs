@@ -269,6 +269,18 @@ async fn d3_queue_snapshot_keeps_current_and_upcoming_from_one_response() {
 }
 
 #[tokio::test]
+async fn v92_missing_queue_is_unavailable_instead_of_a_confirmed_empty_queue() {
+    for body in [json!({}), json!({"queue":null}), json!({"queue":{}})] {
+        let (server, provider, _) = setup().await;
+        get_mock(&server, "/me/player/queue", body).await;
+        assert!(provider.queue_snapshot().await.is_err());
+    }
+    let (server, provider, _) = setup().await;
+    get_mock(&server, "/me/player/queue", json!({"queue":[]})).await;
+    assert!(provider.queue_snapshot().await.unwrap().tracks.is_empty());
+}
+
+#[tokio::test]
 async fn premium_required_and_no_active_device_and_not_found_are_distinct() {
     let (server, provider, _) = setup().await;
     Mock::given(path("/me/player/play"))
@@ -1249,4 +1261,56 @@ async fn long_429_pauses_requests_locally_without_a_quota_warning() {
         }
     }
     assert!(warnings.try_recv().is_err());
+}
+
+#[tokio::test]
+async fn v92_devices_keep_active_smartphone_nulls_and_restrictions() {
+    let (server, provider, _) = setup().await;
+    get_mock(
+        &server,
+        "/me/player/devices",
+        json!({"devices": [
+            {"id":"phone", "name":"Pixel", "type":"Smartphone", "is_active":true,
+             "is_restricted":false, "volume_percent":null, "supports_volume":false},
+            {"id":"pc", "name":"Velo", "type":"Computer", "is_active":false,
+             "volume_percent":50, "supports_volume":true},
+            {"id":null, "name":"Restricted phone", "type":"Smartphone", "is_active":false,
+             "is_restricted":true, "volume_percent":null, "supports_volume":null}
+        ]}),
+    )
+    .await;
+    let devices = provider.devices().await.unwrap();
+    assert_eq!(devices.len(), 3);
+    assert!(devices[0].is_active);
+    assert_eq!(devices[0].kind, "Smartphone");
+    assert_eq!(devices[0].volume_percent, None);
+    assert!(!devices[0].supports_volume);
+    assert_eq!(devices[1].kind, "Computer");
+    assert_eq!(devices[1].volume_percent, Some(50));
+    assert_eq!(devices[2].id, None);
+    assert!(!devices[2].supports_volume);
+}
+
+#[tokio::test]
+async fn v92_devices_401_retries_once_then_finishes_and_403_preserves_error() {
+    for status in [401, 403] {
+        let server = MockServer::start().await;
+        let (provider, source) = sourced(&server);
+        Mock::given(method("GET"))
+            .and(path("/me/player/devices"))
+            .respond_with(
+                ResponseTemplate::new(status)
+                    .set_body_json(json!({"error":{"message":"Insufficient client scope"}})),
+            )
+            .expect(if status == 401 { 2 } else { 1 })
+            .mount(&server)
+            .await;
+        match (status, provider.devices().await) {
+            (401, Err(VeloError::NotAuthenticated)) => {
+                assert_eq!(source.calls.load(Ordering::SeqCst), 2)
+            }
+            (403, Err(VeloError::Forbidden(_))) => {}
+            (_, other) => panic!("unexpected devices result: {other:?}"),
+        }
+    }
 }

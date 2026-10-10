@@ -6,9 +6,9 @@ import "../../views" as Views
 import "../../components/window"
 import "../../components/library"
 
-// T8: the sleep timer never sits under a view's buttons and uses the
+// T8 (/impeccable of T2-T4): the sleep timer never sits under a view's buttons and uses the
 // measured secondary ink; the search box keeps its minimum width and clears the timer; the cover
-// is a button only while a visualizer is drawn; Modo rendimiento freezes the player bar's click.
+// is a button while there is a session; Modo rendimiento freezes the player bar's click.
 TestCase {
     id: test
     name: "T8"
@@ -43,6 +43,7 @@ TestCase {
         Backend.Visualizer.enabled = true
         Backend.Visualizer.style = "normal"
         Backend.Visualizer.shape = "wave"
+        Backend.Visualizer.band = true
     }
     function cleanup() {
         Backend.Actions.sleepMinutes = 0
@@ -138,24 +139,31 @@ TestCase {
     }
 
     // ---- cover button
-    function test_cover_is_inert_without_a_visualizer() {
+    function test_cover_enabled_with_session_without_a_visualizer() {
         const np = make(npComponent)
         const button = findChild(np, "npCoverButton")
         verify(button.enabled)
         Backend.Visualizer.enabled = false
         wait(0)
-        verify(!button.enabled, "no visualizer: the art is not a button")
+        verify(button.enabled, "the cover shape can change without a visualizer")
         mouseClick(np.coverArt)
-        compare(vizState(), "false/normal/wave", "neither the shape nor the background rotation")
+        compare(vizState(), "false/circular/wave")
         Backend.Visualizer.enabled = true
         Theme.performanceMode = true
         wait(0)
-        verify(!button.enabled, "Modo rendimiento without «Mantener el visualizador»")
+        verify(button.enabled, "the cover shape can change in Modo rendimiento")
+        mouseClick(np.coverArt)
+        compare(vizState(), "true/normal/wave")
         Backend.Settings.performanceKeepVisualizer = true
         wait(0)
         verify(button.enabled)
         mouseClick(np.coverArt)
-        compare(vizState(), "true/normal/bars")
+        compare(vizState(), "true/circular/wave")
+        Backend.Player.hasSession = false
+        wait(0)
+        verify(!button.enabled, "no session: the cover is not a button")
+        mouseClick(np.coverArt)
+        compare(vizState(), "true/circular/wave")
     }
 
     // ---- player bar under Modo rendimiento

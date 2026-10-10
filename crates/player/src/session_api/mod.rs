@@ -46,6 +46,10 @@ const IMAGE_HOST: &str = "https://i.scdn.co/image/";
 pub trait SessionSource: Send + Sync {
     /// The session, waiting a little while it (re)connects; `None` when signed out.
     async fn session(&self) -> Option<Session>;
+    /// Latest Connect cluster, scoped to the running engine; never activates audio.
+    fn connect_devices(&self) -> Option<Vec<Device>> {
+        None
+    }
 }
 
 /// Web API tokens from the session's login5 (librespot's own client): no second login.
@@ -557,7 +561,10 @@ impl MusicProvider for SessionApi {
         self.web.playback().await
     }
     async fn devices(&self) -> Result<Vec<Device>> {
-        self.web.devices().await
+        let web = tokio::time::timeout(TIMEOUT, self.web.devices())
+            .await
+            .unwrap_or_else(|_| Err(unavailable()));
+        crate::connect_devices::with_connect(web, self.source.connect_devices())
     }
     async fn transfer(&self, device_id: &str, play: bool) -> Result<()> {
         self.web.transfer(device_id, play).await

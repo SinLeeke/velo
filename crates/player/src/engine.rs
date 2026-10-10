@@ -245,6 +245,7 @@ pub struct Engine {
     output_control: OutputControl,
     spirc: Spirc,
     session: Session,
+    connect_devices: Option<crate::connect_devices::ConnectDevices>,
     player: Option<Arc<Player>>,
     device_id: String,
     state: watch::Receiver<EngineState>,
@@ -272,6 +273,14 @@ impl Engine {
     /// Shared authenticated session; discovery never creates a second audio login.
     pub fn session(&self) -> &Session {
         &self.session
+    }
+
+    /// Latest cluster of this engine's session; unavailable after disconnect/shutdown.
+    pub fn connect_devices(&self) -> Option<Vec<velo_domain::Device>> {
+        if self.session.is_invalid() || *self.stopped.borrow() {
+            return None;
+        }
+        self.connect_devices.as_ref()?.snapshot()
     }
 
     /// Starts with the stored audio login (no browser). [`PlayerError::NotSignedIn`] when there
@@ -409,6 +418,7 @@ impl Engine {
             initial_volume: state::percent_to_volume(config.initial_volume),
             ..ConnectConfig::default()
         };
+        let connect_devices = crate::connect_devices::ConnectDevices::observe(&session);
         let started = tokio::time::timeout(
             CONNECT_TIMEOUT,
             Spirc::new(
@@ -492,6 +502,7 @@ impl Engine {
             output_control,
             spirc,
             session,
+            connect_devices,
             player: Some(player),
             device_id: config.device_id,
             state,

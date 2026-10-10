@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Templates as T
+import QtQuick.Effects
 import Velo.Backend
 import "../theme"
 import "../components"
@@ -10,10 +11,11 @@ import "../components/devices"
 import "../nav"
 import "../components/motion/morph.js" as Morph
 
-// Now Playing: the cover shapes the background and palette.
+// Now Playing: the cover is the room (brief: .impeccable/surfaces/qml-views-nowplaying-qml.md).
 // Left column (~46 %): cover, title, artist, album, progress, transport, volume — centered.
 // Right column: time-synced lyrics. Top: close disc (left, under the traffic lights) and the
-// tool pill (right). Bottom: the visualizer band (or, with the circular style, the ring around the cover).
+// tool pill (right). Bottom: the visualizer band (bars / wave / off, Visualizer.band); the cover
+// carries its own reactive (ring around the circle, frame around the square).
 // S1-NP: the entrance/exit choreography reads `presence` (set by Main's NowPlayingMorph):
 // 0 = folded into the library's mini player, 1 = at rest. Each element owns a window of it
 // (Theme.motion.npWin*), so the exit plays the same windows backwards and reverses mid-way
@@ -63,25 +65,31 @@ FocusScope {
     // Modo rendimiento turns the visualizer off without touching the user's switch, unless
     // Ajustes › Modo rendimiento › «Mantener el visualizador» (G5).
     readonly property bool vizOn: !idle && Visualizer.enabled && (!Theme.performanceMode || Settings.performanceKeepVisualizer)
-    readonly property bool bandShown: vizOn && !circular
+    // v0.9.2: the cover carries its own reactive (ring around the circle, frame around the square)
+    // whenever the visualizer is on; the band below is separate (Visualizer.band).
+    readonly property bool coverReactive: vizOn
+    readonly property bool bandShown: vizOn && Visualizer.band
 
     // ------------------------------------------------------------ T4 clicks
     // Forced off (Modo rendimiento without «Mantener el visualizador», or nothing playing): a
     // background click changes nothing, so no hidden setting moves behind the user's back.
     readonly property bool vizForcedOff: idle || (Theme.performanceMode && !Settings.performanceKeepVisualizer)
+    // v0.9.2: a free click cycles the band below: bars → wave → off → bars.
     function rotateVisualizer() {
         if (vizForcedOff)
             return
-        if (!Visualizer.enabled) {
-            Visualizer.style = "normal"
+        if (!Visualizer.enabled || !Visualizer.band) {
+            Visualizer.shape = "bars"
+            Visualizer.band = true
             Visualizer.enabled = true
-        } else if (Visualizer.style !== "circular") {
-            Visualizer.style = "circular"
+        } else if (Visualizer.shape === "bars") {
+            Visualizer.shape = "wave"
         } else {
-            Visualizer.enabled = false
+            Visualizer.band = false
         }
     }
-    function toggleVizShape() { Visualizer.shape = Visualizer.shape === "bars" ? "wave" : "bars" }
+    // v0.9.2: a click on the cover toggles circle ↔ square (each with its reactive).
+    function toggleCoverShape() { Visualizer.style = circular ? "normal" : "circular" }
     // Controls a near miss must not count as background (also while disabled, when they let
     // the press through). Their rects grow by Theme.nowPlayingClicks.barMargin.
     function freeAt(x, y) {
@@ -149,19 +157,20 @@ FocusScope {
     // when there is room; below that the gaps tighten (`compact`) and the cover shrinks, down to
     // coverFloor at the 560 px minimum height. Heights of the controls do not depend on the cover
     // (single-line texts), so nothing here loops.
-    readonly property real slotRatio: circular ? Theme.nowPlaying.ringSlotRatio : 1
+    readonly property real slotRatio: circular || coverReactive ? Theme.nowPlaying.ringSlotRatio : 1
     readonly property real columnRoom: leftArea.height - 2 * Theme.space.lg
     readonly property real controlsHeight: trackInfo.implicitHeight + seekBar.implicitHeight
                                            + transport.implicitHeight + volumeSlider.implicitHeight
     function gaps(tight) {
-        return (circular ? Theme.space.lg : tight ? Theme.space.md : Theme.space.xxl)
+        return (circular || coverReactive ? Theme.space.lg : tight ? Theme.space.md : Theme.space.xxl)
              + (tight ? Theme.space.sm : Theme.space.xl) + 2 * (tight ? Theme.space.sm : Theme.space.lg)
     }
     readonly property bool compact: columnRoom < controlsHeight + gaps(false) + Theme.size.coverMin * slotRatio
     readonly property real coverSize: {
         const preferred = Math.max(Theme.size.coverMin, Math.min(Theme.size.coverMax, height * Theme.nowPlaying.coverHeightRatio))
         const fits = (columnRoom - controlsHeight - gaps(compact)) / slotRatio
-        return Math.round(Math.max(Theme.nowPlaying.coverFloor, Math.min(preferred, fits)))
+        // v0.9.2: the floor holds for the whole slot (art + reactive), which now also sits over the band.
+        return Math.floor(Math.max(Theme.nowPlaying.coverFloor / slotRatio, Math.min(preferred, fits)))
     }
 
     // The engine analyses the PCM before the volume (V1b); the drawing follows the volume the user
@@ -202,7 +211,7 @@ FocusScope {
         height: root.height - y
         Accessible.role: Accessible.Pane
         Accessible.name: qsTr("Fondo de Reproduciendo ahora")
-        Accessible.description: root.vizForcedOff ? "" : qsTr("Haz clic en una zona libre para cambiar el visualizador: banda, anillo alrededor de la carátula o desactivado")
+        Accessible.description: root.vizForcedOff ? "" : qsTr("Haz clic en una zona libre para cambiar el visualizador de abajo: barras, onda o apagado")
         property bool armed: false
         TapHandler {
             acceptedButtons: Qt.LeftButton
@@ -245,12 +254,14 @@ FocusScope {
         }
     }
 
-    // Circular visualizer ring: lives in the cover's ring slot, behind the circle.
+    // The cover's reactive: ring behind the circle, or frame around the square (v0.9.2).
     Loader {
         parent: cover.ringSlot
         anchors.fill: parent
-        active: root.circular && root.vizOn
+        active: root.coverReactive
         sourceComponent: VisualizerRing {
+            square: !root.circular
+            cornerRadius: cover.artCorner
             bands: Visualizer.bands
             running: Visualizer.running
             gain: root.vizGain
@@ -356,6 +367,23 @@ FocusScope {
             easing.bezierCurve: Theme.motion.easeInOut   // set per direction in onLyricsShownChanged
         }
 
+        // v0.9.2: local scrim behind the title and controls (the veil alone is light so the art
+        // shows). RectangularShadow is used as a soft-edged panel: one static SDF quad, no
+        // texture, nothing per frame; same colour as the veil, alpha from Rust (contrast).
+        RectangularShadow {
+            objectName: "npControlsScrim"
+            readonly property real pad: Theme.nowPlaying.scrimBlur / 2 + Theme.space.md
+            visible: !root.idle && Theme.cover.scrimOpacity > 0
+            x: column.x - pad
+            y: column.y + trackInfo.y - pad
+            width: column.width + 2 * pad
+            height: volumeSlider.y + volumeSlider.height - trackInfo.y + 2 * pad
+            radius: Theme.radius.xl
+            blur: Theme.nowPlaying.scrimBlur
+            color: Theme.cover.veil
+            opacity: Theme.cover.scrimOpacity * root.riseIn(0)
+        }
+
         Column {
             id: column
             anchors.centerIn: parent
@@ -366,21 +394,20 @@ FocusScope {
                 id: cover
                 objectName: "npCover"
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: root.circular ? Math.round(root.coverSize * Theme.nowPlaying.ringSlotRatio) : root.coverSize
+                width: root.circular || root.coverReactive ? Math.round(root.coverSize * Theme.nowPlaying.ringSlotRatio) : root.coverSize
                 height: width
                 source: Player.coverUrl
                 retainEmpty: Player.hasSession
                 circular: root.circular
+                frame: root.coverReactive && !root.circular
                 tiltEnabled: !root.morphing
                 ringReveal: root.enterStep(Theme.motion.npWinRing, Theme.motion.npEase)
-                // T4: a click on the art switches the visualizer's shape (it had no click before).
-                artName: Visualizer.shape === "bars" ? qsTr("Carátula: cambiar el visualizador a ola")
-                                                     : qsTr("Carátula: cambiar el visualizador a barras")
+                // v0.9.2: a click on the art toggles circle ↔ square.
+                artName: root.circular ? qsTr("Carátula: cambiar a cuadrada")
+                                       : qsTr("Carátula: cambiar a circular")
                 pressBlocked: root.pressClosesPopup
-                // T8: only while a visualizer is drawn; otherwise the click would flip a shape
-                // nobody sees (and the art is no Tab stop then).
-                artEnabled: root.vizOn
-                onArtClicked: root.toggleVizShape()
+                artEnabled: !root.idle
+                onArtClicked: root.toggleCoverShape()
 
                 // S1-NP: shared element. The cover leaves the mini player's tile (same rect, same
                 // image) and travels until npCoverLand of its window: position, size and turn all
@@ -421,7 +448,7 @@ FocusScope {
                 ]
             }
 
-            Item { width: 1; height: root.circular ? Theme.space.lg : root.compact ? Theme.space.md : Theme.space.xxl }
+            Item { width: 1; height: root.circular || root.coverReactive ? Theme.space.lg : root.compact ? Theme.space.md : Theme.space.xxl }
 
             // R2: nothing is playing: say so and offer the way back (the controls below hide).
             Column {
@@ -568,6 +595,20 @@ FocusScope {
     // ------------------------------------------------------------ lyrics column
     // Shown: fades in while sliding lyricsShift px from the right (base, easeOut). Hidden: the
     // reverse, shorter (fast, easeIn). Stays visible only until the fade-out ends.
+    // v0.9.2: the lyrics' scrim (see npControlsScrim), fading with the lyrics column.
+    RectangularShadow {
+        objectName: "npLyricsScrim"
+        readonly property real pad: Theme.nowPlaying.scrimBlur / 2
+        visible: lyricsView.visible && Theme.cover.scrimOpacity > 0
+        x: lyricsView.x - pad
+        y: lyricsView.y - pad
+        width: lyricsView.width + 2 * pad
+        height: lyricsView.height + 2 * pad
+        radius: Theme.radius.xl
+        blur: Theme.nowPlaying.scrimBlur
+        color: Theme.cover.veil
+        opacity: Theme.cover.scrimOpacity * lyricsView.opacity
+    }
     LyricsView {
         id: lyricsView
         opacity: root.lyricsShown ? 1 : 0

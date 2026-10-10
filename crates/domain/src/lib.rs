@@ -2,7 +2,7 @@
 //!
 //! Every backend crate implements one of the traits below; the Qt bridge (`crates/app`)
 //! only talks to these traits and types, never to a concrete provider. Changing anything
-//! here changes the shared contract and requires coordinated updates across providers.
+//! here is a contract change: it must be agreed by the lead, not done inside a task.
 
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
@@ -368,8 +368,8 @@ pub trait NowPlayingSource: Send + Sync {
 
 // ------------------------------------------------------------------ cover art & palette
 
-/// Colors are "#RRGGBB". Inks (including secondary ink at 0.62 alpha) have
-/// >= 4.5:1 contrast over the cover composed with the corresponding veil alpha.
+/// Colors are "#RRGGBB". Opaque inks have >= 4.5:1 contrast over the cover
+/// composed with the global veil and the local scrim (both use the veil color).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Palette {
     pub base: String,
@@ -381,6 +381,10 @@ pub struct Palette {
     /// Veil opacity in 0..=255; published to QML as a real in 0..=1.
     pub veil_dark_alpha: u8,
     pub veil_light_alpha: u8,
+    /// Local opacity behind text/controls, in 0..=255. Required fields deliberately
+    /// invalidate old cached palettes so the cover cache recomputes them offline.
+    pub scrim_dark_alpha: u8,
+    pub scrim_light_alpha: u8,
 }
 
 /// Files ready for QML (`file:` URLs are built by the bridge).
@@ -577,6 +581,9 @@ impl Default for AppearanceSettings {
 #[serde(default)]
 pub struct VisualizerSettings {
     pub enabled: bool,
+    /// Show the bottom band in Now Playing; independent of the reactive cover.
+    #[serde(default = "default_band")]
+    pub band: bool,
     pub style: VizStyle,
     pub shape: VizShape,
     pub sensitivity: f32, // 0.25 ..= 2.0
@@ -586,12 +593,17 @@ impl Default for VisualizerSettings {
     fn default() -> Self {
         Self {
             enabled: true,
+            band: true,
             style: VizStyle::Normal,
             shape: VizShape::Wave,
             sensitivity: 1.2,
             player_bar_mode: "off".into(),
         }
     }
+}
+
+fn default_band() -> bool {
+    true
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -1,4 +1,4 @@
-//! `Visualizer` singleton. Settings persist through `engine::prefs`; capture
+//! `Visualizer` singleton (docs/CONTRATO.md). Settings persist through `engine::prefs`; capture
 //! and FFT live in velo-viz on their own thread and only run while `running` (see
 //! `engine::viz`). `bands` is pushed at most at the display rate (30..=240 Hz, 60 by default), and only changes while running.
 
@@ -17,6 +17,7 @@ pub mod ffi {
         #[qml_element]
         #[qml_singleton]
         #[qproperty(bool, enabled)]
+        #[qproperty(bool, band)]
         #[qproperty(QString, style)]
         #[qproperty(QString, shape)]
         #[qproperty(f64, sensitivity)]
@@ -52,6 +53,7 @@ pub const SENSITIVITY_MAX: f64 = 2.0;
 
 pub struct VisualizerRust {
     enabled: bool,
+    band: bool,
     style: QString,
     shape: QString,
     sensitivity: f64,
@@ -105,6 +107,7 @@ impl Default for VisualizerRust {
         let v = c.env.prefs.settings().visualizer;
         Self {
             enabled: v.enabled,
+            band: v.band,
             style: QString::from(style_name(v.style)),
             shape: QString::from(shape_name(v.shape)),
             sensitivity: f64::from(v.sensitivity),
@@ -118,9 +121,11 @@ impl Default for VisualizerRust {
 
 fn persist(q: &ffi::Visualizer) {
     let (enabled, style, shape) = (*q.enabled(), q.style().to_string(), q.shape().to_string());
+    let band = *q.band();
     let sensitivity = clamp_sensitivity(*q.sensitivity()) as f32;
     core().env.prefs.update_settings(|s| {
         s.visualizer.enabled = enabled;
+        s.visualizer.band = band;
         s.visualizer.style = parse_style(&style);
         s.visualizer.shape = parse_shape(&shape);
         s.visualizer.sensitivity = sensitivity;
@@ -130,6 +135,7 @@ fn persist(q: &ffi::Visualizer) {
 impl cxx_qt::Initialize for ffi::Visualizer {
     fn initialize(mut self: Pin<&mut Self>) {
         self.as_mut().on_enabled_changed(|q| persist(&q)).release();
+        self.as_mut().on_band_changed(|q| persist(&q)).release();
         self.as_mut().on_style_changed(|q| persist(&q)).release();
         self.as_mut().on_shape_changed(|q| persist(&q)).release();
         self.as_mut()
@@ -222,6 +228,35 @@ impl ffi::Visualizer {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn band_settings_round_trip() {
+        for band in [false, true] {
+            let settings = velo_domain::VisualizerSettings {
+                band,
+                style: VizStyle::Circular,
+                shape: VizShape::Bars,
+                ..Default::default()
+            };
+            let json = serde_json::to_string(&settings).unwrap();
+            let restored: velo_domain::VisualizerSettings = serde_json::from_str(&json).unwrap();
+            assert_eq!(restored, settings);
+        }
+    }
+
+    #[test]
+    fn legacy_json_enables_band_without_losing_preferences() {
+        let settings: velo_domain::Settings = serde_json::from_str(
+            r#"{"visualizer":{"enabled":false,"style":"circular","shape":"bars","sensitivity":0.8}}"#,
+        )
+        .unwrap();
+        assert!(settings.visualizer.band);
+        assert!(!settings.visualizer.enabled);
+        assert_eq!(settings.visualizer.style, VizStyle::Circular);
+        assert_eq!(settings.visualizer.shape, VizShape::Bars);
+        assert_eq!(settings.visualizer.sensitivity, 0.8);
+        assert!(velo_domain::VisualizerSettings::default().band);
+    }
 
     #[test]
     fn style_and_shape_round_trip() {
