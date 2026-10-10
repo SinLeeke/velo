@@ -1,0 +1,23 @@
+/target/
+**/target/
+*.pdb
+/build/
+/dist/
+*.user
+.vscode/
+.idea/
+aqtinstall.log
+
+# Configuración local
+velo.local.env
+*.bundle
+
+# Publicación: salidas de herramientas y archivos locales
+*.log
+*.tmp
+*.swp
+.env
+.env.*
+*.env
+.DS_Store
+Thumbs.db

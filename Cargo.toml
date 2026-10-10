@@ -1,0 +1,43 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.9.1"
+edition = "2024"
+license = "MIT"
+rust-version = "1.85"
+
+# Shared versions. Each crate opts in with `dep = { workspace = true }`.
+# Crate-specific dependencies are declared in each crate's Cargo.toml.
+[workspace.dependencies]
+velo-domain = { path = "crates/domain" }
+tokio = { version = "1.53", features = ["rt-multi-thread", "macros", "sync", "time", "fs", "net", "io-util"] }
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
+url = "2"
+directories = "6"
+toml = "1"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
+rustfft = "6.4"
+keyring = "4"
+windows = "0.62"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+debug = "line-tables-only"   # backtraces keep file:line with smaller debug artifacts
+
+[profile.dev.package."*"]
+opt-level = 2   # image decoding / FFT stay fast in debug builds
+debug = false
