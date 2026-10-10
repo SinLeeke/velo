@@ -1,0 +1,20 @@
+[package]
+name = "velo-ui"
+description = "Velo QML module (URI `Velo`): every .qml under qml/ plus fonts and icons, compiled ahead of time."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+# Required by cxx-qt-build so the binary crate links this module's static QML plugin.
+links = "velo-ui"
+
+[dependencies]
+cxx-qt = "0.10"
+
+[build-dependencies]
+cxx-qt-build = { version = "0.10", features = ["link_qt_object_files"] }
+
+[lib]
+# The QML module only links inside the real binary (needs the full Qt runtime); it has no unit tests.
+test = false
+doctest = false
