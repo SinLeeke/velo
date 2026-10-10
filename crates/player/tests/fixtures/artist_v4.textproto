@@ -1,0 +1,11 @@
+# Fixture sintético del esquema librespot-protocol 0.8. No es una respuesta real.
+gid: "aaaaaaaaaaaaaaaa"
+name: "Artista de prueba"
+biography { text: "Biografía de prueba." portrait { file_id: "bbbbbbbbbbbbbbbbbbbb" } }
+related { gid: "cccccccccccccccc" name: "Relacionado" }
+top_track { country: "CL" track { gid: "dddddddddddddddd" } track { gid: "eeeeeeeeeeeeeeee" } }
+top_track { country: "" track { gid: "ffffffffffffffff" } }
+album_group { album { gid: "gggggggggggggggg" } album { gid: "hhhhhhhhhhhhhhhh" } }
+single_group { album { gid: "iiiiiiiiiiiiiiii" } }
+compilation_group { album { gid: "jjjjjjjjjjjjjjjj" } }
+appears_on_group { album { gid: "kkkkkkkkkkkkkkkk" } }

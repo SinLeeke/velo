@@ -1,0 +1,12 @@
+{
+  "lyrics": {
+    "syncType": "LINE_SYNCED",
+    "lines": [
+      { "startTimeMs": "0", "words": "♪" },
+      { "startTimeMs": "3000", "words": "Segunda línea" },
+      { "startTimeMs": 1000, "words": " Primera línea " },
+      { "startTimeMs": "3000", "words": "Otra voz" },
+      { "startTimeMs": "4000", "words": " " }
+    ]
+  }
+}

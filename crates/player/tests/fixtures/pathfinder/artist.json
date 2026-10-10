@@ -1,0 +1,6137 @@
+{
+ "data": {
+  "artistUnion": {
+   "__typename": "Artist",
+   "discography": {
+    "albums": {
+     "items": [
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2026 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02fd7d4d2da0f58b40e1897316",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851fd7d4d2da0f58b40e1897316",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273fd7d4d2da0f58b40e1897316",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 27,
+           "month": 3,
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1VQqxna6HR1QUrJsoQF0pT",
+          "label": "Columbia",
+          "name": "Queen II (2026 Mix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "vv7yfLSkTMCMiCEeSuxSzw",
+           "shareUrl": "https://open.spotify.com/album/1VQqxna6HR1QUrJsoQF0pT?si=vv7yfLSkTMCMiCEeSuxSzw"
+          },
+          "tracks": {
+           "totalCount": 11
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:1VQqxna6HR1QUrJsoQF0pT"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2026 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020445bdb4d3a1ba7ab6b84fa4",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510445bdb4d3a1ba7ab6b84fa4",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730445bdb4d3a1ba7ab6b84fa4",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 27,
+           "month": 3,
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "2TETbr0O1HGNdy1thnKYXJ",
+          "label": "Columbia",
+          "name": "Queen II (Collector's Edition)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "z-0vybDgSoa8n73SdVTzXQ",
+           "shareUrl": "https://open.spotify.com/album/2TETbr0O1HGNdy1thnKYXJ?si=z-0vybDgSoa8n73SdVTzXQ"
+          },
+          "tracks": {
+           "totalCount": 58
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:2TETbr0O1HGNdy1thnKYXJ"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2024 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02d6e66e7fa9080daf42bd0c11",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851d6e66e7fa9080daf42bd0c11",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273d6e66e7fa9080daf42bd0c11",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 25,
+           "month": 10,
+           "precision": "DAY",
+           "year": 2024
+          },
+          "id": "0DF6o6LLOB0OTd70ylsSp0",
+          "label": "Columbia",
+          "name": "Queen I (2024 Mix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "4T7isBaOSyyoqgwR3mUsaw",
+           "shareUrl": "https://open.spotify.com/album/0DF6o6LLOB0OTd70ylsSp0?si=4T7isBaOSyyoqgwR3mUsaw"
+          },
+          "tracks": {
+           "totalCount": 11
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:0DF6o6LLOB0OTd70ylsSp0"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2024 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02a91d685422965d087e5de5ed",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851a91d685422965d087e5de5ed",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273a91d685422965d087e5de5ed",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 25,
+           "month": 10,
+           "precision": "DAY",
+           "year": 2024
+          },
+          "id": "4wrlsLD7ePO4jsK0iVPDRG",
+          "label": "Columbia",
+          "name": "Queen I (Collector's Edition)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "w3xyNRr8QyqK5c2vza8vCg",
+           "shareUrl": "https://open.spotify.com/album/4wrlsLD7ePO4jsK0iVPDRG?si=w3xyNRr8QyqK5c2vza8vCg"
+          },
+          "tracks": {
+           "totalCount": 63
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:4wrlsLD7ePO4jsK0iVPDRG"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2022 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02f9d4d9ff8261907d3b1c694b",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851f9d4d9ff8261907d3b1c694b",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273f9d4d9ff8261907d3b1c694b",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 18,
+           "month": 11,
+           "precision": "DAY",
+           "year": 2022
+          },
+          "id": "32SCJ9cqSEVHczInhCCwPs",
+          "label": "Columbia",
+          "name": "The Miracle (Collector's Edition)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "wzlXYX0jT9OaylXfcWgw6Q",
+           "shareUrl": "https://open.spotify.com/album/32SCJ9cqSEVHczInhCCwPs?si=wzlXYX0jT9OaylXfcWgw6Q"
+          },
+          "tracks": {
+           "totalCount": 47
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:32SCJ9cqSEVHczInhCCwPs"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "© 2020 Miracle Recordings Ltd, under exclusive licence to Universal International Music B.V.",
+             "type": "C"
+            },
+            {
+             "text": "℗ 2020 Miracle Recordings Ltd, under exclusive licence to Universal International Music B.V.",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0272a659e4c3bda377f2e9b162",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485172a659e4c3bda377f2e9b162",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27372a659e4c3bda377f2e9b162",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 2,
+           "month": 10,
+           "precision": "DAY",
+           "year": 2020
+          },
+          "id": "4UAsVsprIJu1OU9qkLwTMe",
+          "label": "EMI",
+          "name": "Live Around The World (Deluxe)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "GE9_VREeSJSBlHvNIl06Ag",
+           "shareUrl": "https://open.spotify.com/album/4UAsVsprIJu1OU9qkLwTMe?si=GE9_VREeSJSBlHvNIl06Ag"
+          },
+          "tracks": {
+           "totalCount": 20
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:4UAsVsprIJu1OU9qkLwTMe"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2018 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020cb397024b7a1185c070d65a",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510cb397024b7a1185c070d65a",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730cb397024b7a1185c070d65a",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 19,
+           "month": 10,
+           "precision": "DAY",
+           "year": 2018
+          },
+          "id": "69RZR37WFgxDDdfxAPz9pk",
+          "label": "Columbia",
+          "name": "Bohemian Rhapsody (The Original Soundtrack)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "NKdijbpeTy6kXcKS5TRpXg",
+           "shareUrl": "https://open.spotify.com/album/69RZR37WFgxDDdfxAPz9pk?si=NKdijbpeTy6kXcKS5TRpXg"
+          },
+          "tracks": {
+           "totalCount": 22
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:69RZR37WFgxDDdfxAPz9pk"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2016 BBC",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02dbd649d87c651a0467b44cf0",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851dbd649d87c651a0467b44cf0",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273dbd649d87c651a0467b44cf0",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 4,
+           "month": 11,
+           "precision": "DAY",
+           "year": 2016
+          },
+          "id": "1DJoATZGiiJUcRj0eTpBrw",
+          "label": "Columbia",
+          "name": "On Air",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "qpUpLixxSdyS3uxgqBhkPQ",
+           "shareUrl": "https://open.spotify.com/album/1DJoATZGiiJUcRj0eTpBrw?si=qpUpLixxSdyS3uxgqBhkPQ"
+          },
+          "tracks": {
+           "totalCount": 24
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:1DJoATZGiiJUcRj0eTpBrw"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2015 Queen Productions Ltd.",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02851217ff8b2057504a7ab217",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851851217ff8b2057504a7ab217",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273851217ff8b2057504a7ab217",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 13,
+           "month": 11,
+           "precision": "DAY",
+           "year": 2015
+          },
+          "id": "4hc8kiAZ3kuZtofWyUPwGs",
+          "label": "Columbia",
+          "name": "A Night At The Odeon",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "yFgkPJ9VQUCndS_WAUU-5g",
+           "shareUrl": "https://open.spotify.com/album/4hc8kiAZ3kuZtofWyUPwGs?si=yFgkPJ9VQUCndS_WAUU-5g"
+          },
+          "tracks": {
+           "totalCount": 19
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:4hc8kiAZ3kuZtofWyUPwGs"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2014 Queen Productions Ltd.",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e028b862c768bc4282173e987ff",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048518b862c768bc4282173e987ff",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2738b862c768bc4282173e987ff",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 1,
+           "month": 1,
+           "precision": "DAY",
+           "year": 2014
+          },
+          "id": "6uGCuVrXkCO35q7Nv17bwP",
+          "label": "Columbia",
+          "name": "Live at the Rainbow",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "7LAM83hzTFG0uBBiOnUP-A",
+           "shareUrl": "https://open.spotify.com/album/6uGCuVrXkCO35q7Nv17bwP?si=7LAM83hzTFG0uBBiOnUP-A"
+          },
+          "tracks": {
+           "totalCount": 24
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:6uGCuVrXkCO35q7Nv17bwP"
+         }
+        ]
+       }
+      }
+     ],
+     "totalCount": 47
+    },
+    "compilations": {
+     "items": [
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020adcdc1d05798f65fea8eb42",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510adcdc1d05798f65fea8eb42",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730adcdc1d05798f65fea8eb42",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 22,
+           "month": 8,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "6PNr7e7B0qd1JFlqPd0BlP",
+          "label": "Columbia",
+          "name": "Acoustic",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "P4iC8fB-TSu36oLnkKT_Nw",
+           "shareUrl": "https://open.spotify.com/album/6PNr7e7B0qd1JFlqPd0BlP?si=P4iC8fB-TSu36oLnkKT_Nw"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:6PNr7e7B0qd1JFlqPd0BlP"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e025791dc7ce46680451a728352",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048515791dc7ce46680451a728352",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2735791dc7ce46680451a728352",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 15,
+           "month": 8,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "3l9HcdRSnvphaJOwvbHL3l",
+          "label": "Columbia",
+          "name": "B-Sides",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "F0pFIDUjSuOM4pIGm0tf_w",
+           "shareUrl": "https://open.spotify.com/album/3l9HcdRSnvphaJOwvbHL3l?si=F0pFIDUjSuOM4pIGm0tf_w"
+          },
+          "tracks": {
+           "totalCount": 12
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:3l9HcdRSnvphaJOwvbHL3l"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0227607455650faca73b39283b",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485127607455650faca73b39283b",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27327607455650faca73b39283b",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 8,
+           "month": 8,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "1jDMSbrn6fy1a2p7gyziNy",
+          "label": "Columbia",
+          "name": "Rock N Roll",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "J_6w7vteRSGWLEFASnGHUg",
+           "shareUrl": "https://open.spotify.com/album/1jDMSbrn6fy1a2p7gyziNy?si=J_6w7vteRSGWLEFASnGHUg"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:1jDMSbrn6fy1a2p7gyziNy"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e021438cd8c2675c20c53eb7428",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048511438cd8c2675c20c53eb7428",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2731438cd8c2675c20c53eb7428",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 1,
+           "month": 8,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "3FFOhUbtUqOJrUNGaY0KXw",
+          "label": "Columbia",
+          "name": "Slightly Mad",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "Fm58aUiGTYWsZKnot6V-IA",
+           "shareUrl": "https://open.spotify.com/album/3FFOhUbtUqOJrUNGaY0KXw?si=Fm58aUiGTYWsZKnot6V-IA"
+          },
+          "tracks": {
+           "totalCount": 12
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:3FFOhUbtUqOJrUNGaY0KXw"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02d5ffa646d7aa2f02710c1f1a",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851d5ffa646d7aa2f02710c1f1a",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273d5ffa646d7aa2f02710c1f1a",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 25,
+           "month": 7,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "4mCWCZ5vTxmRNC4lfVzwKY",
+          "label": "Columbia",
+          "name": "Ballads",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "7nLk0icpTjuRMqrdPalOMg",
+           "shareUrl": "https://open.spotify.com/album/4mCWCZ5vTxmRNC4lfVzwKY?si=7nLk0icpTjuRMqrdPalOMg"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:4mCWCZ5vTxmRNC4lfVzwKY"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02e9e0bc3df0c8eb37cdb8d4be",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851e9e0bc3df0c8eb37cdb8d4be",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273e9e0bc3df0c8eb37cdb8d4be",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 18,
+           "month": 7,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "1lesofKUPL5Rl27grY4alW",
+          "label": "Columbia",
+          "name": "Funk",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "eFBZe5TnTre4oQG6DhBzhA",
+           "shareUrl": "https://open.spotify.com/album/1lesofKUPL5Rl27grY4alW?si=eFBZe5TnTre4oQG6DhBzhA"
+          },
+          "tracks": {
+           "totalCount": 11
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:1lesofKUPL5Rl27grY4alW"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0259febf3f6f3738538dfd1360",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485159febf3f6f3738538dfd1360",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27359febf3f6f3738538dfd1360",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 11,
+           "month": 7,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "6VdPzzQe2QIU0H7hx4jqmG",
+          "label": "Columbia",
+          "name": "Anthems",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "H6xjUCXFRiauuMGtm1-BrQ",
+           "shareUrl": "https://open.spotify.com/album/6VdPzzQe2QIU0H7hx4jqmG?si=H6xjUCXFRiauuMGtm1-BrQ"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:6VdPzzQe2QIU0H7hx4jqmG"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020dab8a2a4b3c01e4cddf0a66",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510dab8a2a4b3c01e4cddf0a66",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730dab8a2a4b3c01e4cddf0a66",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 4,
+           "month": 7,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "7vwI0rfb9RIZHNdkUJH1yw",
+          "label": "Columbia",
+          "name": "Pop",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "DKvLWK4sTyCK9EQ5GpqRSw",
+           "shareUrl": "https://open.spotify.com/album/7vwI0rfb9RIZHNdkUJH1yw?si=DKvLWK4sTyCK9EQ5GpqRSw"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:7vwI0rfb9RIZHNdkUJH1yw"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0271875512369fd3f03e34b347",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485171875512369fd3f03e34b347",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27371875512369fd3f03e34b347",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 27,
+           "month": 6,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "1aY5pGGVLivuAeWlaYQglP",
+          "label": "Columbia",
+          "name": "Riffs",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "gIOuEcaET62dDMiVu8YGZA",
+           "shareUrl": "https://open.spotify.com/album/1aY5pGGVLivuAeWlaYQglP?si=gIOuEcaET62dDMiVu8YGZA"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:1aY5pGGVLivuAeWlaYQglP"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2025 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0215e03881589378a11e0a93cd",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485115e03881589378a11e0a93cd",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27315e03881589378a11e0a93cd",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 20,
+           "month": 6,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "3G6WiQ8LYl4c6FFPvtXjgV",
+          "label": "Columbia",
+          "name": "Heavy",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "mp9Gf2KKSKuYKpIsHjh05Q",
+           "shareUrl": "https://open.spotify.com/album/3G6WiQ8LYl4c6FFPvtXjgV?si=mp9Gf2KKSKuYKpIsHjh05Q"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:3G6WiQ8LYl4c6FFPvtXjgV"
+         }
+        ]
+       }
+      }
+     ],
+     "totalCount": 21
+    },
+    "latest": {
+     "copyright": {
+      "items": [
+       {
+        "text": "(P) 2026 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+        "type": "P"
+       }
+      ]
+     },
+     "coverArt": {
+      "sources": [
+       {
+        "height": 300,
+        "url": "https://i.scdn.co/image/ab67616d00001e02d1567333c2b5d84544c53518",
+        "width": 300
+       },
+       {
+        "height": 64,
+        "url": "https://i.scdn.co/image/ab67616d00004851d1567333c2b5d84544c53518",
+        "width": 64
+       },
+       {
+        "height": 640,
+        "url": "https://i.scdn.co/image/ab67616d0000b273d1567333c2b5d84544c53518",
+        "width": 640
+       }
+      ]
+     },
+     "date": {
+      "day": 25,
+      "month": 9,
+      "precision": "DAY",
+      "year": 2026
+     },
+     "id": "1LTJ0KNMXcbQnewKg8P4qf",
+     "label": "Columbia",
+     "name": "Don't Stop Me Now / In Only Seven Days",
+     "playability": {
+      "playable": true,
+      "reason": "PLAYABLE"
+     },
+     "sharingInfo": {
+      "shareId": "1D9wG9a4TOCwGI6HX-5c1w",
+      "shareUrl": "https://open.spotify.com/album/1LTJ0KNMXcbQnewKg8P4qf?si=1D9wG9a4TOCwGI6HX-5c1w"
+     },
+     "tracks": {
+      "totalCount": 2
+     },
+     "type": "SINGLE",
+     "uri": "spotify:album:1LTJ0KNMXcbQnewKg8P4qf"
+    },
+    "popularReleasesAlbums": {
+     "items": [
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 1980 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e02a4e6eac83c0fe38bf682f643",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d00004851a4e6eac83c0fe38bf682f643",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b273a4e6eac83c0fe38bf682f643",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 27,
+        "month": 6,
+        "precision": "DAY",
+        "year": 1980
+       },
+       "id": "6l8tOdUItDC01Qmb91Lo8W",
+       "label": "Columbia",
+       "name": "The Game",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "lV72SCr-QWqfWYfE3qw9wA",
+        "shareUrl": "https://open.spotify.com/album/6l8tOdUItDC01Qmb91Lo8W?si=lV72SCr-QWqfWYfE3qw9wA"
+       },
+       "tracks": {
+        "totalCount": 10
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:6l8tOdUItDC01Qmb91Lo8W"
+      },
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 1978 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e026c03b757ece416e014feef5e",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d000048516c03b757ece416e014feef5e",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b2736c03b757ece416e014feef5e",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 10,
+        "month": 11,
+        "precision": "DAY",
+        "year": 1978
+       },
+       "id": "1yzF0wUwJFgtkkXmKNe5BE",
+       "label": "Columbia",
+       "name": "Jazz",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "wMi1gpbzT0KaGeb2DL0cog",
+        "shareUrl": "https://open.spotify.com/album/1yzF0wUwJFgtkkXmKNe5BE?si=wMi1gpbzT0KaGeb2DL0cog"
+       },
+       "tracks": {
+        "totalCount": 13
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:1yzF0wUwJFgtkkXmKNe5BE"
+      },
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 1975 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e02fdab4a163ab9f6db72c952ee",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d00004851fdab4a163ab9f6db72c952ee",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b273fdab4a163ab9f6db72c952ee",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 21,
+        "month": 11,
+        "precision": "DAY",
+        "year": 1975
+       },
+       "id": "1TkbyIkf6GSrO5e7gWS4AM",
+       "label": "Columbia",
+       "name": "A Night At The Opera",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "5II9U1CPQNiADaIrzygH_g",
+        "shareUrl": "https://open.spotify.com/album/1TkbyIkf6GSrO5e7gWS4AM?si=5II9U1CPQNiADaIrzygH_g"
+       },
+       "tracks": {
+        "totalCount": 12
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:1TkbyIkf6GSrO5e7gWS4AM"
+      },
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 1982 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e0244c0a9843fac69db4d56d14e",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d0000485144c0a9843fac69db4d56d14e",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b27344c0a9843fac69db4d56d14e",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 3,
+        "month": 5,
+        "precision": "DAY",
+        "year": 1982
+       },
+       "id": "4pFJdTvK6zNyWOO3W1hkGd",
+       "label": "Columbia",
+       "name": "Hot Space",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "-jsCj7RERFW-3cee1DhARg",
+        "shareUrl": "https://open.spotify.com/album/4pFJdTvK6zNyWOO3W1hkGd?si=-jsCj7RERFW-3cee1DhARg"
+       },
+       "tracks": {
+        "totalCount": 11
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:4pFJdTvK6zNyWOO3W1hkGd"
+      },
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 1977 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e026c74d509c1581f8e0a35391b",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d000048516c74d509c1581f8e0a35391b",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b2736c74d509c1581f8e0a35391b",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 28,
+        "month": 10,
+        "precision": "DAY",
+        "year": 1977
+       },
+       "id": "7hq6mnrJ7CWbemk6B3H8PJ",
+       "label": "Columbia",
+       "name": "News Of The World",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "oxuaI3ZKSL6Q95XxRUKVPg",
+        "shareUrl": "https://open.spotify.com/album/7hq6mnrJ7CWbemk6B3H8PJ?si=oxuaI3ZKSL6Q95XxRUKVPg"
+       },
+       "tracks": {
+        "totalCount": 11
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:7hq6mnrJ7CWbemk6B3H8PJ"
+      },
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 2018 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e020cb397024b7a1185c070d65a",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d000048510cb397024b7a1185c070d65a",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b2730cb397024b7a1185c070d65a",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 19,
+        "month": 10,
+        "precision": "DAY",
+        "year": 2018
+       },
+       "id": "69RZR37WFgxDDdfxAPz9pk",
+       "label": "Columbia",
+       "name": "Bohemian Rhapsody (The Original Soundtrack)",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "ak6nNupjR9S9f7KyFoIebg",
+        "shareUrl": "https://open.spotify.com/album/69RZR37WFgxDDdfxAPz9pk?si=ak6nNupjR9S9f7KyFoIebg"
+       },
+       "tracks": {
+        "totalCount": 22
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:69RZR37WFgxDDdfxAPz9pk"
+      },
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 1976 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e023aa2d125c28475c322ac831e",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d000048513aa2d125c28475c322ac831e",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b2733aa2d125c28475c322ac831e",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 10,
+        "month": 12,
+        "precision": "DAY",
+        "year": 1976
+       },
+       "id": "32wu2qeQwVA6D8z1nWk68Q",
+       "label": "Columbia",
+       "name": "A Day At The Races (Deluxe Edition)",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "D3_f6YcrQE2WhU8i8df0yg",
+        "shareUrl": "https://open.spotify.com/album/32wu2qeQwVA6D8z1nWk68Q?si=D3_f6YcrQE2WhU8i8df0yg"
+       },
+       "tracks": {
+        "totalCount": 15
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:32wu2qeQwVA6D8z1nWk68Q"
+      },
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 1984 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e020b6e29757c37fb90e4587f65",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d000048510b6e29757c37fb90e4587f65",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b2730b6e29757c37fb90e4587f65",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 27,
+        "month": 2,
+        "precision": "DAY",
+        "year": 1984
+       },
+       "id": "6IXmSdbq5OmlR08vvcnHoC",
+       "label": "Columbia",
+       "name": "The Works",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "DTrxMDfKTBauEEWyeooqow",
+        "shareUrl": "https://open.spotify.com/album/6IXmSdbq5OmlR08vvcnHoC?si=DTrxMDfKTBauEEWyeooqow"
+       },
+       "tracks": {
+        "totalCount": 9
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:6IXmSdbq5OmlR08vvcnHoC"
+      },
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 1974 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e024d09b89253dcbbe1d944e198",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d000048514d09b89253dcbbe1d944e198",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b2734d09b89253dcbbe1d944e198",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 8,
+        "month": 11,
+        "precision": "DAY",
+        "year": 1974
+       },
+       "id": "6uj0z3xtvQ8Y0UWevdQlIx",
+       "label": "Columbia",
+       "name": "Sheer Heart Attack",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "owb31VEGS_aMVLx4X_mEXA",
+        "shareUrl": "https://open.spotify.com/album/6uj0z3xtvQ8Y0UWevdQlIx?si=owb31VEGS_aMVLx4X_mEXA"
+       },
+       "tracks": {
+        "totalCount": 13
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:6uj0z3xtvQ8Y0UWevdQlIx"
+      },
+      {
+       "copyright": {
+        "items": [
+         {
+          "text": "(P) 1991 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+          "type": "P"
+         }
+        ]
+       },
+       "coverArt": {
+        "sources": [
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab67616d00001e020f0b764e930d478c16b8d2cc",
+          "width": 300
+         },
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67616d000048510f0b764e930d478c16b8d2cc",
+          "width": 64
+         },
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab67616d0000b2730f0b764e930d478c16b8d2cc",
+          "width": 640
+         }
+        ]
+       },
+       "date": {
+        "day": 5,
+        "month": 2,
+        "precision": "DAY",
+        "year": 1991
+       },
+       "id": "0CNfnxzURJtjzeyELCBfvj",
+       "label": "Columbia",
+       "name": "Innuendo",
+       "playability": {
+        "playable": true,
+        "reason": "PLAYABLE"
+       },
+       "sharingInfo": {
+        "shareId": "2c7YfOrzTL2l9BXTMVB9yA",
+        "shareUrl": "https://open.spotify.com/album/0CNfnxzURJtjzeyELCBfvj?si=2c7YfOrzTL2l9BXTMVB9yA"
+       },
+       "tracks": {
+        "totalCount": 12
+       },
+       "type": "ALBUM",
+       "uri": "spotify:album:0CNfnxzURJtjzeyELCBfvj"
+      }
+     ],
+     "totalCount": 20
+    },
+    "singles": {
+     "items": [
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2026 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02d1567333c2b5d84544c53518",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851d1567333c2b5d84544c53518",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273d1567333c2b5d84544c53518",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 25,
+           "month": 9,
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1LTJ0KNMXcbQnewKg8P4qf",
+          "label": "Columbia",
+          "name": "Don't Stop Me Now / In Only Seven Days",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "uqA6ds5wTVOZPa6wJmfGWg",
+           "shareUrl": "https://open.spotify.com/album/1LTJ0KNMXcbQnewKg8P4qf?si=uqA6ds5wTVOZPa6wJmfGWg"
+          },
+          "tracks": {
+           "totalCount": 2
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:1LTJ0KNMXcbQnewKg8P4qf"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2026 Queen Productions Ltd.",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e023f30d64eec022b27edcf2bb7",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048513f30d64eec022b27edcf2bb7",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2733f30d64eec022b27edcf2bb7",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 10,
+           "month": 9,
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1BGiS3fcRGNi1Fw68WCC2W",
+          "label": "Legacy Recordings",
+          "name": "Tie Your Mother Down (Live in Budapest)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "9-DOI1P2T26uFNGlouZMvA",
+           "shareUrl": "https://open.spotify.com/album/1BGiS3fcRGNi1Fw68WCC2W?si=9-DOI1P2T26uFNGlouZMvA"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:1BGiS3fcRGNi1Fw68WCC2W"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2026 Queen Productions Ltd.",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0212d3568a9ed52054da352c7e",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485112d3568a9ed52054da352c7e",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27312d3568a9ed52054da352c7e",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 21,
+           "month": 8,
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1phOF1iJfhjm64XX3P6Vny",
+          "label": "Legacy Recordings",
+          "name": "Who Wants to Live Forever (Live in Budapest)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "gSxkqBz8QICErU5MWZD76A",
+           "shareUrl": "https://open.spotify.com/album/1phOF1iJfhjm64XX3P6Vny?si=gSxkqBz8QICErU5MWZD76A"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:1phOF1iJfhjm64XX3P6Vny"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2026 Queen Productions Ltd.",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02afa2d15179f78c55b5fac40b",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851afa2d15179f78c55b5fac40b",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273afa2d15179f78c55b5fac40b",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 27,
+           "month": 7,
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "2i3G9uRIMioVziTJ4T5fxI",
+          "label": "Legacy Recordings",
+          "name": "Radio Ga Ga (Live in Budapest)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "yuq8ZMfpS7Cj_KXvBU-Gwg",
+           "shareUrl": "https://open.spotify.com/album/2i3G9uRIMioVziTJ4T5fxI?si=yuq8ZMfpS7Cj_KXvBU-Gwg"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:2i3G9uRIMioVziTJ4T5fxI"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2026 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02f41188be93c25d48ac684775",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851f41188be93c25d48ac684775",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273f41188be93c25d48ac684775",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 27,
+           "month": 2,
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1Ut0XBnNtyfgbdwBSkQ3xZ",
+          "label": "Legacy Recordings",
+          "name": "Seven Seas of Rhye (2026 Mix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "e_LFlcCsTKGnlwGBDFxLTQ",
+           "shareUrl": "https://open.spotify.com/album/1Ut0XBnNtyfgbdwBSkQ3xZ?si=e_LFlcCsTKGnlwGBDFxLTQ"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:1Ut0XBnNtyfgbdwBSkQ3xZ"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2024 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e022f24ee4173262ea0522075ce",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048512f24ee4173262ea0522075ce",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2732f24ee4173262ea0522075ce",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 6,
+           "month": 11,
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "3apsijVtRaziEzZZn5Uc2a",
+          "label": "Legacy Recordings",
+          "name": "Who Wants to Live Forever (Stranger Things Remix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "SOaAeHz8QE-p5LT7ffUMUg",
+           "shareUrl": "https://open.spotify.com/album/3apsijVtRaziEzZZn5Uc2a?si=SOaAeHz8QE-p5LT7ffUMUg"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:3apsijVtRaziEzZZn5Uc2a"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2024 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0276b97f9bf4362c4fce939d01",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485176b97f9bf4362c4fce939d01",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27376b97f9bf4362c4fce939d01",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 11,
+           "month": 10,
+           "precision": "DAY",
+           "year": 2024
+          },
+          "id": "5FnS88MPvObZdH6okibxQ7",
+          "label": "Columbia",
+          "name": "Modern Times Rock 'n' Roll (2024 Mix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "Kb2JZcHrRjadicQiak9NUg",
+           "shareUrl": "https://open.spotify.com/album/5FnS88MPvObZdH6okibxQ7?si=Kb2JZcHrRjadicQiak9NUg"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:5FnS88MPvObZdH6okibxQ7"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2024 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02a634bbe70c56eff4d4adb11c",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851a634bbe70c56eff4d4adb11c",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273a634bbe70c56eff4d4adb11c",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 11,
+           "month": 9,
+           "precision": "DAY",
+           "year": 2024
+          },
+          "id": "3hAh1b8FCuu0DCPJVaxWRT",
+          "label": "Columbia",
+          "name": "The Night Comes Down (2024 Mix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "ZkXr867LRcK0OAvbe-0LaA",
+           "shareUrl": "https://open.spotify.com/album/3hAh1b8FCuu0DCPJVaxWRT?si=ZkXr867LRcK0OAvbe-0LaA"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:3hAh1b8FCuu0DCPJVaxWRT"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2024 Queen Productions Ltd. (ROW)/Hollywood Records, Inc. (USA & Can)",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02efbd9ac40ca8bb48698484fb",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851efbd9ac40ca8bb48698484fb",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273efbd9ac40ca8bb48698484fb",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 5,
+           "month": 9,
+           "precision": "DAY",
+           "year": 2024
+          },
+          "id": "17Amw8vlmjBdbEU0q5AbGQ",
+          "label": "Columbia",
+          "name": "We Will Rock You (Megan Thee Stallion Version)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "4w0Sx3D0She0OrAmRhbcAw",
+           "shareUrl": "https://open.spotify.com/album/17Amw8vlmjBdbEU0q5AbGQ?si=4w0Sx3D0She0OrAmRhbcAw"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:17Amw8vlmjBdbEU0q5AbGQ"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "copyright": {
+           "items": [
+            {
+             "text": "(P) 2022 Queen Productions Ltd.",
+             "type": "P"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02562e4262063f97d6e8cbb2c7",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851562e4262063f97d6e8cbb2c7",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273562e4262063f97d6e8cbb2c7",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "day": 13,
+           "month": 10,
+           "precision": "DAY",
+           "year": 2022
+          },
+          "id": "3kzZKO6z3sPW9yyYTKsx5X",
+          "label": "Columbia",
+          "name": "Face It Alone",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "KCsyO-ktTG6IYh2qRbVdcA",
+           "shareUrl": "https://open.spotify.com/album/3kzZKO6z3sPW9yyYTKsx5X?si=KCsyO-ktTG6IYh2qRbVdcA"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:3kzZKO6z3sPW9yyYTKsx5X"
+         }
+        ]
+       }
+      }
+     ],
+     "totalCount": 20
+    },
+    "topTracks": {
+     "items": [
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e02fdab4a163ab9f6db72c952ee"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d00004851fdab4a163ab9f6db72c952ee"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b273fdab4a163ab9f6db72c952ee"
+           }
+          ]
+         },
+         "uri": "spotify:album:1TkbyIkf6GSrO5e7gWS4AM"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 355154
+        },
+        "id": "2JiDi0qAXsPwhPqA2qaKGt",
+        "name": "Bohemian Rhapsody",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "3294438998",
+        "uri": "spotify:track:2JiDi0qAXsPwhPqA2qaKGt"
+       },
+       "uid": "2ecdcdcbecc7fe33b139"
+      },
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e026c03b757ece416e014feef5e"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d000048516c03b757ece416e014feef5e"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b2736c03b757ece416e014feef5e"
+           }
+          ]
+         },
+         "uri": "spotify:album:1yzF0wUwJFgtkkXmKNe5BE"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 209413
+        },
+        "id": "1NHWG8zxSEypSRF3UufrnO",
+        "name": "Don't Stop Me Now",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "2789648251",
+        "uri": "spotify:track:1NHWG8zxSEypSRF3UufrnO"
+       },
+       "uid": "9ff6de1007a9735dffa7"
+      },
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e0244c0a9843fac69db4d56d14e"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000485144c0a9843fac69db4d56d14e"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b27344c0a9843fac69db4d56d14e"
+           }
+          ]
+         },
+         "uri": "spotify:album:4pFJdTvK6zNyWOO3W1hkGd"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          },
+          {
+           "profile": {
+            "name": "David Bowie"
+           },
+           "uri": "spotify:artist:0oSGxfWSnnOXhD2fKuz2Gy"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 248440
+        },
+        "id": "2nrG5UtAcqXbYttu7MXP1p",
+        "name": "Under Pressure (feat. David Bowie)",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "2282980552",
+        "uri": "spotify:track:2nrG5UtAcqXbYttu7MXP1p"
+       },
+       "uid": "e2b241f470d515b44f3e"
+      },
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e02a4e6eac83c0fe38bf682f643"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d00004851a4e6eac83c0fe38bf682f643"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b273a4e6eac83c0fe38bf682f643"
+           }
+          ]
+         },
+         "uri": "spotify:album:6l8tOdUItDC01Qmb91Lo8W"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 214653
+        },
+        "id": "1KPuohcXPmJYQfdyg9zKmR",
+        "name": "Another One Bites The Dust",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "2540741747",
+        "uri": "spotify:track:1KPuohcXPmJYQfdyg9zKmR"
+       },
+       "uid": "f3fb10b348b9c090b52e"
+      },
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e026c74d509c1581f8e0a35391b"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d000048516c74d509c1581f8e0a35391b"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b2736c74d509c1581f8e0a35391b"
+           }
+          ]
+         },
+         "uri": "spotify:album:7hq6mnrJ7CWbemk6B3H8PJ"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 122134
+        },
+        "id": "2ELSVi4kwWOXgxiIC592tJ",
+        "name": "We Will Rock You",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "1670119718",
+        "uri": "spotify:track:2ELSVi4kwWOXgxiIC592tJ"
+       },
+       "uid": "470c139fc40938044df8"
+      },
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e02a4e6eac83c0fe38bf682f643"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d00004851a4e6eac83c0fe38bf682f643"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b273a4e6eac83c0fe38bf682f643"
+           }
+          ]
+         },
+         "uri": "spotify:album:6l8tOdUItDC01Qmb91Lo8W"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 163373
+        },
+        "id": "7uON6DWIjXgmLQIfGsWXpV",
+        "name": "Crazy Little Thing Called Love",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "1276530762",
+        "uri": "spotify:track:7uON6DWIjXgmLQIfGsWXpV"
+       },
+       "uid": "f193f53ea345f9eae957"
+      },
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e024d09b89253dcbbe1d944e198"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d000048514d09b89253dcbbe1d944e198"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b2734d09b89253dcbbe1d944e198"
+           }
+          ]
+         },
+         "uri": "spotify:album:6uj0z3xtvQ8Y0UWevdQlIx"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 180866
+        },
+        "id": "46L5lm1Xzwr0TExEMpObtq",
+        "name": "Killer Queen",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "1142210694",
+        "uri": "spotify:track:46L5lm1Xzwr0TExEMpObtq"
+       },
+       "uid": "02814db0ddbdd61a0668"
+      },
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e023aa2d125c28475c322ac831e"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d000048513aa2d125c28475c322ac831e"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b2733aa2d125c28475c322ac831e"
+           }
+          ]
+         },
+         "uri": "spotify:album:32wu2qeQwVA6D8z1nWk68Q"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 297017
+        },
+        "id": "18OMrZoyyZuVy06FttIFhq",
+        "name": "Somebody To Love",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "1181359389",
+        "uri": "spotify:track:18OMrZoyyZuVy06FttIFhq"
+       },
+       "uid": "c885c86030403b3c8f6b"
+      },
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e020b6e29757c37fb90e4587f65"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d000048510b6e29757c37fb90e4587f65"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b2730b6e29757c37fb90e4587f65"
+           }
+          ]
+         },
+         "uri": "spotify:album:6IXmSdbq5OmlR08vvcnHoC"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 349186
+        },
+        "id": "6N717o83wbmahFGUqkjQj7",
+        "name": "Radio Ga Ga",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "792583926",
+        "uri": "spotify:track:6N717o83wbmahFGUqkjQj7"
+       },
+       "uid": "1e0f74083657ca909688"
+      },
+      {
+       "track": {
+        "albumOfTrack": {
+         "coverArt": {
+          "sources": [
+           {
+            "url": "https://i.scdn.co/image/ab67616d00001e026c74d509c1581f8e0a35391b"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d000048516c74d509c1581f8e0a35391b"
+           },
+           {
+            "url": "https://i.scdn.co/image/ab67616d0000b2736c74d509c1581f8e0a35391b"
+           }
+          ]
+         },
+         "uri": "spotify:album:7hq6mnrJ7CWbemk6B3H8PJ"
+        },
+        "artists": {
+         "items": [
+          {
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "discNumber": 1,
+        "duration": {
+         "totalMilliseconds": 180188
+        },
+        "id": "0saBeiGcu2dECTvAknHPzL",
+        "name": "We Are the Champions",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "playcount": "945770200",
+        "uri": "spotify:track:0saBeiGcu2dECTvAknHPzL"
+       },
+       "uid": "50f9879566a1bb3946e0"
+      }
+     ]
+    }
+   },
+   "goods": {
+    "concerts": {
+     "items": [],
+     "totalCount": 0
+    },
+    "merch": {
+     "items": [
+      {
+       "description": "‘Queen Budapest’ celebrates the 40th anniversary of a pivotal moment in the band’s history. Available on vinyl for the very first time, this release includes newly remixed audio from the original multitrack recordings which delivers the most immersive presentation of the performance to date. Captured on July 27, 1986, at Budapest’s Népstadion, during the band’s ‘The Magic Tour’, the concert was a groundbreaking moment, as Queen became the first Western rock band to perform behind the Iron Curtain during a period of profound cultural and political change. In addition to 80,000 tickets selling out, an estimated 45,000 people listened to the group outside, and some fans had travelled from as far away as Russia and Poland to see the concert. With the scale of the achievement, it would have been impossible to imagine that Queen would go on to play only a further five shows, ending forever their touring days with Freddie only one month later, with their final show played at Knebworth Park in England on August 9, 1986. ‘Queen Budapest’ is the last filmed live performance of the band with Freddie Mercury, showing the band at the height of their powers as a live act. This release captures the band performing iconic hits such as We Will Rock You, We Are The Champions, A Kind Of Magic, Crazy Little Thing Called Love, Under Pressure, Who Wants To Live Forever, Hammer To Fall and Bohemian Rhapsody.",
+       "image": {
+        "sources": [
+         {
+          "url": "https://i.scdn.co/image/ab676d6300001475578a9a8c2f418230d09c9f2e"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d630000ea68578a9a8c2f418230d09c9f2e"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d63000076a0578a9a8c2f418230d09c9f2e"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d6300001475578a9a8c2f418230d09c9f2e"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d630000e1f0578a9a8c2f418230d09c9f2e"
+         }
+        ]
+       },
+       "nameV2": "Queen Budapest 40th Anniversary | 3LP Black Vinyl",
+       "price": "£47.99",
+       "uri": "1MdPsqr2kYgw1f2fYHijEa",
+       "url": "https://shop.spotify.com/en/artist/1dfeR4HaWDbWqFHLkxsg1d/product/queen-budapest-3lp-black-vinyl?utm_source=spotify&utm_medium=app-artistprofile&utm_term=00a466f09fa80006b1e484e510d93946de61348555e364717c1b78"
+      },
+      {
+       "description": "‘Queen Budapest’ celebrates the 40th anniversary of the first western stadium rock show behind the Iron Curtain and the final filmed Queen live performance. ‘Queen Budapest’ marks a pivotal moment in the band’s history, and the film has been meticulously restored from the original filmed 35mm footage by Sir Peter Jackson’s Park Road Post Production facility in New Zealand, with newly remixed audio from the original multitrack recordings to deliver the most immersive presentation of the performance to date. Captured on July 27, 1986, at Budapest’s Népstadion, during the band’s ‘The Magic Tour’, the concert was a groundbreaking moment, as Queen became the first Western rock band to perform behind the Iron Curtain during a period of profound cultural and political change. In addition to 80,000 tickets selling out, an estimated 45,000 people listened to the group outside, and some fans had travelled from as far away as Russia and Poland to see the concert. ‘Queen Budapest’ is the last filmed live performance of the band with Freddie Mercury, showing the band at the height of their powers as a live act. The film captures the band performing iconic hits such as We Will Rock You, We Are The Champions, A Kind Of Magic, Crazy Little Thing Called Love, Under Pressure, Who Wants To Live Forever, Hammer To Fall and Bohemian Rhapsody. ‘Queen Budapest’ is directed by János Zsombolyai.",
+       "image": {
+        "sources": [
+         {
+          "url": "https://i.scdn.co/image/ab676d630000147545c113515aef7db5db0b19f5"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d630000ea6845c113515aef7db5db0b19f5"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d63000076a045c113515aef7db5db0b19f5"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d630000147545c113515aef7db5db0b19f5"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d630000e1f045c113515aef7db5db0b19f5"
+         }
+        ]
+       },
+       "nameV2": "Queen Budapest 40th Anniversary | BluRay",
+       "price": "£22.99",
+       "uri": "761UAOmnpcMKzpI7vZHrvl",
+       "url": "https://shop.spotify.com/en/artist/1dfeR4HaWDbWqFHLkxsg1d/product/queen-budapest-bluray?utm_source=spotify&utm_medium=app-artistprofile&utm_term=00a466f09fa80006b1e484e510d93946de61348555e364717c1b78"
+      },
+      {
+       "description": "Made from 100% recycled nylon, with embroidered AKOM character embellishment. Adjustable adults cap, one size fits all.",
+       "image": {
+        "sources": [
+         {
+          "url": "https://i.scdn.co/image/ab676d6300001475eb146ed91f32a17746b782f7"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d630000ea68eb146ed91f32a17746b782f7"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d63000076a0eb146ed91f32a17746b782f7"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d6300001475eb146ed91f32a17746b782f7"
+         },
+         {
+          "url": "https://i.scdn.co/image/ab676d630000e1f0eb146ed91f32a17746b782f7"
+         }
+        ]
+       },
+       "nameV2": "A Kind of Magic | Red Cap",
+       "price": "£30.00",
+       "uri": "5maDK1BpiQSmAKcVniWZaK",
+       "url": "https://shop.spotify.com/en/artist/1dfeR4HaWDbWqFHLkxsg1d/product/a-kind-of-magic-red-cap?utm_source=spotify&utm_medium=app-artistprofile&utm_term=00a466f09fa80006b1e484e510d93946de61348555e364717c1b78"
+      }
+     ]
+    }
+   },
+   "headerImage": {
+    "data": {
+     "__typename": "ImageV2",
+     "sources": [
+      {
+       "maxHeight": 1140,
+       "maxWidth": 2660,
+       "url": "https://image-cdn-fa.spotifycdn.com/image/ab6761860000101625119771314a74f431bd3bb1"
+      },
+      {
+       "maxHeight": 1080,
+       "maxWidth": 1920,
+       "url": "https://i2o.scdn.co/image/ab6761860000166625119771314a74f431bd3bb1"
+      },
+      {
+       "maxHeight": 1080,
+       "maxWidth": 1920,
+       "url": "https://i2o.scdn.co/image/ab6761860000166625119771314a74f431bd3bb1"
+      },
+      {
+       "maxHeight": 640,
+       "maxWidth": 1494,
+       "url": "https://image-cdn-fa.spotifycdn.com/image/ab6761860000660e25119771314a74f431bd3bb1"
+      },
+      {
+       "maxHeight": 641,
+       "maxWidth": 1495,
+       "url": "https://image-cdn-fa.spotifycdn.com/image/ab67618600006fba25119771314a74f431bd3bb1"
+      }
+     ]
+    }
+   },
+   "id": "1dfeR4HaWDbWqFHLkxsg1d",
+   "onPlatformReputationTrait": {
+    "verification": {
+     "aiPersona": null,
+     "isRegistered": true,
+     "isVerified": true
+    }
+   },
+   "preRelease": {
+    "preReleaseContent": {
+     "coverArt": {
+      "sources": [
+       {
+        "height": 300,
+        "url": "https://i.scdn.co/image/ab67616d00001e02a2705f46c5e6d3ba0e650db9",
+        "width": 300
+       },
+       {
+        "height": 64,
+        "url": "https://i.scdn.co/image/ab67616d00004851a2705f46c5e6d3ba0e650db9",
+        "width": 64
+       },
+       {
+        "height": 640,
+        "url": "https://i.scdn.co/image/ab67616d0000b273a2705f46c5e6d3ba0e650db9",
+        "width": 640
+       }
+      ]
+     },
+     "name": "Queen Budapest",
+     "type": "ALBUM"
+    },
+    "releaseDate": {
+     "isoString": "2026-11-06T03:00:00Z"
+    },
+    "uri": "spotify:prerelease:27lhnOW0pexLQhZ2woaDwa"
+   },
+   "profile": {
+    "biography": {
+     "text": "Queen epitomize all the glittery excess of album-oriented rock in the 1970s, marrying the crunch of heavy metal to the pomp of prog rock then leavening the heady mixture with camp humor. It's an eccentric blend that proves to be surprisingly versatile, allowing for the mock-operatic \"Bohemian Rhapsody,\" soaring arena rock like \"Somebody to Love,\" thumping rockers like \"Fat Bottomed Girls,\" the neo-rockabilly \"Crazy Little Thing Called Love,\" and the disco excursion \"Another One Bites the Dust.\" Queen's range proves that they were a deceptively egalitarian band: they're the only classic rock group where each member wrote at least one of the group's signature songs. Despite this division of labor, frontman <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Freddie Mercury</a> commanded attention both during his life and after his death. A powerful singer with a penchant for drama, <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Mercury</a> possessed an exaggerated charisma and a devilish sense of humor, qualities that made him one of the great rock stars of his generation. Queen's reign began in earnest with 1975's A Night at the Opera and lasted through The Game in 1980, a half-decade filled with big hits that turned into enduring standards. Although the hits weren't as big in the '80s, the group retained its international popularity through <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Mercury</a>'s death in 1991. After his passing, Queen's original LPs found a new audience, partially cultivated by surviving members <a href=\"spotify:artist:2NcbLU1bW55eahD0UgD7U3\">Brian May</a> and <a href=\"spotify:artist:2PZEd7yktruWruOqORRChA\">Roger Taylor</a> tending to archival releases and staying on the road, either with <a href=\"spotify:artist:2gaWNB3YrlTc0KRlHNqhol\">Paul Rodgers</a> or <a href=\"spotify:artist:6prmLEyn4LfHlD9NnXWlf7\">Adam Lambert</a> as <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Mercury</a>'s replacement. Queen's legacy also was assisted by the 2018 release of Bohemian Rhapsody, a biopic of the band featuring Rami Malek in an Oscar-winning turn as <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Freddie Mercury</a>. \r\n\nThe origins of Queen lay in the hard rock psychedelic group Smile, which guitarist <a href=\"spotify:artist:2NcbLU1bW55eahD0UgD7U3\">Brian May</a> and drummer <a href=\"spotify:artist:2PZEd7yktruWruOqORRChA\">Roger Taylor</a> joined in 1967. Following the departure of Smile's lead vocalist, <a href=\"spotify:artist:6EtRaGeodP9stdGz92vPtB\">Tim Staffell</a>, in 1971, <a href=\"spotify:artist:2NcbLU1bW55eahD0UgD7U3\">May</a> and <a href=\"spotify:artist:2PZEd7yktruWruOqORRChA\">Taylor</a> formed a group with <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Freddie Mercury</a>, the former lead singer for Wreckage. Within a few months, bassist <a href=\"spotify:artist:6KrRVxAW7yvCYrO1ALqPG5\">John Deacon</a> joined them, and they began rehearsing. Over the next two years, as all four members completed college, they simply rehearsed, playing just a handful of gigs. By 1973, they had begun to concentrate on their career, releasing their debut album, Queen, that year and setting out on their first tour. Produced by the band, along with <a href=\"spotify:artist:5UnZl2Izl86NC6yfVwG0CT\">Roy Thomas Baker</a> and John Anthony, Queen was more or less a straight metal album and drew favorable comparisons to <a href=\"spotify:artist:36QJpDe2go2KgaRleHCDTp\">Led Zeppelin</a>. \r\n\nHowever, it was with their sophomore album, Queen II, that the band unexpectedly broke through in Britain in early 1974. Before its release, the band played Top of the Pops, performing \"Seven Seas of Rhye.\" Both the song and the performance were smash successes, and the single rocketed into the Top Ten, setting the stage for Queen II to reach number five. Following its release, the group embarked on its first American tour, supporting <a href=\"spotify:artist:6ysQi6NI88X627t2srsWz6\">Mott the Hoople</a>. On the strength of their campily dramatic performances, the album climbed to number 43 in the States. \r\n\nQueen released their third album, Sheer Heart Attack, before the end of 1974. The music hall-meets-<a href=\"spotify:artist:36QJpDe2go2KgaRleHCDTp\">Zeppelin</a> \"Killer Queen\" climbed to number two on the U.K. charts, taking the album to number two as well. Sheer Heart Attack made some inroads in America, setting the stage for the breakthrough of 1975's A Night at the Opera. Queen labored long and hard over the record; according to many reports, it was the most expensive rock record ever made at the time of its release. The first single, \"Bohemian Rhapsody,\" became Queen's signature song, and with its bombastic, mock-operatic structure punctuated by heavy metal riffing, encapsulated their ambitious, genre-bending musical vision. To support \"Bohemian Rhapsody,\" Queen shot one of the first conceptual music videos, and the gamble paid off as the single spent nine weeks at number one in England, breaking the record for the longest run at number one. The song and A Night at the Opera were equally successful in America, as the album climbed into the Top Ten and quickly went platinum. \r\n\nFollowing A Night at the Opera, Queen were established as superstars, yet they continued to work at a rapid rate. In the summer of 1976, they performed a free concert at London's Hyde Park that broke attendance records, and they released the hit single \"Somebody to Love\" a few months later. It was followed by A Day at the Races, which was essentially a scaled-down version of A Night at the Opera that reached number one in the U.K. and number five in the U.S. They continued to pile up hit singles in both Britain and America over the next five years, as each of their albums went into the Top Ten, always going gold and usually platinum in the process. Featuring the Top Five double-A-sided single \"We Are the Champions\"/\"We Will Rock You,\" News of the World became a Top Ten hit in 1977. The following year, Jazz nearly replicated that success, with the single \"Fat Bottomed Girls\"/\"Bicycle Race\" becoming an international hit.\r\n\nQueen were at the height of their popularity as they entered the '80s, releasing The Game, their most diverse album to date, in 1980. On the strength of two number one singles -- the rockabilly-inspired \"Crazy Little Thing Called Love\" and the disco-fied \"Another One Bites the Dust\" -- The Game became the group's first American number one album. Their largely instrumental soundtrack to Flash Gordon arrived later that same year. With the help of <a href=\"spotify:artist:0oSGxfWSnnOXhD2fKuz2Gy\">David Bowie</a>, Queen were able to successfully compete with new wave with the 1981 hit single \"Under Pressure\" -- their first U.K. number one since \"Bohemian Rhapsody\" -- which was included both on 1981's Greatest Hits and 1982's Hot Space. Hot Space proved a moderate hit and paved the way for the more rock-oriented The Works, which arrived in 1984. Also a minor hit, it was buoyed the singles \"Radio Ga Ga,\" \"Hammer to Fall,\" and \"I Want to Break Free.\" Shortly afterward, Queen left <a href=\"spotify:search:label%3A%22Elektra%22\">Elektra</a> and signed with <a href=\"spotify:search:label%3A%22Capitol%22\">Capitol</a>. \r\n\nDuring this period, Queen began touring foreign markets, cultivating a large, dedicated fan base in Latin America, Asia, and Africa. In 1985, they returned to renewed popularity in Britain in the wake of their show-stopping performance at Live Aid. The following year, they released A Kind of Magic to strong European sales. It debuted at number one in the U.K. and remained there for over 60 weeks, spawning the singles \"A Kind of Magic,\" \"One Vision,\" \"Friends Will Be Friends,\" and \"Who Wants to Live Forever.\" The Miracle followed in 1989 and proved similarly successful, debuting at number one in the U.K. and cracking the Top 30 of the Billboard 200. \r\n\nThe group's 14th studio album, 1991's Innuendo, was greeted even more favorably, going gold and peaking at number 30 in the U.S. It was a far bigger success in Europe, entering the U.K. charts at number one. However, by 1991, Queen had drastically scaled back their activity, causing rumors to circulate about <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Freddie Mercury</a>'s health. On November 23, the singer issued a statement confirming that he had AIDS. <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Mercury</a> died the next day from bronchial pneumonia resulting from his illness. The following spring, the remaining members of Queen held a memorial concert at Wembley Stadium that was broadcast to an international audience of more than one billion. Featuring such guest artists as <a href=\"spotify:artist:0oSGxfWSnnOXhD2fKuz2Gy\">David Bowie</a>, <a href=\"spotify:artist:3PhoLpVuITZKcymswpck5b\">Elton John</a>, <a href=\"spotify:artist:5MspMQqdVbdwP6ax3GXqum\">Annie Lennox</a>, <a href=\"spotify:artist:6H1RjVyNruCmrBEWRbD0VZ\">Def Leppard</a>, and <a href=\"spotify:artist:3qm84nBOXUEQ2vnTfUTTFC\">Guns N' Roses</a>, the concert raised millions for the Mercury Phoenix Trust, which was established for AIDS awareness. The concert coincided with a revival of interest in \"Bohemian Rhapsody,\" which climbed to number two in the U.S. and number one in the U.K. in the wake of its appearance in the Mike Myers comedy Wayne's World. \r\n\nFollowing <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Mercury</a>'s death, the remaining members of Queen were fairly quiet. <a href=\"spotify:artist:2NcbLU1bW55eahD0UgD7U3\">Brian May</a> released his second solo album, Back to the Light, in 1993, ten years after the release of his first record. <a href=\"spotify:artist:2PZEd7yktruWruOqORRChA\">Roger Taylor</a> cut a few albums with the Cross, which he had been playing with since 1987, while <a href=\"spotify:artist:6KrRVxAW7yvCYrO1ALqPG5\">Deacon</a> essentially retired. The three reunited in 1994 to record backing tapes for vocal tracks <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Mercury</a> recorded on his deathbed. The resulting album, Made in Heaven, was released in 1995 to strong sales, particularly in Europe. Crown Jewels, a box set repackaging their first eight LPs, followed in 1998. Archival live recordings, DVDs, and compilations continued to appear into the new millennium. \r\n\nThe Queen name was revived in 2005, but this time with \"+ <a href=\"spotify:artist:2gaWNB3YrlTc0KRlHNqhol\">Paul Rodgers</a>\" appended to it. <a href=\"spotify:artist:2gaWNB3YrlTc0KRlHNqhol\">Rodgers</a>, the former lead singer of <a href=\"spotify:artist:2e53aHBQdCMKWqHDuyJsjC\">Free</a> and <a href=\"spotify:artist:5AEG63ajney2BoDXi0Vb84\">Bad Company</a>, joined <a href=\"spotify:artist:2NcbLU1bW55eahD0UgD7U3\">Brian May</a> and <a href=\"spotify:artist:2PZEd7yktruWruOqORRChA\">Roger Taylor</a> (<a href=\"spotify:artist:6KrRVxAW7yvCYrO1ALqPG5\">John Deacon</a> remained retired) for several live shows, one of which was documented on 2005's Return of the Champions, a double-disc release issued by the <a href=\"spotify:search:label%3A%22Hollywood%22\">Hollywood</a> label. International touring continued, as did a new studio album featuring <a href=\"spotify:artist:2gaWNB3YrlTc0KRlHNqhol\">Rodgers</a>' vocals. Released under the \"Queen + <a href=\"spotify:artist:2gaWNB3YrlTc0KRlHNqhol\">Paul Rodgers</a>\" tag, The Cosmos Rocks appeared in September 2008, followed by an American release one month later. Reception was decidedly mixed. <a href=\"spotify:artist:2gaWNB3YrlTc0KRlHNqhol\">Rodgers</a> departed Queen in 2009 and in his wake came a new compilation called Absolute Greatest. \r\n\nTV appearances followed over the next two years, including a spot on the 2009 American Idol finale where they performed with <a href=\"spotify:artist:6prmLEyn4LfHlD9NnXWlf7\">Adam Lambert</a>, and in 2010 Queen wound up leaving their home of <a href=\"spotify:search:label%3A%22EMI%22\">EMI</a> for <a href=\"spotify:search:label%3A%22Island%22\">Island</a>, which brought all of the group's recordings to <a href=\"spotify:search:label%3A%22Universal+Records%22\">Universal Records</a>. A new round of reissues followed in 2011, along with a performance with <a href=\"spotify:artist:6prmLEyn4LfHlD9NnXWlf7\">Lambert</a> at the MTV Europe Music Awards, and the vocalist soon became a fixture with the band, as Queen performed several big concerts and television performances in 2012 and 2013, followed by a full tour in 2014. Also that year, Queen released another compilation, Queen Forever, which was anchored by reworked versions of three old songs, including a solo number by <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Mercury</a> where he duetted with <a href=\"spotify:artist:3fMbdgg4jU18AjLCKBhRSm\">Michael Jackson</a>. The archival live album, A Night at the Odeon, featuring the band's 1975 Christmas Eve performance at London's Hammersmith Odeon, appeared in 2015. \r\n\nOver the next two years, the band stayed active, appearing live with <a href=\"spotify:artist:6prmLEyn4LfHlD9NnXWlf7\">Lambert</a>. In 2018, Queen was the subject of the biopic Bohemian Rhapsody, which starred Rami Malek as <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Freddie Mercury</a>. The band contributed to the soundtrack, which featured classic tracks as well as live recordings and several songs reworked for the film. Bohemian Rhapsody became an international hit and took home four Academy Awards, including Malek's award for Best Actor.\r\n\nA concert collection featuring <a href=\"spotify:artist:6prmLEyn4LfHlD9NnXWlf7\">Lambert</a>, Live Around the World, arrived in October 2020 but the next major Queen project was an elaborate Collector's Edition reissue of The Miracle. The 1989 album was expanded into a five-CD set containing additional Blu-Rays, DVDs and LPs, all featuring previously unheard material, such as the <a href=\"spotify:artist:4M1FpEWs2PeYfJe7xxJfhH\">Mercury</a>-sung \"Face It Alone,\" which was released as a single prior to the box's October 2022 release. The band continued to tour semi-regularly with <a href=\"spotify:artist:6prmLEyn4LfHlD9NnXWlf7\">Lambert</a> as vocalist, hitting North America in 2023 and Japan in early 2024.~ Stephen Thomas Erlewine",
+     "type": "BIOGRAPHY"
+    },
+    "externalLinks": {
+     "items": [
+      {
+       "name": "FACEBOOK",
+       "url": "https://facebook.com/Queen"
+      },
+      {
+       "name": "INSTAGRAM",
+       "url": "https://instagram.com/officialqueenmusic/"
+      },
+      {
+       "name": "TIKTOK",
+       "url": "https://tiktok.com/@queenofficial"
+      },
+      {
+       "name": "TWITTER",
+       "url": "https://twitter.com/Queenwillrock"
+      },
+      {
+       "name": "WIKIPEDIA",
+       "url": "https://en.wikipedia.org/wiki/Queen_(band)"
+      }
+     ]
+    },
+    "name": "Queen",
+    "pinnedItem": {
+     "backgroundImageV2": null,
+     "comment": "",
+     "itemV2": {
+      "__typename": "PlaylistResponseWrapper",
+      "data": {
+       "__typename": "Playlist",
+       "images": {
+        "items": [
+         {
+          "sources": [
+           {
+            "height": null,
+            "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84a4bf7249acf410c30882541c",
+            "width": null
+           }
+          ]
+         }
+        ]
+       },
+       "name": "Queen: Greatest Hits",
+       "uri": "spotify:playlist:595cY5S1FpMpiEIWsk6dG7"
+      }
+     },
+     "subtitle": "Playlist",
+     "thumbnailImage": {
+      "data": {
+       "sources": [
+        {
+         "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c00006c11a4bf7249acf410c30882541c"
+        },
+        {
+         "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000bebba4bf7249acf410c30882541c"
+        },
+        {
+         "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84a4bf7249acf410c30882541c"
+        }
+       ]
+      }
+     },
+     "title": "Queen: Greatest Hits",
+     "type": "PLAYLIST",
+     "uri": "spotify:playlist:595cY5S1FpMpiEIWsk6dG7"
+    },
+    "playlistsV2": {
+     "items": [
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "This new playlist is a selection, mainly of the 7” and 12” singles, that Freddie Mercury held at his home, Garden Lodge in London, up until November 1991. Where possible, the title track of the LP or biggest hit has been included in the playlist. ",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84c595a9cddcf5bf34b49f8c56",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "The Garden Lodge Collection",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:6jf5DC5ne7NtPqoUSCkKFH"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The finest from one of the world's greatest bands - visit the official site and store for news, merch and more at <a href=\"http://www.queenonline.com\">www.queenonline.com</a>",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84a4bf7249acf410c30882541c",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "Queen: Greatest Hits",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:595cY5S1FpMpiEIWsk6dG7"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Celebrate the holidays with our favorite songs!",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84d6ef5355d3c820eab69dbc0d",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "Queen for the Holidays ",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:2Ic04vAorswSdACT1748J8"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Experience every studio album from 1973's Queen to 1995's Made in Heaven and beyond.",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84f0a8b429e41aa1f66dd7bc1a",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "Queen: Complete",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:6nDNX0VlQORQrI0K55bMak"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The soundtrack to 30 years of Mercury Phoenix Trust fundraising, includes tracks inspired, performed or released in association with the charity. <a href=\"http://www.mercuryphoenixtrust.com\">www.mercuryphoenixtrust.com</a>",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84ea1dc4a1cb92c007b8cc7928",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "Queen: MPT30",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:6PnSeohqdDfKMj4w3vtTBh"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Celebrate live gems recorded at  Live Aid, The Rainbow, Hammersmith Odeon, Wembley Stadium and more.",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84c339bf1ec637ce507e689c44",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "Queen: Live",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:0laQTbj0EUNVUw0eUiXKP8"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The best from the Queen, Queen II, Sheer Heart Attack, A Night at the Opera, and A Day at the Races albums.",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84fe2792190a55a39f610a0cd2",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "Queen: Early Years ('73 - '76)",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:4dHEObDrF6s8OeEglGZRWD"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "All the best from the News of the World, Jazz, The Game, Flash Gordon, and Hot Space albums.",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84bbbfc459df3ec8334a5ef8f9",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "Queen: Middle Years ('77 - '82)",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:27jaDqlQzFn3QZMeq2FWcX"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Prime cuts from the A Kind of Magic, The Works, The Miracle, Innuendo, and Made in Heaven albums.",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da8421af4736fe45b4dcb3023482",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "Queen: Later Years ('84 - '95)",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:2SWFIYrZ80Yc5mlXqf7Kwb"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Sing your heart out to all of your favorites!",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da848dd557b128a369f9ed740f32",
+             "width": null
+            }
+           ]
+          }
+         ]
+        },
+        "name": "Queen: Singalong",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:5pqaHJC3ajuBjlLPM2bdsT"
+       }
+      }
+     ],
+     "totalCount": 19
+    }
+   },
+   "relatedContent": {
+    "appearsOn": {
+     "items": [
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Metallica"
+             },
+             "uri": "spotify:artist:2ye2Wgw4gimLv2eAKyk1NB"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02c1a13209dfe146aef3296e34",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851c1a13209dfe146aef3296e34",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273c1a13209dfe146aef3296e34",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2021
+          },
+          "id": "7h5xn0Olvx2p0eQcSt1Osy",
+          "name": "Metallica (Remastered Deluxe Box Set)",
+          "sharingInfo": {
+           "shareId": "LDk3JCPpSaGXi2Uqb9bP-Q",
+           "shareUrl": "https://open.spotify.com/album/7h5xn0Olvx2p0eQcSt1Osy?si=LDk3JCPpSaGXi2Uqb9bP-Q"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:7h5xn0Olvx2p0eQcSt1Osy"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "George Michael"
+             },
+             "uri": "spotify:artist:19ra5tSw0tWufvUp8GotLo"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02813629baee66b2ec5f90ebee",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851813629baee66b2ec5f90ebee",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273813629baee66b2ec5f90ebee",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1998
+          },
+          "id": "0IJcpy0eM4o63J43qij68g",
+          "name": "Ladies & Gentlemen",
+          "sharingInfo": {
+           "shareId": "mQ8CUkyTSry8-hpArDSIuQ",
+           "shareUrl": "https://open.spotify.com/album/0IJcpy0eM4o63J43qij68g?si=mQ8CUkyTSry8-hpArDSIuQ"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:0IJcpy0eM4o63J43qij68g"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "David Bowie"
+             },
+             "uri": "spotify:artist:0oSGxfWSnnOXhD2fKuz2Gy"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e027fa10b9bdb970e45b08aee3c",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048517fa10b9bdb970e45b08aee3c",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2737fa10b9bdb970e45b08aee3c",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2014
+          },
+          "id": "5CeaUy7mAbMw3nMI3ezmie",
+          "name": "Nothing Has Changed (The Best of David Bowie) [Deluxe Edition]",
+          "sharingInfo": {
+           "shareId": "1lBGBogESNOAZfilx6htPw",
+           "shareUrl": "https://open.spotify.com/album/5CeaUy7mAbMw3nMI3ezmie?si=1lBGBogESNOAZfilx6htPw"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:5CeaUy7mAbMw3nMI3ezmie"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Five"
+             },
+             "uri": "spotify:artist:6rEzedK7cKWjeQWdAYvWVG"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02ce248e7ad7389aee6cd97e7f",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851ce248e7ad7389aee6cd97e7f",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273ce248e7ad7389aee6cd97e7f",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1999
+          },
+          "id": "72qAXkZ8keSUHe55hhEVQG",
+          "name": "Invincible",
+          "sharingInfo": {
+           "shareId": "5imcF5mSRbCnR8tmQyqbLQ",
+           "shareUrl": "https://open.spotify.com/album/72qAXkZ8keSUHe55hhEVQG?si=5imcF5mSRbCnR8tmQyqbLQ"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:72qAXkZ8keSUHe55hhEVQG"
+         },
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Five"
+             },
+             "uri": "spotify:artist:6rEzedK7cKWjeQWdAYvWVG"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02ce9fd5ab39c782d19d4a70bf",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851ce9fd5ab39c782d19d4a70bf",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273ce9fd5ab39c782d19d4a70bf",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1999
+          },
+          "id": "3gnDAi2njt1vvEyC9qoNJA",
+          "name": "Invincible",
+          "sharingInfo": {
+           "shareId": "UxzptIMCR56ZtEfXvEevqg",
+           "shareUrl": "https://open.spotify.com/album/3gnDAi2njt1vvEyC9qoNJA?si=UxzptIMCR56ZtEfXvEevqg"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:3gnDAi2njt1vvEyC9qoNJA"
+         },
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Five"
+             },
+             "uri": "spotify:artist:6rEzedK7cKWjeQWdAYvWVG"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0266bca48ce2d83f3a7109567e",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485166bca48ce2d83f3a7109567e",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27366bca48ce2d83f3a7109567e",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1999
+          },
+          "id": "6rwT7u32X6CdrOCClbowiW",
+          "name": "Invincible",
+          "sharingInfo": {
+           "shareId": "MzOJzZ_IRh--BApilz030A",
+           "shareUrl": "https://open.spotify.com/album/6rwT7u32X6CdrOCClbowiW?si=MzOJzZ_IRh--BApilz030A"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:6rwT7u32X6CdrOCClbowiW"
+         }
+        ],
+        "totalCount": 3
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Luciano Pavarotti"
+             },
+             "uri": "spotify:artist:0Y8KmFkKOgJybpVobn1onU"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0243b97c0dba1428ed7ea54a09",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485143b97c0dba1428ed7ea54a09",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27343b97c0dba1428ed7ea54a09",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2019
+          },
+          "id": "2P3b56yTzSqL3HLM25qUq4",
+          "name": "Pavarotti - The Greatest Hits",
+          "sharingInfo": {
+           "shareId": "J-Oq0EtGRJy5ktaAZV7yBA",
+           "shareUrl": "https://open.spotify.com/album/2P3b56yTzSqL3HLM25qUq4?si=J-Oq0EtGRJy5ktaAZV7yBA"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:2P3b56yTzSqL3HLM25qUq4"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Various Artists"
+             },
+             "uri": "spotify:artist:0LyfQWJT6nXafLPZqxe9Of"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e027b71fd49eb20d0275387779f",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048517b71fd49eb20d0275387779f",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2737b71fd49eb20d0275387779f",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2021
+          },
+          "id": "5ibszTMHImI4rzhjrDRKMq",
+          "name": "Cruella (Original Motion Picture Soundtrack)",
+          "sharingInfo": {
+           "shareId": "VNzHOy8vRfqrGqws0JbvVA",
+           "shareUrl": "https://open.spotify.com/album/5ibszTMHImI4rzhjrDRKMq?si=VNzHOy8vRfqrGqws0JbvVA"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:5ibszTMHImI4rzhjrDRKMq"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "David Bowie"
+             },
+             "uri": "spotify:artist:0oSGxfWSnnOXhD2fKuz2Gy"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0210498de46a76d45a3b982a5c",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485110498de46a76d45a3b982a5c",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27310498de46a76d45a3b982a5c",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2017
+          },
+          "id": "6DcvIymXDe8sCD1u0fzi8J",
+          "name": "A New Career in a New Town (1977 - 1982)",
+          "sharingInfo": {
+           "shareId": "b2RwdJRMTqGrx-FM_6E9QA",
+           "shareUrl": "https://open.spotify.com/album/6DcvIymXDe8sCD1u0fzi8J?si=b2RwdJRMTqGrx-FM_6E9QA"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:6DcvIymXDe8sCD1u0fzi8J"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Helene Fischer"
+             },
+             "uri": "spotify:artist:7MzHPIXAqIOCnvK0sVY72W"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02b90be5309a52aec3fdda5303",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851b90be5309a52aec3fdda5303",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273b90be5309a52aec3fdda5303",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2020
+          },
+          "id": "46RjcxrrWRFiOuq1V7MPHR",
+          "name": "Die Helene Fischer Show - Meine schönsten Momente (Vol. 1)",
+          "sharingInfo": {
+           "shareId": "4QtnkkzZTS-_SYAbx-gmkQ",
+           "shareUrl": "https://open.spotify.com/album/46RjcxrrWRFiOuq1V7MPHR?si=4QtnkkzZTS-_SYAbx-gmkQ"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:46RjcxrrWRFiOuq1V7MPHR"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "David Bowie"
+             },
+             "uri": "spotify:artist:0oSGxfWSnnOXhD2fKuz2Gy"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e029a76bbfd7ed73adb852eb9f1",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048519a76bbfd7ed73adb852eb9f1",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2739a76bbfd7ed73adb852eb9f1",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2016
+          },
+          "id": "1TAUTNeWsXMv2rM4IJjBoh",
+          "name": "Legacy (The Very Best Of David Bowie, Deluxe)",
+          "sharingInfo": {
+           "shareId": "BxBoND0rQ9O8IasQ5OXn_Q",
+           "shareUrl": "https://open.spotify.com/album/1TAUTNeWsXMv2rM4IJjBoh?si=BxBoND0rQ9O8IasQ5OXn_Q"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:1TAUTNeWsXMv2rM4IJjBoh"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Various Artists"
+             },
+             "uri": "spotify:artist:0LyfQWJT6nXafLPZqxe9Of"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02d400ccf256bb490d40e6e1e8",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851d400ccf256bb490d40e6e1e8",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273d400ccf256bb490d40e6e1e8",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2018
+          },
+          "id": "0kenHkk55M5xQXbEqlFoOT",
+          "name": "Live Aid (Live, 13th July 1985)",
+          "sharingInfo": {
+           "shareId": "iVO_cw0zSvuiJWNfkvChRw",
+           "shareUrl": "https://open.spotify.com/album/0kenHkk55M5xQXbEqlFoOT?si=iVO_cw0zSvuiJWNfkvChRw"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:0kenHkk55M5xQXbEqlFoOT"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Various Artists"
+             },
+             "uri": "spotify:artist:0LyfQWJT6nXafLPZqxe9Of"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e022a98b23842247cbac8c4899c",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048512a98b23842247cbac8c4899c",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2732a98b23842247cbac8c4899c",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2010
+          },
+          "id": "3b52zf21FTW2ZposefIqK4",
+          "name": "Best Of The Best",
+          "sharingInfo": {
+           "shareId": "cVqif0duRim3svgujAkSLQ",
+           "shareUrl": "https://open.spotify.com/album/3b52zf21FTW2ZposefIqK4?si=cVqif0duRim3svgujAkSLQ"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:3b52zf21FTW2ZposefIqK4"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "E.S. Posthumus"
+             },
+             "uri": "spotify:artist:1CqW2UkLsaZvByLwkOaNsH"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02a449ecedb27809fe413466b9",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851a449ecedb27809fe413466b9",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273a449ecedb27809fe413466b9",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2022
+          },
+          "id": "2lh47Ii8FZLRr1pcwTSXxZ",
+          "name": "Ultimate Football Music Vol 1",
+          "sharingInfo": {
+           "shareId": "kMQl5-WgQFGWoTBakY0phg",
+           "shareUrl": "https://open.spotify.com/album/2lh47Ii8FZLRr1pcwTSXxZ?si=kMQl5-WgQFGWoTBakY0phg"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:2lh47Ii8FZLRr1pcwTSXxZ"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Various Artists"
+             },
+             "uri": "spotify:artist:0LyfQWJT6nXafLPZqxe9Of"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02cbf220dc07db0596932e285a",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851cbf220dc07db0596932e285a",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273cbf220dc07db0596932e285a",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2026
+          },
+          "id": "2UaOLi9cF5BGNx3wxHSJ9q",
+          "name": "Mundial 2026: Copa de Fútbol del Mundo 2026",
+          "sharingInfo": {
+           "shareId": "OqGJ6odNSemYuEAzjxsflw",
+           "shareUrl": "https://open.spotify.com/album/2UaOLi9cF5BGNx3wxHSJ9q?si=OqGJ6odNSemYuEAzjxsflw"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:2UaOLi9cF5BGNx3wxHSJ9q"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Five"
+             },
+             "uri": "spotify:artist:6rEzedK7cKWjeQWdAYvWVG"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02899445a984d7f0ea89b5cb79",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851899445a984d7f0ea89b5cb79",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273899445a984d7f0ea89b5cb79",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2001
+          },
+          "id": "1JyilPm1DKfNkhGy95PAuH",
+          "name": "Greatest Hits",
+          "sharingInfo": {
+           "shareId": "zLeY5l0uTYez3q_FjL9sbQ",
+           "shareUrl": "https://open.spotify.com/album/1JyilPm1DKfNkhGy95PAuH?si=zLeY5l0uTYez3q_FjL9sbQ"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:1JyilPm1DKfNkhGy95PAuH"
+         },
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Five"
+             },
+             "uri": "spotify:artist:6rEzedK7cKWjeQWdAYvWVG"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0210df926bec224d743644ea3e",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485110df926bec224d743644ea3e",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27310df926bec224d743644ea3e",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2003
+          },
+          "id": "5jSAkaiC1BBKZQSZ7wFYOY",
+          "name": "Greatest Hits",
+          "sharingInfo": {
+           "shareId": "v14l8j-USZSaJpIpXpgZlA",
+           "shareUrl": "https://open.spotify.com/album/5jSAkaiC1BBKZQSZ7wFYOY?si=v14l8j-USZSaJpIpXpgZlA"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:5jSAkaiC1BBKZQSZ7wFYOY"
+         }
+        ],
+        "totalCount": 2
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Ian Hunter"
+             },
+             "uri": "spotify:artist:1Ov9t7KbQF0oz9B4JsMfV2"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0266c609d04ad4eec9565e8bbc",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485166c609d04ad4eec9565e8bbc",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27366c609d04ad4eec9565e8bbc",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1996
+          },
+          "id": "4eYIIKMQ2TFe5cqLhaeGoe",
+          "name": "Once Bitten Twice Shy",
+          "sharingInfo": {
+           "shareId": "4jboQqPgQ_6zNqQefNOUFw",
+           "shareUrl": "https://open.spotify.com/album/4eYIIKMQ2TFe5cqLhaeGoe?si=4jboQqPgQ_6zNqQefNOUFw"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:4eYIIKMQ2TFe5cqLhaeGoe"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Music Room 29"
+             },
+             "uri": "spotify:artist:4djj97IZwNTsqwjznPmvz5"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020ae3a718b3ec7ed7b6e4caf7",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510ae3a718b3ec7ed7b6e4caf7",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730ae3a718b3ec7ed7b6e4caf7",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2026
+          },
+          "id": "0u7hwaf7KMFRVvAazDCLBT",
+          "name": "Navidad 2026: La Mejor Música de Navidad",
+          "sharingInfo": {
+           "shareId": "e0jiEWrHTLWAk_M-SN915Q",
+           "shareUrl": "https://open.spotify.com/album/0u7hwaf7KMFRVvAazDCLBT?si=e0jiEWrHTLWAk_M-SN915Q"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:0u7hwaf7KMFRVvAazDCLBT"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Various Artists"
+             },
+             "uri": "spotify:artist:0LyfQWJT6nXafLPZqxe9Of"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02ea1a1f4476f64425234a75c9",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851ea1a1f4476f64425234a75c9",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273ea1a1f4476f64425234a75c9",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2021
+          },
+          "id": "0Os0o1zAzszqNfbg4yFsVj",
+          "name": "Cruella (Original Motion Picture Soundtrack)",
+          "sharingInfo": {
+           "shareId": "Kgoqi44iRi6xs7RW7j8gEA",
+           "shareUrl": "https://open.spotify.com/album/0Os0o1zAzszqNfbg4yFsVj?si=Kgoqi44iRi6xs7RW7j8gEA"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:0Os0o1zAzszqNfbg4yFsVj"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Che Lingo"
+             },
+             "uri": "spotify:artist:0xNKgWtSixAqcwJLM2c8ez"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e027fbe9aa87f060c7c8b579920",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048517fbe9aa87f060c7c8b579920",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2737fbe9aa87f060c7c8b579920",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2023
+          },
+          "id": "6RczPeRY0vh0DyyuTYrP5Q",
+          "name": "Coming Up For Air",
+          "sharingInfo": {
+           "shareId": "y0VoYbo-R3OssJsCNgOOpQ",
+           "shareUrl": "https://open.spotify.com/album/6RczPeRY0vh0DyyuTYrP5Q?si=y0VoYbo-R3OssJsCNgOOpQ"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:6RczPeRY0vh0DyyuTYrP5Q"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Various Artists"
+             },
+             "uri": "spotify:artist:0LyfQWJT6nXafLPZqxe9Of"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02dedfe5c2b23bd89ab846aa72",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851dedfe5c2b23bd89ab846aa72",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273dedfe5c2b23bd89ab846aa72",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1994
+          },
+          "id": "5Cv6yseFYZp3tmZXEIxAoM",
+          "name": "Highlander - Best Of Fantasy",
+          "sharingInfo": {
+           "shareId": "BXVphP6vSbiw36fRLo7JWw",
+           "shareUrl": "https://open.spotify.com/album/5Cv6yseFYZp3tmZXEIxAoM?si=BXVphP6vSbiw36fRLo7JWw"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:5Cv6yseFYZp3tmZXEIxAoM"
+         }
+        ],
+        "totalCount": 1
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "artists": {
+           "items": [
+            {
+             "profile": {
+              "name": "Various Artists"
+             },
+             "uri": "spotify:artist:0LyfQWJT6nXafLPZqxe9Of"
+            }
+           ]
+          },
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02c1c97df3bd78a99066840cd5",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851c1c97df3bd78a99066840cd5",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273c1c97df3bd78a99066840cd5",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2003
+          },
+          "id": "19pyW0tSihvcvYX3oeNklw",
+          "name": "Rock Da Pop",
+          "sharingInfo": {
+           "shareId": "zDMJbaJFRaygklvOlUYyqw",
+           "shareUrl": "https://open.spotify.com/album/19pyW0tSihvcvYX3oeNklw?si=zDMJbaJFRaygklvOlUYyqw"
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:19pyW0tSihvcvYX3oeNklw"
+         }
+        ],
+        "totalCount": 1
+       }
+      }
+     ],
+     "totalCount": 36
+    },
+    "discoveredOnV2": {
+     "items": [
+      {
+       "data": {
+        "__typename": "GenericError"
+       }
+      },
+      {
+       "data": {
+        "__typename": "GenericError"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "This is Queen. The essential tracks, all in one playlist.",
+        "id": "37i9dQZF1DZ06evO0ENBD2",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/thisisv3/1dfeR4HaWDbWqFHLkxsg1d/en",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "This Is Queen",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DZ06evO0ENBD2"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The finest from one of the world's greatest bands - visit the official site and store for news, merch and more at <a href=\"http://www.queenonline.com\">www.queenonline.com</a>",
+        "id": "595cY5S1FpMpiEIWsk6dG7",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84a4bf7249acf410c30882541c",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Queen: Greatest Hits",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Queen"
+         }
+        },
+        "uri": "spotify:playlist:595cY5S1FpMpiEIWsk6dG7"
+       }
+      },
+      {
+       "data": {
+        "__typename": "GenericError"
+       }
+      },
+      {
+       "data": {
+        "__typename": "GenericError"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The best of the 1980s classics from Michael Jackson, Journey, Whitney Houston, TOTO, AC/DC, Kenny Loggins, Billy Joel, Survivor + more. Stranger Things, Top Gun, Back to the Future.",
+        "id": "19PgP2QSGPcm6Ve8VhbtpG",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84e3c1a976c360ce69cfa89594",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "80s HITS | TOP 100 SONGS ",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Filtr US"
+         }
+        },
+        "uri": "spotify:playlist:19PgP2QSGPcm6Ve8VhbtpG"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Música en Inglés y Español 80s &amp; 90s. Las míticas de los años 80 y 90 en el panorama internacional y nacional. Canciones de los 80s y 90s que nunca pasarán de moda.  Clasicos de los 80 + 90",
+        "id": "1Q0etBj016AQwekqom3Ypk",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84d58f67f833226da15ef3c0d5",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "TEMAZOS 80s y 90s  📻   La Mejor Música de los Años 80 y 90 ",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Filtr Éxitos"
+         }
+        },
+        "uri": "spotify:playlist:1Q0etBj016AQwekqom3Ypk"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Rock legends & epic songs that continue to inspire generations. Cover: Ramones",
+        "id": "37i9dQZF1DWXRqgorJj26U",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://i.scdn.co/image/ab67706f00000002694bf33281695f3b7542a09a",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Rock Classics",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DWXRqgorJj26U"
+       }
+      },
+      {
+       "data": {
+        "__typename": "GenericError"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "💚This is QUEEN radio all the best of songs discography todas las canciones hits de discografia Les musicas los di van z od av af die der del dei til lui last new single TLC ☝️",
+        "id": "12UYYKqEYV2MO5OjAJteNp",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84caf0c82cf9dd347ac7da53ba",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "QUEEN MIX💚EXITOS/LO MEJOR",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "🟢 ROCK PLAYLISTS 🟢"
+         }
+        },
+        "uri": "spotify:playlist:12UYYKqEYV2MO5OjAJteNp"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "This is the QUEEN mix of all songs playlist discography. don&#x27;t stop me now bohemian rhapsody Classics songs Lo mejor de exitos.🤘As melhores musicas dos todas las canciones  and similar bands. x",
+        "id": "6l2sPFg1xZUfSR6RSMppEI",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da843170f6c9049319b29b739a30",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "BEST OF QUEEN🎸HITS",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Best of 🟠 ROCK n METAL 🟢"
+         }
+        },
+        "uri": "spotify:playlist:6l2sPFg1xZUfSR6RSMppEI"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The biggest songs of the 1980s. Cover: Madonna",
+        "id": "37i9dQZF1DX4UtSsGT1Sbe",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://i.scdn.co/image/ab67706f00000002fb8e01f2c022ab1a32e2c5a0",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "All Out 80s",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DX4UtSsGT1Sbe"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "",
+        "id": "4d7g5e0CIhDZJZXaLkBEHM",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": 640,
+             "url": "https://mosaic.scdn.co/640/ab67616d00001e0222463d6939fec9e17b2a6235ab67616d00001e024637341b9f507521afa9a778ab67616d00001e0251f311c2fb06ad2789e3ff91ab67616d00001e026c03b757ece416e014feef5e",
+             "width": 640
+            },
+            {
+             "height": 300,
+             "url": "https://mosaic.scdn.co/300/ab67616d00001e0222463d6939fec9e17b2a6235ab67616d00001e024637341b9f507521afa9a778ab67616d00001e0251f311c2fb06ad2789e3ff91ab67616d00001e026c03b757ece416e014feef5e",
+             "width": 300
+            },
+            {
+             "height": 60,
+             "url": "https://mosaic.scdn.co/60/ab67616d00001e0222463d6939fec9e17b2a6235ab67616d00001e024637341b9f507521afa9a778ab67616d00001e0251f311c2fb06ad2789e3ff91ab67616d00001e026c03b757ece416e014feef5e",
+             "width": 60
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Clásicos del Rock en Inglés (60s, 70s, 80s, 90s y 00s)",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "x"
+         }
+        },
+        "uri": "spotify:playlist:4d7g5e0CIhDZJZXaLkBEHM"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "",
+        "id": "0g398EfR77dLY0jRTN0FhB",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84579f6e7323216680dcb4077d",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Queen – Greatest Hits I II & III",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "21koahy4s4g44gudplknfowhi"
+         }
+        },
+        "uri": "spotify:playlist:0g398EfR77dLY0jRTN0FhB"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "A soundtrack to fuel your good mood while on the road.",
+        "id": "37i9dQZF1DX9wC1KY45plY",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://i.scdn.co/image/ab67706f0000000250c7781777a3b0662fce5426",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Classic Road Trip Songs",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DX9wC1KY45plY"
+       }
+      },
+      {
+       "data": {
+        "__typename": "GenericError"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Queen as melhores - O Melhor | The Best Of | This Is | Sucessos | Greatest Hits | TOPS | Bohemian Rhapsody | Crazy Little Thing Called Love | Don&#x27;t Stop Me Now | Underpressure | Another One Bites The Dust | I Want To Break Free | Love Of My Life | We Will Rock You | We Are The Champions | Radio GaGa",
+        "id": "3DB3F8XV4XPgBiha9fxx7M",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84943cdff1bf14fad55eda013d",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Queen as melhores",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "@Playlist.Rock"
+         }
+        },
+        "uri": "spotify:playlist:3DB3F8XV4XPgBiha9fxx7M"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The best of the 1970s classics, from &quot;September&quot; Earth Wind &amp; Fire, AC/DC, Michael Jackson, Bruce Springsteen, Hall &amp; Oates, Billy Joel, Paul Simon, Bill Withers &amp; more!",
+        "id": "5KmBulox9POMt9hOt3VV1x",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da849d37dd221d8aa1b35c545057",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "70s HITS | TOP 100 SONGS",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Filtr US"
+         }
+        },
+        "uri": "spotify:playlist:5KmBulox9POMt9hOt3VV1x"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "This is a playlist of what I think is the top 20 best songs made by Queen.",
+        "id": "2t2qZOIwNWudCWIEmrkvfC",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da84f99dc4604667786f3bb76ff0",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Queen - Top 20 Best",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "rutsusann"
+         }
+        },
+        "uri": "spotify:playlist:2t2qZOIwNWudCWIEmrkvfC"
+       }
+      }
+     ],
+     "totalCount": 100
+    },
+    "featuringV2": {
+     "items": [
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "This is Queen. The essential tracks, all in one playlist.",
+        "id": "37i9dQZF1DZ06evO0ENBD2",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/thisisv3/1dfeR4HaWDbWqFHLkxsg1d/en",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "This Is Queen",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DZ06evO0ENBD2"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "With AC/DC, Bon Jovi, The Rolling Stones and more",
+        "id": "37i9dQZF1E4vJDb4S6o3EK",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://pickasso.spotifycdn.com/image/ab67c0de0000deef/dt/v1/img/radio/artist/1dfeR4HaWDbWqFHLkxsg1d/en",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Queen Radio",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1E4vJDb4S6o3EK"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Rock legends & epic songs that continue to inspire generations. Cover: Ramones",
+        "id": "37i9dQZF1DWXRqgorJj26U",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://i.scdn.co/image/ab67706f00000002694bf33281695f3b7542a09a",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Rock Classics",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DWXRqgorJj26U"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The biggest party hits of the 1980s.",
+        "id": "37i9dQZF1DX6xnkAwJX7tn",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://i.scdn.co/image/ab67706f000000028e6b9a53f7c37210a843ab0a",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "80s Party",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DX6xnkAwJX7tn"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The biggest party hits of the 1970s. Cover: The Jacksons.",
+        "id": "37i9dQZF1DX1Hya1sRqqxI",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://i.scdn.co/image/ab67706f0000000299d235163c535ef381ba2cf5",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "70s Party",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DX1Hya1sRqqxI"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "Éxitos de todos los tiempos musicalizan tu cocina.",
+        "id": "37i9dQZF1DWZypDDXfbyfI",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://i.scdn.co/image/ab67706f000000027271b7ad5ea0adef59f2b2c7",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "Cocina de clásicos",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DWZypDDXfbyfI"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "The biggest songs of the 1970s. Remembering Dolly Parton",
+        "id": "37i9dQZF1DWTJ7xPn4vNaz",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://i.scdn.co/image/ab67706f00000002b219d39e3016528e17fe935f",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "All Out 70s",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz"
+       }
+      },
+      {
+       "data": {
+        "__typename": "Playlist",
+        "description": "These songs rocked the 80s.",
+        "id": "37i9dQZF1DX1spT6G94GFC",
+        "images": {
+         "items": [
+          {
+           "sources": [
+            {
+             "height": null,
+             "url": "https://i.scdn.co/image/ab67706f0000000239fb869a9405c47438369779",
+             "width": null
+            }
+           ]
+          }
+         ],
+         "totalCount": 1
+        },
+        "name": "80s Rock Anthems",
+        "ownerV2": {
+         "data": {
+          "__typename": "User",
+          "name": "Spotify"
+         }
+        },
+        "uri": "spotify:playlist:37i9dQZF1DX1spT6G94GFC"
+       }
+      }
+     ],
+     "totalCount": 8
+    },
+    "relatedArtists": {
+     "items": [
+      {
+       "id": "5NGO30tJxFlKixkPSgXcFE",
+       "profile": {
+        "name": "The Police"
+       },
+       "uri": "spotify:artist:5NGO30tJxFlKixkPSgXcFE",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 410,
+           "url": "https://i.scdn.co/image/72fe2cadb69ab59960ae3dbd29618549e4432699",
+           "width": 640
+          },
+          {
+           "height": 41,
+           "url": "https://i.scdn.co/image/e7a6ecc704516f1bdc3ff67e96fb51435ebeebbb",
+           "width": 64
+          },
+          {
+           "height": 128,
+           "url": "https://i.scdn.co/image/078c3d6784e53ca7490fb63218560d20100a18f2",
+           "width": 200
+          },
+          {
+           "height": 641,
+           "url": "https://i.scdn.co/image/1f73a61faca2942cd5ea29c2143184db8645f0b3",
+           "width": 1000
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "7Ey4PD4MYsKc5I2dolUwbH",
+       "profile": {
+        "name": "Aerosmith"
+       },
+       "uri": "spotify:artist:7Ey4PD4MYsKc5I2dolUwbH",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5ebc5733401b4689b2064458e7d",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f178c5733401b4689b2064458e7d",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab67616100005174c5733401b4689b2064458e7d",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "3qm84nBOXUEQ2vnTfUTTFC",
+       "profile": {
+        "name": "Guns N' Roses"
+       },
+       "uri": "spotify:artist:3qm84nBOXUEQ2vnTfUTTFC",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb50defaf9fc059a1efc541f4c",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f17850defaf9fc059a1efc541f4c",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab6761610000517450defaf9fc059a1efc541f4c",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "3PhoLpVuITZKcymswpck5b",
+       "profile": {
+        "name": "Elton John"
+       },
+       "uri": "spotify:artist:3PhoLpVuITZKcymswpck5b",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb0dc33a1c53bb58a84b45d6a7",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f1780dc33a1c53bb58a84b45d6a7",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab676161000051740dc33a1c53bb58a84b45d6a7",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "58lV9VcRSjABbAbfWS6skp",
+       "profile": {
+        "name": "Bon Jovi"
+       },
+       "uri": "spotify:artist:58lV9VcRSjABbAbfWS6skp",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb52aade0d2ea19706074da4b9",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f17852aade0d2ea19706074da4b9",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab6761610000517452aade0d2ea19706074da4b9",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "6zFYqv1mOsgBRQbae3JJ9e",
+       "profile": {
+        "name": "Billy Joel"
+       },
+       "uri": "spotify:artist:6zFYqv1mOsgBRQbae3JJ9e",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5ebb34057d59275011032ef8bc8",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f178b34057d59275011032ef8bc8",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab67616100005174b34057d59275011032ef8bc8",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "0PFtn5NtBbbUNbU9EAmIWF",
+       "profile": {
+        "name": "TOTO"
+       },
+       "uri": "spotify:artist:0PFtn5NtBbbUNbU9EAmIWF",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eba59a5bcab211f964fe9bfb06",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f178a59a5bcab211f964fe9bfb06",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab67616100005174a59a5bcab211f964fe9bfb06",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "711MCceyCBcFnzjGY4Q7Un",
+       "profile": {
+        "name": "AC/DC"
+       },
+       "uri": "spotify:artist:711MCceyCBcFnzjGY4Q7Un",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5ebc4c77549095c86acb4e77b37",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f178c4c77549095c86acb4e77b37",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab67616100005174c4c77549095c86acb4e77b37",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "0LcJLqbBmaGUft1e9Mm8HV",
+       "profile": {
+        "name": "ABBA"
+       },
+       "uri": "spotify:artist:0LcJLqbBmaGUft1e9Mm8HV",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb144d2bd5d672fcb0f38be00b",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f178144d2bd5d672fcb0f38be00b",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab67616100005174144d2bd5d672fcb0f38be00b",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "07XSN3sPlIlB2L2XNcTwJw",
+       "profile": {
+        "name": "KISS"
+       },
+       "uri": "spotify:artist:07XSN3sPlIlB2L2XNcTwJw",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5ebd8205a492a79bfe4b34c567a",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f178d8205a492a79bfe4b34c567a",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab67616100005174d8205a492a79bfe4b34c567a",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "2jzc5TC5TVFLXQlBNiIUzE",
+       "profile": {
+        "name": "a-ha"
+       },
+       "uri": "spotify:artist:2jzc5TC5TVFLXQlBNiIUzE",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb294570977675d1359d07ce2c",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f178294570977675d1359d07ce2c",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab67616100005174294570977675d1359d07ce2c",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "0rvjqX7ttXeg3mTy8Xscbt",
+       "profile": {
+        "name": "Journey"
+       },
+       "uri": "spotify:artist:0rvjqX7ttXeg3mTy8Xscbt",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5ebe848dfb35ea4969099662dfd",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f178e848dfb35ea4969099662dfd",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab67616100005174e848dfb35ea4969099662dfd",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "1LZEQNv7sE11VDY3SdxQeN",
+       "profile": {
+        "name": "Bee Gees"
+       },
+       "uri": "spotify:artist:1LZEQNv7sE11VDY3SdxQeN",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 469,
+           "url": "https://i.scdn.co/image/1ea4795e17ffa658d7ad23095d58997a278179a9",
+           "width": 640
+          },
+          {
+           "height": 47,
+           "url": "https://i.scdn.co/image/c707552215757c7f2dc6071e32d487a3c7b28d3f",
+           "width": 64
+          },
+          {
+           "height": 147,
+           "url": "https://i.scdn.co/image/1f363042bdd59e0f80cb7b9cac1b312f9389b019",
+           "width": 200
+          },
+          {
+           "height": 733,
+           "url": "https://i.scdn.co/image/1d5a05673975ba0c378cd280344e000b0b865620",
+           "width": 1000
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "4tpUmLEVLCGFr93o8hFFIB",
+       "profile": {
+        "name": "Blondie"
+       },
+       "uri": "spotify:artist:4tpUmLEVLCGFr93o8hFFIB",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb67dc4da82c968767d994f3c3",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f17867dc4da82c968767d994f3c3",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab6761610000517467dc4da82c968767d994f3c3",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "0SD4eZCN4Kr0wQk56hCdh2",
+       "profile": {
+        "name": "Bonnie Tyler"
+       },
+       "uri": "spotify:artist:0SD4eZCN4Kr0wQk56hCdh2",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb4ca4431cf4b1227eba8288d8",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f1784ca4431cf4b1227eba8288d8",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab676161000051744ca4431cf4b1227eba8288d8",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "26bcq2nyj5GB7uRr558iQg",
+       "profile": {
+        "name": "Survivor"
+       },
+       "uri": "spotify:artist:26bcq2nyj5GB7uRr558iQg",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 414,
+           "url": "https://i.scdn.co/image/4b664fd84812a6275249447cae61ca048721c52d",
+           "width": 640
+          },
+          {
+           "height": 41,
+           "url": "https://i.scdn.co/image/b138642e8356c9b946e82cfc79d0b047fa886a02",
+           "width": 63
+          },
+          {
+           "height": 129,
+           "url": "https://i.scdn.co/image/7b6f21db11d15febd6e8079f0f2b147ccac427b4",
+           "width": 199
+          },
+          {
+           "height": 647,
+           "url": "https://i.scdn.co/image/da30acd2c9d0f32f5f5a2d69f32c2d30335466b5",
+           "width": 1000
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "3WrFJ7ztbogyGnTHbHJFl2",
+       "profile": {
+        "name": "The Beatles"
+       },
+       "uri": "spotify:artist:3WrFJ7ztbogyGnTHbHJFl2",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb357fdaf56c64a36a36741538",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f178357fdaf56c64a36a36741538",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab67616100005174357fdaf56c64a36a36741538",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "4bthk9UfsYUYdcFyqxmSUU",
+       "profile": {
+        "name": "Tears For Fears"
+       },
+       "uri": "spotify:artist:4bthk9UfsYUYdcFyqxmSUU",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb1e63dea1bded4ae1d53b5c9a",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f1781e63dea1bded4ae1d53b5c9a",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab676161000051741e63dea1bded4ae1d53b5c9a",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "2hl0xAkS2AIRAu23TVMBG1",
+       "profile": {
+        "name": "Kansas"
+       },
+       "uri": "spotify:artist:2hl0xAkS2AIRAu23TVMBG1",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb4a5ee495f61402a3959b2d9c",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f1784a5ee495f61402a3959b2d9c",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab676161000051744a5ee495f61402a3959b2d9c",
+           "width": 320
+          }
+         ]
+        }
+       }
+      },
+      {
+       "id": "7jefIIksOi1EazgRTfW2Pk",
+       "profile": {
+        "name": "Electric Light Orchestra"
+       },
+       "uri": "spotify:artist:7jefIIksOi1EazgRTfW2Pk",
+       "visuals": {
+        "avatarImage": {
+         "sources": [
+          {
+           "height": 640,
+           "url": "https://i.scdn.co/image/ab6761610000e5eb6ee22df4403027ae525ced87",
+           "width": 640
+          },
+          {
+           "height": 160,
+           "url": "https://i.scdn.co/image/ab6761610000f1786ee22df4403027ae525ced87",
+           "width": 160
+          },
+          {
+           "height": 320,
+           "url": "https://i.scdn.co/image/ab676161000051746ee22df4403027ae525ced87",
+           "width": 320
+          }
+         ]
+        }
+       }
+      }
+     ],
+     "totalCount": 40
+    }
+   },
+   "relatedMusicVideos": {
+    "__typename": "MusicVideosPage",
+    "items": [],
+    "pagingInfo": {
+     "nextOffset": null
+    },
+    "totalCount": 0
+   },
+   "saved": true,
+   "sharingInfo": {
+    "shareId": "qGx47dsLSfK47GLZ2XI52w",
+    "shareUrl": "https://open.spotify.com/artist/1dfeR4HaWDbWqFHLkxsg1d?si=qGx47dsLSfK47GLZ2XI52w"
+   },
+   "stats": {
+    "followers": 58691539,
+    "monthlyListeners": 51691719,
+    "topCities": {
+     "items": [
+      {
+       "city": "Mexico City",
+       "country": "MX",
+       "numberOfListeners": 1075446,
+       "region": "CMX"
+      },
+      {
+       "city": "São Paulo",
+       "country": "BR",
+       "numberOfListeners": 792218,
+       "region": "SP"
+      },
+      {
+       "city": "London",
+       "country": "GB",
+       "numberOfListeners": 744720,
+       "region": "ENG"
+      },
+      {
+       "city": "Santiago",
+       "country": "CL",
+       "numberOfListeners": 732545,
+       "region": "RM"
+      },
+      {
+       "city": "Sydney",
+       "country": "AU",
+       "numberOfListeners": 571058,
+       "region": "NSW"
+      }
+     ]
+    },
+    "worldRank": 63
+   },
+   "unmappedMusicVideosV2": {
+    "items": [],
+    "pagingInfo": {
+     "nextOffset": null
+    },
+    "totalCount": 0
+   },
+   "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d",
+   "visualIdentity": {
+    "wideFullBleedImage": {
+     "__typename": "VisualIdentityImage",
+     "extractedColorSet": {
+      "encoreBaseSetTextColor": {
+       "alpha": 255,
+       "blue": 147,
+       "green": 162,
+       "red": 255
+      },
+      "highContrast": {
+       "backgroundBase": {
+        "alpha": 255,
+        "blue": 24,
+        "green": 32,
+        "red": 152
+       },
+       "backgroundTintedBase": {
+        "alpha": 255,
+        "blue": 0,
+        "green": 0,
+        "red": 95
+       },
+       "textBase": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textBrightAccent": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textSubdued": {
+        "alpha": 255,
+        "blue": 177,
+        "green": 190,
+        "red": 255
+       }
+      },
+      "higherContrast": {
+       "backgroundBase": {
+        "alpha": 255,
+        "blue": 0,
+        "green": 0,
+        "red": 101
+       },
+       "backgroundTintedBase": {
+        "alpha": 255,
+        "blue": 41,
+        "green": 52,
+        "red": 147
+       },
+       "textBase": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textBrightAccent": {
+        "alpha": 255,
+        "blue": 96,
+        "green": 215,
+        "red": 30
+       },
+       "textSubdued": {
+        "alpha": 255,
+        "blue": 177,
+        "green": 190,
+        "red": 255
+       }
+      },
+      "minContrast": {
+       "backgroundBase": {
+        "alpha": 255,
+        "blue": 24,
+        "green": 32,
+        "red": 152
+       },
+       "backgroundTintedBase": {
+        "alpha": 255,
+        "blue": 0,
+        "green": 0,
+        "red": 95
+       },
+       "textBase": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textBrightAccent": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textSubdued": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       }
+      }
+     }
+    }
+   },
+   "visuals": {
+    "avatarImage": {
+     "extractedColors": {
+      "colorRaw": {
+       "hex": "#981810"
+      }
+     },
+     "sources": [
+      {
+       "height": 640,
+       "url": "https://i.scdn.co/image/ab6761610000e5eb73e4d22612ac8d944b5789b4",
+       "width": 640
+      },
+      {
+       "height": 160,
+       "url": "https://i.scdn.co/image/ab6761610000f17873e4d22612ac8d944b5789b4",
+       "width": 160
+      },
+      {
+       "height": 320,
+       "url": "https://i.scdn.co/image/ab6761610000517473e4d22612ac8d944b5789b4",
+       "width": 320
+      }
+     ]
+    },
+    "gallery": {
+     "items": [
+      {
+       "sources": [
+        {
+         "height": 640,
+         "url": "https://i.scdn.co/image/ab6772690000dd2247488c35a509d42072c23976",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 516,
+         "url": "https://i.scdn.co/image/af2b8e57f6d7b5d43a616bd1e27ba552cd8bfd42",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 635,
+         "url": "https://i.scdn.co/image/bc4e2b6a9abcef513b17c3bc7576a42e4f4947a3",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 640,
+         "url": "https://i.scdn.co/image/0a9a9051e050f4bc77b349bd01e36382cd56f64f",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 793,
+         "url": "https://i.scdn.co/image/1040c93d84c6d98c1dd2687ef84cb97607e1d800",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 642,
+         "url": "https://i.scdn.co/image/c3c7dede97db2ba7b864a16ba63c437cb3226785",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 640,
+         "url": "https://i.scdn.co/image/2c4ce2b16639912b2f33fd2caf2d94ea4823ae98",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 646,
+         "url": "https://i.scdn.co/image/d745db5fdb16dd40fe6801b5962c99f68f228839",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 844,
+         "url": "https://i.scdn.co/image/403b3eab1e79bcaea331cd74d983783725f69432",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 395,
+         "url": "https://i.scdn.co/image/90fca3f8723d944ef1ac5e9c1042a86722930d1a",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 465,
+         "url": "https://i.scdn.co/image/3c3ba2467da5b41540abc34a8af7c8c92ce1cfcb",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 798,
+         "url": "https://i.scdn.co/image/98e3d0ab15bb84902b0981124ab15e6a2a94c4f4",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 883,
+         "url": "https://i.scdn.co/image/63813527f7129334ddcc9fa98cf77f6eebdc3fb2",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 450,
+         "url": "https://i.scdn.co/image/8b4c139a6b753864e63276b9623c4a00c36c51c5",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 773,
+         "url": "https://i.scdn.co/image/62e8d2b6b6ed41f33ddc6dd90b60b58a2cfd4501",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 439,
+         "url": "https://i.scdn.co/image/c52d06ba6fbff49f97a568ccb61f00abd7c7258b",
+         "width": 639
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 431,
+         "url": "https://i.scdn.co/image/353562b75e5e5951aef6e375139139bdf3691a7d",
+         "width": 639
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 399,
+         "url": "https://i.scdn.co/image/71ed67b3a9c44c9db72c90adb2a97470f61d9dd6",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 389,
+         "url": "https://i.scdn.co/image/cf60836814d7ccb4dcf0b5f0ad040d01edf27499",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 334,
+         "url": "https://i.scdn.co/image/3d5605216a79d4e1cec0c5d31a176839eb0f11f5",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 421,
+         "url": "https://i.scdn.co/image/f9e47548a77812dd8acbf7146584b42157028d96",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 437,
+         "url": "https://i.scdn.co/image/048f0efdd278e42e961a853872878928acc11a53",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 501,
+         "url": "https://i.scdn.co/image/5a1ce8b1c5f7ef8cdbd412dbf295e40da04bc223",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 887,
+         "url": "https://i.scdn.co/image/4f219f73f5175273d006d777cc915b5d57ff7a78",
+         "width": 640
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "height": 480,
+         "url": "https://i.scdn.co/image/92ff0ba3b3762fdafaa8a9f4a39033c9c461a822",
+         "width": 640
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "watchFeedEntrypoint": null
+  }
+ }
+}

@@ -1,0 +1,48 @@
+[package]
+name = "velo"
+description = "Velo desktop app: Qt Quick UI (cxx-qt) and the native Windows 11 frameless window."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "velo"
+path = "src/main.rs"
+
+[dependencies]
+cxx = "1.0.95"
+cxx-qt = "0.10"
+cxx-qt-lib = { version = "0.10", features = ["qt_gui", "qt_qml"] }
+# The `Velo` QML module (all of qml/, fonts and icons), built by crates/app/ui/build.rs.
+velo-ui = { path = "ui" }
+# Backend crates (no Qt): the bridge only talks to them through velo-domain traits.
+velo-domain = { workspace = true }
+velo-spotify = { path = "../spotify" }
+velo-nowplaying = { path = "../nowplaying" }
+velo-services = { path = "../services" }
+velo-viz = { path = "../viz" }
+velo-player = { path = "../player" }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }
+url = { workspace = true }
+getrandom = "0.3"
+directories = { workspace = true }
+image = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows-core = "0.62"
+windows = { workspace = true, features = ["Win32_Devices_FunctionDiscovery", "Win32_Foundation", "Win32_Media_Audio", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_Variant", "Win32_UI_Shell_PropertiesSystem"] }
+
+[build-dependencies]
+cxx-qt-build = { version = "0.10", features = ["link_qt_object_files"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
+tempfile = "3"
+wiremock = "0.6"

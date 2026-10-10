@@ -1,0 +1,12 @@
+{
+  "_note": "Synthetic documented track-credits-view JSON shape. The leader will replace this with a real, whitelisted probe capture.",
+  "trackName": "Fixture Track",
+  "roleCredits": [
+    {"roleTitle": "Performed By", "artists": [{"name": "Fixture Artist", "uri": "spotify:artist:fixtureArtist", "subroles": ["Vocals"]}]},
+    {"roleTitle": "Written By", "artists": [{"name": "Fixture Writer", "uri": "", "subroles": ["Composer", "Lyricist"]}]},
+    {"roleTitle": "Produced By", "artists": [{"name": "Fixture Producer", "uri": "", "subroles": ["Producer", "Vocal Producer"]}]},
+    {"roleTitle": "Mixed By", "artists": [{"name": "Fixture Engineer", "uri": "", "subroles": []}]},
+    {"roleTitle": "Additional Instruments", "artists": [{"name": "Fixture Musician", "uri": "", "subroles": ["Piano"]}]}
+  ],
+  "sourceNames": ["Fixture Label", "Fixture Publisher"]
+}

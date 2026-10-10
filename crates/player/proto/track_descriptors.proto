@@ -1,0 +1,22 @@
+// Contrato de librespot-protocol 0.8.0, proto/extension_descriptor_type.proto.
+// Conservar package, nombres, tipos y números para verificar Any.type_url.
+syntax = "proto3";
+package spotify.descriptorextension;
+message ExtensionDescriptor {
+    string text = 1;
+    float weight = 2;
+    repeated ExtensionDescriptorType types = 3;
+}
+message ExtensionDescriptorData {
+    repeated ExtensionDescriptor descriptors = 1;
+}
+enum ExtensionDescriptorType {
+    UNKNOWN = 0;
+    GENRE = 1;
+    MOOD = 2;
+    ACTIVITY = 3;
+    INSTRUMENT = 4;
+    TIME = 5;
+    ERA = 6;
+    AESTHETIC = 7;
+}
