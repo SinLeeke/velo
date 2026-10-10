@@ -3,7 +3,9 @@
 param(
     [string]$QtBin = 'C:\Qt\6.10.3\msvc2022_64\bin',
     # Opcional: un release ya enlazado. No cambia el Client ID de ese ejecutable.
-    [string]$ExecutablePath = ''
+    [string]$ExecutablePath = '',
+    # Opcional: generar también el instalador si Inno Setup 6 está disponible.
+    [switch]$Installer
 )
 
 Set-StrictMode -Version Latest
@@ -169,6 +171,26 @@ Para salir: pulsa tu avatar/nombre → Cerrar sesión (o en Ajustes → Cuenta).
             }
         } finally { $archive.Dispose() }
         Write-Host 'Listo: dist/Velo-win64.zip (sin archivo local, configuración ni tokens).'
+        if ($Installer) {
+            $isccCommand = Get-Command 'ISCC.exe' -CommandType Application -ErrorAction SilentlyContinue
+            $isccPath = if ($isccCommand) { $isccCommand.Source } else { $null }
+            foreach ($installRoot in @($env:LOCALAPPDATA, ${env:ProgramFiles(x86)}, $env:ProgramFiles)) {
+                if ($isccPath) { break }
+                if (!$installRoot) { continue }
+                $relativePath = if ($installRoot -eq $env:LOCALAPPDATA) { 'Programs\Inno Setup 6\ISCC.exe' } else { 'Inno Setup 6\ISCC.exe' }
+                $candidate = Join-Path $installRoot $relativePath
+                if (Test-Path -LiteralPath $candidate -PathType Leaf -ErrorAction SilentlyContinue) { $isccPath = $candidate }
+            }
+            if ($isccPath) {
+                Invoke-CheckedNative $isccPath @((Join-Path $repoRoot 'installer\velo.iss'))
+                if (!(Test-Path -LiteralPath (Join-Path $distDir 'Velo-Setup-0.9.1.exe'))) {
+                    throw 'ISCC terminó sin generar dist/Velo-Setup-0.9.1.exe.'
+                }
+                Write-Host 'Listo: dist/Velo-Setup-0.9.1.exe.'
+            } else {
+                Write-Warning 'No se encontró un ISCC.exe accesible (Inno Setup 6); el zip portable está listo, pero no se generó el instalador.'
+            }
+        }
     } finally { Pop-Location }
 } finally {
     $env:Path = $oldPath
