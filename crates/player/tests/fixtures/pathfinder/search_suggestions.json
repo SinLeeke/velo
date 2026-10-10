@@ -1,0 +1,1168 @@
+{
+ "data": {
+  "searchV2": {
+   "__typename": "SearchResultV2",
+   "query": "quee",
+   "topResultsV2": {
+    "itemsV2": [
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "SearchAutoCompleteEntity",
+       "data": {
+        "text": "queen",
+        "uri": "spotify:search:queen"
+       }
+      }
+     },
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "SearchAutoCompleteEntity",
+       "data": {
+        "text": "queens of the stone age",
+        "uri": "spotify:search:queens+of+the+stone+age"
+       }
+      }
+     },
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "SearchAutoCompleteEntity",
+       "data": {
+        "text": "queen st",
+        "uri": "spotify:search:queen+st"
+       }
+      }
+     },
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "SearchAutoCompleteEntity",
+       "data": {
+        "text": "queen: greatest hits",
+        "uri": "spotify:search:queen%3A+greatest+hits"
+       }
+      }
+     },
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "ArtistResponseWrapper",
+       "data": {
+        "__typename": "Artist",
+        "onPlatformReputationTrait": {
+         "verification": {
+          "aiPersona": null,
+          "isVerified": true
+         }
+        },
+        "profile": {
+         "name": "Queen"
+        },
+        "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d",
+        "visualIdentity": {
+         "squareCoverImage": {
+          "__typename": "VisualIdentityImage",
+          "extractedColorSet": {
+           "encoreBaseSetTextColor": {
+            "alpha": 255,
+            "blue": 146,
+            "green": 162,
+            "red": 255
+           },
+           "highContrast": {
+            "backgroundBase": {
+             "alpha": 255,
+             "blue": 16,
+             "green": 24,
+             "red": 152
+            },
+            "backgroundTintedBase": {
+             "alpha": 255,
+             "blue": 0,
+             "green": 0,
+             "red": 92
+            },
+            "textBase": {
+             "alpha": 255,
+             "blue": 255,
+             "green": 255,
+             "red": 255
+            },
+            "textBrightAccent": {
+             "alpha": 255,
+             "blue": 255,
+             "green": 255,
+             "red": 255
+            },
+            "textSubdued": {
+             "alpha": 255,
+             "blue": 177,
+             "green": 190,
+             "red": 255
+            }
+           },
+           "higherContrast": {
+            "backgroundBase": {
+             "alpha": 255,
+             "blue": 0,
+             "green": 0,
+             "red": 101
+            },
+            "backgroundTintedBase": {
+             "alpha": 255,
+             "blue": 41,
+             "green": 52,
+             "red": 147
+            },
+            "textBase": {
+             "alpha": 255,
+             "blue": 255,
+             "green": 255,
+             "red": 255
+            },
+            "textBrightAccent": {
+             "alpha": 255,
+             "blue": 96,
+             "green": 215,
+             "red": 30
+            },
+            "textSubdued": {
+             "alpha": 255,
+             "blue": 177,
+             "green": 190,
+             "red": 255
+            }
+           },
+           "minContrast": {
+            "backgroundBase": {
+             "alpha": 255,
+             "blue": 16,
+             "green": 24,
+             "red": 152
+            },
+            "backgroundTintedBase": {
+             "alpha": 255,
+             "blue": 0,
+             "green": 0,
+             "red": 92
+            },
+            "textBase": {
+             "alpha": 255,
+             "blue": 255,
+             "green": 255,
+             "red": 255
+            },
+            "textBrightAccent": {
+             "alpha": 255,
+             "blue": 255,
+             "green": 255,
+             "red": 255
+            },
+            "textSubdued": {
+             "alpha": 255,
+             "blue": 255,
+             "green": 255,
+             "red": 255
+            }
+           }
+          }
+         }
+        },
+        "visuals": {
+         "avatarImage": {
+          "extractedColors": {
+           "colorDark": {
+            "hex": "#981810",
+            "isFallback": false
+           }
+          },
+          "sources": [
+           {
+            "height": 640,
+            "url": "https://i.scdn.co/image/ab6761610000e5eb73e4d22612ac8d944b5789b4",
+            "width": 640
+           },
+           {
+            "height": 160,
+            "url": "https://i.scdn.co/image/ab6761610000f17873e4d22612ac8d944b5789b4",
+            "width": 160
+           },
+           {
+            "height": 320,
+            "url": "https://i.scdn.co/image/ab6761610000517473e4d22612ac8d944b5789b4",
+            "width": 320
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "TrackResponseWrapper",
+       "data": {
+        "__typename": "Track",
+        "albumOfTrack": {
+         "coverArt": {
+          "extractedColors": {
+           "colorDark": {
+            "hex": "#777777",
+            "isFallback": false
+           }
+          },
+          "sources": [
+           {
+            "height": 300,
+            "url": "https://i.scdn.co/image/ab67616d00001e02fdab4a163ab9f6db72c952ee",
+            "width": 300
+           },
+           {
+            "height": 64,
+            "url": "https://i.scdn.co/image/ab67616d00004851fdab4a163ab9f6db72c952ee",
+            "width": 64
+           },
+           {
+            "height": 640,
+            "url": "https://i.scdn.co/image/ab67616d0000b273fdab4a163ab9f6db72c952ee",
+            "width": 640
+           }
+          ]
+         },
+         "id": "1TkbyIkf6GSrO5e7gWS4AM",
+         "name": "A Night At The Opera",
+         "uri": "spotify:album:1TkbyIkf6GSrO5e7gWS4AM",
+         "visualIdentity": {
+          "squareCoverImage": {
+           "__typename": "VisualIdentityImage",
+           "extractedColorSet": {
+            "encoreBaseSetTextColor": {
+             "alpha": 255,
+             "blue": 224,
+             "green": 224,
+             "red": 224
+            },
+            "highContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 83,
+              "green": 83,
+              "red": 83
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 51,
+              "green": 51,
+              "red": 51
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 205,
+              "green": 205,
+              "red": 205
+             }
+            },
+            "higherContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 53,
+              "green": 53,
+              "red": 53
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 86,
+              "green": 86,
+              "red": 86
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 96,
+              "green": 215,
+              "red": 30
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 205,
+              "green": 205,
+              "red": 205
+             }
+            },
+            "minContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 153,
+              "green": 153,
+              "red": 153
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 128,
+              "green": 128,
+              "red": 128
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             }
+            }
+           }
+          }
+         }
+        },
+        "artists": {
+         "items": [
+          {
+           "onPlatformReputationTrait": {
+            "verification": {
+             "aiPersona": null
+            }
+           },
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "audioAssociations": {
+          "totalCount": 0
+         },
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "duration": {
+         "totalMilliseconds": 355154
+        },
+        "id": "2JiDi0qAXsPwhPqA2qaKGt",
+        "trackMediaType": "AUDIO",
+        "name": "Bohemian Rhapsody",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "uri": "spotify:track:2JiDi0qAXsPwhPqA2qaKGt",
+        "visualIdentity": {
+         "sixteenByNineCoverImage": null
+        }
+       }
+      }
+     },
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "TrackResponseWrapper",
+       "data": {
+        "__typename": "Track",
+        "albumOfTrack": {
+         "coverArt": {
+          "extractedColors": {
+           "colorDark": {
+            "hex": "#777777",
+            "isFallback": false
+           }
+          },
+          "sources": [
+           {
+            "height": 300,
+            "url": "https://i.scdn.co/image/ab67616d00001e023aa2d125c28475c322ac831e",
+            "width": 300
+           },
+           {
+            "height": 64,
+            "url": "https://i.scdn.co/image/ab67616d000048513aa2d125c28475c322ac831e",
+            "width": 64
+           },
+           {
+            "height": 640,
+            "url": "https://i.scdn.co/image/ab67616d0000b2733aa2d125c28475c322ac831e",
+            "width": 640
+           }
+          ]
+         },
+         "id": "32wu2qeQwVA6D8z1nWk68Q",
+         "name": "A Day At The Races (Deluxe Edition)",
+         "uri": "spotify:album:32wu2qeQwVA6D8z1nWk68Q",
+         "visualIdentity": {
+          "squareCoverImage": {
+           "__typename": "VisualIdentityImage",
+           "extractedColorSet": {
+            "encoreBaseSetTextColor": {
+             "alpha": 255,
+             "blue": 224,
+             "green": 224,
+             "red": 224
+            },
+            "highContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 83,
+              "green": 83,
+              "red": 83
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 51,
+              "green": 51,
+              "red": 51
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 205,
+              "green": 205,
+              "red": 205
+             }
+            },
+            "higherContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 53,
+              "green": 53,
+              "red": 53
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 86,
+              "green": 86,
+              "red": 86
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 96,
+              "green": 215,
+              "red": 30
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 205,
+              "green": 205,
+              "red": 205
+             }
+            },
+            "minContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 153,
+              "green": 153,
+              "red": 153
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 128,
+              "green": 128,
+              "red": 128
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             }
+            }
+           }
+          }
+         }
+        },
+        "artists": {
+         "items": [
+          {
+           "onPlatformReputationTrait": {
+            "verification": {
+             "aiPersona": null
+            }
+           },
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "audioAssociations": {
+          "totalCount": 0
+         },
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "duration": {
+         "totalMilliseconds": 172990
+        },
+        "id": "1FXeqJV13iMAeOohMpwJnA",
+        "trackMediaType": "AUDIO",
+        "name": "Good Old-Fashioned Lover Boy",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "uri": "spotify:track:1FXeqJV13iMAeOohMpwJnA",
+        "visualIdentity": {
+         "sixteenByNineCoverImage": null
+        }
+       }
+      }
+     },
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "TrackResponseWrapper",
+       "data": {
+        "__typename": "Track",
+        "albumOfTrack": {
+         "coverArt": {
+          "extractedColors": {
+           "colorDark": {
+            "hex": "#D83028",
+            "isFallback": false
+           }
+          },
+          "sources": [
+           {
+            "height": 300,
+            "url": "https://i.scdn.co/image/ab67616d00001e024d09b89253dcbbe1d944e198",
+            "width": 300
+           },
+           {
+            "height": 64,
+            "url": "https://i.scdn.co/image/ab67616d000048514d09b89253dcbbe1d944e198",
+            "width": 64
+           },
+           {
+            "height": 640,
+            "url": "https://i.scdn.co/image/ab67616d0000b2734d09b89253dcbbe1d944e198",
+            "width": 640
+           }
+          ]
+         },
+         "id": "6uj0z3xtvQ8Y0UWevdQlIx",
+         "name": "Sheer Heart Attack",
+         "uri": "spotify:album:6uj0z3xtvQ8Y0UWevdQlIx",
+         "visualIdentity": {
+          "squareCoverImage": {
+           "__typename": "VisualIdentityImage",
+           "extractedColorSet": {
+            "encoreBaseSetTextColor": {
+             "alpha": 255,
+             "blue": 148,
+             "green": 162,
+             "red": 255
+            },
+            "highContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 0,
+              "green": 0,
+              "red": 159
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 0,
+              "green": 0,
+              "red": 97
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 178,
+              "green": 190,
+              "red": 255
+             }
+            },
+            "higherContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 0,
+              "green": 0,
+              "red": 101
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 41,
+              "green": 52,
+              "red": 147
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 96,
+              "green": 215,
+              "red": 30
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 178,
+              "green": 190,
+              "red": 255
+             }
+            },
+            "minContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 40,
+              "green": 48,
+              "red": 216
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 0,
+              "green": 0,
+              "red": 173
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             }
+            }
+           }
+          }
+         }
+        },
+        "artists": {
+         "items": [
+          {
+           "onPlatformReputationTrait": {
+            "verification": {
+             "aiPersona": null
+            }
+           },
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "audioAssociations": {
+          "totalCount": 0
+         },
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "duration": {
+         "totalMilliseconds": 180866
+        },
+        "id": "46L5lm1Xzwr0TExEMpObtq",
+        "trackMediaType": "AUDIO",
+        "name": "Killer Queen",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "uri": "spotify:track:46L5lm1Xzwr0TExEMpObtq",
+        "visualIdentity": {
+         "sixteenByNineCoverImage": null
+        }
+       }
+      }
+     },
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "TrackResponseWrapper",
+       "data": {
+        "__typename": "Track",
+        "albumOfTrack": {
+         "coverArt": {
+          "extractedColors": {
+           "colorDark": {
+            "hex": "#007FB1",
+            "isFallback": false
+           }
+          },
+          "sources": [
+           {
+            "height": 300,
+            "url": "https://i.scdn.co/image/ab67616d00001e0244c0a9843fac69db4d56d14e",
+            "width": 300
+           },
+           {
+            "height": 64,
+            "url": "https://i.scdn.co/image/ab67616d0000485144c0a9843fac69db4d56d14e",
+            "width": 64
+           },
+           {
+            "height": 640,
+            "url": "https://i.scdn.co/image/ab67616d0000b27344c0a9843fac69db4d56d14e",
+            "width": 640
+           }
+          ]
+         },
+         "id": "4pFJdTvK6zNyWOO3W1hkGd",
+         "name": "Hot Space",
+         "uri": "spotify:album:4pFJdTvK6zNyWOO3W1hkGd",
+         "visualIdentity": {
+          "squareCoverImage": {
+           "__typename": "VisualIdentityImage",
+           "extractedColorSet": {
+            "encoreBaseSetTextColor": {
+             "alpha": 255,
+             "blue": 255,
+             "green": 197,
+             "red": 86
+            },
+            "highContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 132,
+              "green": 86,
+              "red": 0
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 93,
+              "green": 50,
+              "red": 0
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 215,
+              "red": 137
+             }
+            },
+            "higherContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 96,
+              "green": 53,
+              "red": 0
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 134,
+              "green": 88,
+              "red": 41
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 96,
+              "green": 215,
+              "red": 30
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 215,
+              "red": 137
+             }
+            },
+            "minContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 200,
+              "green": 144,
+              "red": 0
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 170,
+              "green": 116,
+              "red": 0
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             }
+            }
+           }
+          }
+         }
+        },
+        "artists": {
+         "items": [
+          {
+           "onPlatformReputationTrait": {
+            "verification": {
+             "aiPersona": null
+            }
+           },
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          },
+          {
+           "onPlatformReputationTrait": {
+            "verification": {
+             "aiPersona": null
+            }
+           },
+           "profile": {
+            "name": "David Bowie"
+           },
+           "uri": "spotify:artist:0oSGxfWSnnOXhD2fKuz2Gy"
+          }
+         ]
+        },
+        "associationsV3": {
+         "audioAssociations": {
+          "totalCount": 0
+         },
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "duration": {
+         "totalMilliseconds": 248440
+        },
+        "id": "2nrG5UtAcqXbYttu7MXP1p",
+        "trackMediaType": "AUDIO",
+        "name": "Under Pressure (feat. David Bowie)",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "uri": "spotify:track:2nrG5UtAcqXbYttu7MXP1p",
+        "visualIdentity": {
+         "sixteenByNineCoverImage": null
+        }
+       }
+      }
+     },
+     {
+      "__typename": "TopResultHit",
+      "item": {
+       "__typename": "TrackResponseWrapper",
+       "data": {
+        "__typename": "Track",
+        "albumOfTrack": {
+         "coverArt": {
+          "extractedColors": {
+           "colorDark": {
+            "hex": "#777777",
+            "isFallback": false
+           }
+          },
+          "sources": [
+           {
+            "height": 300,
+            "url": "https://i.scdn.co/image/ab67616d00001e023aa2d125c28475c322ac831e",
+            "width": 300
+           },
+           {
+            "height": 64,
+            "url": "https://i.scdn.co/image/ab67616d000048513aa2d125c28475c322ac831e",
+            "width": 64
+           },
+           {
+            "height": 640,
+            "url": "https://i.scdn.co/image/ab67616d0000b2733aa2d125c28475c322ac831e",
+            "width": 640
+           }
+          ]
+         },
+         "id": "32wu2qeQwVA6D8z1nWk68Q",
+         "name": "A Day At The Races (Deluxe Edition)",
+         "uri": "spotify:album:32wu2qeQwVA6D8z1nWk68Q",
+         "visualIdentity": {
+          "squareCoverImage": {
+           "__typename": "VisualIdentityImage",
+           "extractedColorSet": {
+            "encoreBaseSetTextColor": {
+             "alpha": 255,
+             "blue": 224,
+             "green": 224,
+             "red": 224
+            },
+            "highContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 83,
+              "green": 83,
+              "red": 83
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 51,
+              "green": 51,
+              "red": 51
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 205,
+              "green": 205,
+              "red": 205
+             }
+            },
+            "higherContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 53,
+              "green": 53,
+              "red": 53
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 86,
+              "green": 86,
+              "red": 86
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 96,
+              "green": 215,
+              "red": 30
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 205,
+              "green": 205,
+              "red": 205
+             }
+            },
+            "minContrast": {
+             "backgroundBase": {
+              "alpha": 255,
+              "blue": 153,
+              "green": 153,
+              "red": 153
+             },
+             "backgroundTintedBase": {
+              "alpha": 255,
+              "blue": 128,
+              "green": 128,
+              "red": 128
+             },
+             "textBase": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textBrightAccent": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             },
+             "textSubdued": {
+              "alpha": 255,
+              "blue": 255,
+              "green": 255,
+              "red": 255
+             }
+            }
+           }
+          }
+         }
+        },
+        "artists": {
+         "items": [
+          {
+           "onPlatformReputationTrait": {
+            "verification": {
+             "aiPersona": null
+            }
+           },
+           "profile": {
+            "name": "Queen"
+           },
+           "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+          }
+         ]
+        },
+        "associationsV3": {
+         "audioAssociations": {
+          "totalCount": 0
+         },
+         "videoAssociations": {
+          "totalCount": 0
+         }
+        },
+        "contentRating": {
+         "label": "NONE"
+        },
+        "duration": {
+         "totalMilliseconds": 297017
+        },
+        "id": "18OMrZoyyZuVy06FttIFhq",
+        "trackMediaType": "AUDIO",
+        "name": "Somebody To Love",
+        "playability": {
+         "playable": true,
+         "reason": "PLAYABLE"
+        },
+        "uri": "spotify:track:18OMrZoyyZuVy06FttIFhq",
+        "visualIdentity": {
+         "sixteenByNineCoverImage": null
+        }
+       }
+      }
+     }
+    ]
+   }
+  }
+ },
+ "extensions": {
+  "requestIds": {
+   "/searchV2": {
+    "search-api": "e499fbc0-2265-e3a4-a760-d23bb008011c/40T7"
+   },
+   "/searchV2/topResultsV2": {
+    "search-api": "e499fbc0-2265-e3a4-a760-d23bb008011c/Dr2n"
+   }
+  }
+ }
+}

@@ -1,0 +1,1514 @@
+{
+ "data": {
+  "albumUnion": {
+   "__typename": "Album",
+   "copyright": {
+    "items": [
+     {
+      "text": "© 2018 Queen Productions Ltd, under exclusive licence to Universal International Music BV",
+      "type": "C"
+     },
+     {
+      "text": "This Compilation ℗ 2018 Queen Productions Ltd, under exclusive licence to Universal International Music BV",
+      "type": "P"
+     }
+    ],
+    "totalCount": 2
+   },
+   "courtesyLine": "A Virgin Records Release",
+   "date": {
+    "isoString": "2018-10-19T00:00:00Z",
+    "precision": "DAY"
+   },
+   "isPreRelease": false,
+   "label": "EMI",
+   "name": "Bohemian Rhapsody (The Original Soundtrack)",
+   "playability": {
+    "playable": true,
+    "reason": "PLAYABLE"
+   },
+   "preReleaseEndDateTime": null,
+   "saved": false,
+   "sharingInfo": {
+    "shareId": "Sgv_j1QgRDmuP5tPeYEegA",
+    "shareUrl": "https://open.spotify.com/album/6i6folBtxKV28WX3msQ4FE?si=Sgv_j1QgRDmuP5tPeYEegA"
+   },
+   "tracksV2": {
+    "items": [
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 25186
+       },
+       "name": "20th Century Fox Fanfare",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "385596",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:7yp7ZWtuIPHq9YeUw2kVGs"
+        }
+       },
+       "saved": false,
+       "trackNumber": 1,
+       "uri": "spotify:track:3YM9o7X3ar7Dm39zXadQSz"
+      },
+      "uid": "1733da1d05e679e19a04"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 295733
+       },
+       "name": "Somebody To Love",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "1181359389",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:18OMrZoyyZuVy06FttIFhq"
+        }
+       },
+       "saved": false,
+       "trackNumber": 2,
+       "uri": "spotify:track:5txoZyuAmtCfmDjUCEphWm"
+      },
+      "uid": "e0ba9e1c2106625edb14"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Smile"
+          },
+          "uri": "spotify:artist:1nTJnNxTJmEiZSYf8ScLQ8"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 196840
+       },
+       "name": "Doing All Right - ...Revisited",
+       "playability": {
+        "playable": false
+       },
+       "playcount": "60965096",
+       "relinkingInformation": null,
+       "saved": true,
+       "trackNumber": 3,
+       "uri": "spotify:track:69VE5kmfqG4dJSkrB1OtCI"
+      },
+      "uid": "177080499e28ea202aa6"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 236083
+       },
+       "name": "Keep Yourself Alive - Live At The Rainbow",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "64924602",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:5JtLSJuUNeR4Q7XPko3eWG"
+        }
+       },
+       "saved": false,
+       "trackNumber": 4,
+       "uri": "spotify:track:34pz8XUZRfw04lk4DPtwa7"
+      },
+      "uid": "69bca32517de5d73657b"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 179355
+       },
+       "name": "Killer Queen",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "1142210694",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:46L5lm1Xzwr0TExEMpObtq"
+        }
+       },
+       "saved": false,
+       "trackNumber": 5,
+       "uri": "spotify:track:300YN8ebGB90nDuzgz0f3O"
+      },
+      "uid": "4af45d82ef6c11c0fc69"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 277706
+       },
+       "name": "Fat Bottomed Girls - Live In Paris",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "62595191",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:6aBYYLT07kZnhynWOIqoRd"
+        }
+       },
+       "saved": false,
+       "trackNumber": 6,
+       "uri": "spotify:track:5Q2cQZKPvF4bpcjV3TCTss"
+      },
+      "uid": "5e6c93329afdfb32038f"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 354947
+       },
+       "name": "Bohemian Rhapsody",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "3294438998",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:2JiDi0qAXsPwhPqA2qaKGt"
+        }
+       },
+       "saved": true,
+       "trackNumber": 7,
+       "uri": "spotify:track:3z8h0TU7ReDPLIbEnYhWZb"
+      },
+      "uid": "ae8a942520acc17dfd4f"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 265981
+       },
+       "name": "Now I'm Here - Live At The Hammersmith Odeon",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "48098956",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:5RCGnHbxUAK1FUF7YlpyT4"
+        }
+       },
+       "saved": false,
+       "trackNumber": 8,
+       "uri": "spotify:track:4ysz5yttr3rpRkvyVMLlRB"
+      },
+      "uid": "34e477f4d2a45be6238c"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 163342
+       },
+       "name": "Crazy Little Thing Called Love",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "1276530762",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:7uON6DWIjXgmLQIfGsWXpV"
+        }
+       },
+       "saved": false,
+       "trackNumber": 9,
+       "uri": "spotify:track:1F9NVicWfNQA5ki8WmEtk8"
+      },
+      "uid": "c42e2950c67d51832875"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 268703
+       },
+       "name": "Love Of My Life - Live At Rock In Rio",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "90541083",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:5NOeRWdPboRePk2EJwHitt"
+        }
+       },
+       "saved": false,
+       "trackNumber": 10,
+       "uri": "spotify:track:6Am82YdURCRXRvoVUObzzG"
+      },
+      "uid": "4ec0fc17ba404d4309af"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 129093
+       },
+       "name": "We Will Rock You - Movie Mix",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "75509747",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:5vhyTt9y0sw3wu0fmBujXg"
+        }
+       },
+       "saved": false,
+       "trackNumber": 11,
+       "uri": "spotify:track:2t8UoPFVXCRZulscbwv0QL"
+      },
+      "uid": "09506839ef37ef5eb2bd"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 214640
+       },
+       "name": "Another One Bites The Dust",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "2540741747",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:1KPuohcXPmJYQfdyg9zKmR"
+        }
+       },
+       "saved": false,
+       "trackNumber": 12,
+       "uri": "spotify:track:2k1yPYf9WGA4LiqcLVwtzn"
+      },
+      "uid": "f2c6c30ff8aa15604248"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 223080
+       },
+       "name": "I Want To Break Free",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "422268040",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:5lmMeytpSOBTzFYRS32fwA"
+        }
+       },
+       "saved": false,
+       "trackNumber": 13,
+       "uri": "spotify:track:7iAqvWLgZzXvH38lA06QZg"
+      },
+      "uid": "e4e9b7f503d6f9be25a0"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         },
+         {
+          "profile": {
+           "name": "David Bowie"
+          },
+          "uri": "spotify:artist:0oSGxfWSnnOXhD2fKuz2Gy"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 244484
+       },
+       "name": "Under Pressure",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "2282980552",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:2nrG5UtAcqXbYttu7MXP1p"
+        }
+       },
+       "saved": false,
+       "trackNumber": 14,
+       "uri": "spotify:track:6suU8oBlW4O2pg88tOXgHo"
+      },
+      "uid": "dccf134fb5b829cf500a"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 314488
+       },
+       "name": "Who Wants To Live Forever",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "108510508",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:3kLZptMCccE21dytQ8bvcv"
+        }
+       },
+       "saved": false,
+       "trackNumber": 15,
+       "uri": "spotify:track:77X4MKKCVpGSHsaErgCLzT"
+      },
+      "uid": "4207af7aa3e25e5ada77"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 147840
+       },
+       "name": "Bohemian Rhapsody - Live Aid",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "87908566",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:0iL5gfXRAPHHMho1MSzZjK"
+        }
+       },
+       "saved": false,
+       "trackNumber": 16,
+       "uri": "spotify:track:7xHATAMD7ezTZGYsNAMr5R"
+      },
+      "uid": "d7402c3b0a90ef019b7e"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 245680
+       },
+       "name": "Radio Ga Ga - Live Aid",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "210803250",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:0ng0si11RnlaCl5y8UKTWg"
+        }
+       },
+       "saved": false,
+       "trackNumber": 17,
+       "uri": "spotify:track:0YwBZKT8JE4U5TwmYE9BV9"
+      },
+      "uid": "945f0ebdf6f5dcffc690"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 41454
+       },
+       "name": "Ay-Oh - Live Aid",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "107736506",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:6vSlOsSEWF6IA3kXJj16jF"
+        }
+       },
+       "saved": false,
+       "trackNumber": 18,
+       "uri": "spotify:track:6Fl9MoM9BDk6vwbHqBBZeK"
+      },
+      "uid": "3a260513e18b185d41b9"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 243531
+       },
+       "name": "Hammer To Fall - Live Aid",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "100554162",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:1SwtxQAPWm1X3HYJm3U14m"
+        }
+       },
+       "saved": false,
+       "trackNumber": 19,
+       "uri": "spotify:track:5ekobRVHvm435Eipr1StAg"
+      },
+      "uid": "aa3ae803652bcc448d45"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 237025
+       },
+       "name": "We Are The Champions - Live Aid",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "134118541",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:3QjYCAzQfNFDIL6kSMpPcw"
+        }
+       },
+       "saved": false,
+       "trackNumber": 20,
+       "uri": "spotify:track:4XaG9IpCXklOcuau1sIrUX"
+      },
+      "uid": "b07ee2f2dc3a5fad9836"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 217824
+       },
+       "name": "Don't Stop Me Now - ...Revisited",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "206509552",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:2JmZGZMlDu90ngd74T05Ue"
+        }
+       },
+       "saved": false,
+       "trackNumber": 21,
+       "uri": "spotify:track:3INsYP1Y8GG4qJvBsKCdXC"
+      },
+      "uid": "a5516a789f4eef927431"
+     },
+     {
+      "track": {
+       "artists": {
+        "items": [
+         {
+          "profile": {
+           "name": "Queen"
+          },
+          "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d"
+         }
+        ]
+       },
+       "associationsV3": {
+        "videoAssociations": {
+         "totalCount": 0
+        }
+       },
+       "contentRating": {
+        "label": "NONE"
+       },
+       "discNumber": 1,
+       "duration": {
+        "totalMilliseconds": 271611
+       },
+       "name": "The Show Must Go On",
+       "playability": {
+        "playable": true
+       },
+       "playcount": "558752443",
+       "relinkingInformation": {
+        "linkedTrack": {
+         "__typename": "Track",
+         "uri": "spotify:track:4GHk8YtewHGbk6HsVJ0mcT"
+        }
+       },
+       "saved": false,
+       "trackNumber": 22,
+       "uri": "spotify:track:5WZDLZVCvY1rEyNir6k8Pg"
+      },
+      "uid": "5b13d60e7e0d6fce0f68"
+     }
+    ],
+    "totalCount": 22
+   },
+   "type": "COMPILATION",
+   "uri": "spotify:album:6i6folBtxKV28WX3msQ4FE",
+   "visualIdentity": {
+    "squareCoverImage": {
+     "__typename": "VisualIdentityImage",
+     "extractedColorSet": {
+      "encoreBaseSetTextColor": {
+       "alpha": 255,
+       "blue": 228,
+       "green": 152,
+       "red": 255
+      },
+      "highContrast": {
+       "backgroundBase": {
+        "alpha": 255,
+        "blue": 114,
+        "green": 30,
+        "red": 143
+       },
+       "backgroundTintedBase": {
+        "alpha": 255,
+        "blue": 69,
+        "green": 0,
+        "red": 91
+       },
+       "textBase": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textBrightAccent": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textSubdued": {
+        "alpha": 255,
+        "blue": 229,
+        "green": 184,
+        "red": 255
+       }
+      },
+      "higherContrast": {
+       "backgroundBase": {
+        "alpha": 255,
+        "blue": 72,
+        "green": 0,
+        "red": 95
+       },
+       "backgroundTintedBase": {
+        "alpha": 255,
+        "blue": 111,
+        "green": 50,
+        "red": 139
+       },
+       "textBase": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textBrightAccent": {
+        "alpha": 255,
+        "blue": 96,
+        "green": 215,
+        "red": 30
+       },
+       "textSubdued": {
+        "alpha": 255,
+        "blue": 229,
+        "green": 184,
+        "red": 255
+       }
+      },
+      "minContrast": {
+       "backgroundBase": {
+        "alpha": 255,
+        "blue": 136,
+        "green": 56,
+        "red": 168
+       },
+       "backgroundTintedBase": {
+        "alpha": 255,
+        "blue": 102,
+        "green": 12,
+        "red": 130
+       },
+       "textBase": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textBrightAccent": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       },
+       "textSubdued": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+       }
+      }
+     }
+    }
+   },
+   "watchFeedEntrypoint": null,
+   "artists": {
+    "items": [
+     {
+      "id": "1dfeR4HaWDbWqFHLkxsg1d",
+      "profile": {
+       "name": "Queen"
+      },
+      "sharingInfo": {
+       "shareUrl": "https://open.spotify.com/artist/1dfeR4HaWDbWqFHLkxsg1d?si=o-DmFsc-QtqAB-H67Da8Ww"
+      },
+      "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d",
+      "visuals": {
+       "avatarImage": {
+        "sources": [
+         {
+          "height": 640,
+          "url": "https://i.scdn.co/image/ab6761610000e5eb73e4d22612ac8d944b5789b4",
+          "width": 640
+         },
+         {
+          "height": 160,
+          "url": "https://i.scdn.co/image/ab6761610000f17873e4d22612ac8d944b5789b4",
+          "width": 160
+         },
+         {
+          "height": 320,
+          "url": "https://i.scdn.co/image/ab6761610000517473e4d22612ac8d944b5789b4",
+          "width": 320
+         }
+        ]
+       }
+      }
+     }
+    ],
+    "totalCount": 1
+   },
+   "coverArt": {
+    "extractedColors": {
+     "colorDark": {
+      "hex": "#A83888"
+     },
+     "colorLight": {
+      "hex": "#C542A0"
+     },
+     "colorRaw": {
+      "hex": "#A83888"
+     }
+    },
+    "sources": [
+     {
+      "height": 300,
+      "url": "https://i.scdn.co/image/ab67616d00001e02e8b066f70c206551210d902b",
+      "width": 300
+     },
+     {
+      "height": 64,
+      "url": "https://i.scdn.co/image/ab67616d00004851e8b066f70c206551210d902b",
+      "width": 64
+     },
+     {
+      "height": 640,
+      "url": "https://i.scdn.co/image/ab67616d0000b273e8b066f70c206551210d902b",
+      "width": 640
+     }
+    ]
+   },
+   "discs": {
+    "items": [
+     {
+      "number": 1,
+      "tracks": {
+       "totalCount": 22
+      }
+     }
+    ],
+    "totalCount": 1
+   },
+   "releases": {
+    "items": [],
+    "totalCount": 0
+   },
+   "moreAlbumsByArtist": {
+    "items": [
+     {
+      "discography": {
+       "popularReleasesAlbums": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02a4e6eac83c0fe38bf682f643",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851a4e6eac83c0fe38bf682f643",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273a4e6eac83c0fe38bf682f643",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1980
+          },
+          "id": "6l8tOdUItDC01Qmb91Lo8W",
+          "name": "The Game",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "XgB22i5oQ9-AvuIELmZhLw",
+           "shareUrl": "https://open.spotify.com/album/6l8tOdUItDC01Qmb91Lo8W?si=XgB22i5oQ9-AvuIELmZhLw"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:6l8tOdUItDC01Qmb91Lo8W"
+         },
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e026c03b757ece416e014feef5e",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048516c03b757ece416e014feef5e",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2736c03b757ece416e014feef5e",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1978
+          },
+          "id": "1yzF0wUwJFgtkkXmKNe5BE",
+          "name": "Jazz",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "Fos-J6w4Sgmdsd_XwqsF6w",
+           "shareUrl": "https://open.spotify.com/album/1yzF0wUwJFgtkkXmKNe5BE?si=Fos-J6w4Sgmdsd_XwqsF6w"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:1yzF0wUwJFgtkkXmKNe5BE"
+         },
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02fdab4a163ab9f6db72c952ee",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851fdab4a163ab9f6db72c952ee",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273fdab4a163ab9f6db72c952ee",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1975
+          },
+          "id": "1TkbyIkf6GSrO5e7gWS4AM",
+          "name": "A Night At The Opera",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "ewfLWjSNQdyAndDEbotFCw",
+           "shareUrl": "https://open.spotify.com/album/1TkbyIkf6GSrO5e7gWS4AM?si=ewfLWjSNQdyAndDEbotFCw"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:1TkbyIkf6GSrO5e7gWS4AM"
+         },
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0244c0a9843fac69db4d56d14e",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485144c0a9843fac69db4d56d14e",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27344c0a9843fac69db4d56d14e",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1982
+          },
+          "id": "4pFJdTvK6zNyWOO3W1hkGd",
+          "name": "Hot Space",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "UaJEIA7ySUm282ubVqNgOA",
+           "shareUrl": "https://open.spotify.com/album/4pFJdTvK6zNyWOO3W1hkGd?si=UaJEIA7ySUm282ubVqNgOA"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:4pFJdTvK6zNyWOO3W1hkGd"
+         },
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e026c74d509c1581f8e0a35391b",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048516c74d509c1581f8e0a35391b",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2736c74d509c1581f8e0a35391b",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1977
+          },
+          "id": "7hq6mnrJ7CWbemk6B3H8PJ",
+          "name": "News Of The World",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "WEkvSorCSM-ZBC_Q2su_Jg",
+           "shareUrl": "https://open.spotify.com/album/7hq6mnrJ7CWbemk6B3H8PJ?si=WEkvSorCSM-ZBC_Q2su_Jg"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:7hq6mnrJ7CWbemk6B3H8PJ"
+         },
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020cb397024b7a1185c070d65a",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510cb397024b7a1185c070d65a",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730cb397024b7a1185c070d65a",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 2018
+          },
+          "id": "69RZR37WFgxDDdfxAPz9pk",
+          "name": "Bohemian Rhapsody (The Original Soundtrack)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "gSVhQTJoQFWeWZ90TedIGQ",
+           "shareUrl": "https://open.spotify.com/album/69RZR37WFgxDDdfxAPz9pk?si=gSVhQTJoQFWeWZ90TedIGQ"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:69RZR37WFgxDDdfxAPz9pk"
+         },
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e023aa2d125c28475c322ac831e",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048513aa2d125c28475c322ac831e",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2733aa2d125c28475c322ac831e",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1976
+          },
+          "id": "32wu2qeQwVA6D8z1nWk68Q",
+          "name": "A Day At The Races (Deluxe Edition)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "VVJbHPfITCGepxeShoCatQ",
+           "shareUrl": "https://open.spotify.com/album/32wu2qeQwVA6D8z1nWk68Q?si=VVJbHPfITCGepxeShoCatQ"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:32wu2qeQwVA6D8z1nWk68Q"
+         },
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020b6e29757c37fb90e4587f65",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510b6e29757c37fb90e4587f65",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730b6e29757c37fb90e4587f65",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1984
+          },
+          "id": "6IXmSdbq5OmlR08vvcnHoC",
+          "name": "The Works",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "x5Ie9ypNTkGImALoa5Hk8A",
+           "shareUrl": "https://open.spotify.com/album/6IXmSdbq5OmlR08vvcnHoC?si=x5Ie9ypNTkGImALoa5Hk8A"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:6IXmSdbq5OmlR08vvcnHoC"
+         },
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e024d09b89253dcbbe1d944e198",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048514d09b89253dcbbe1d944e198",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2734d09b89253dcbbe1d944e198",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1974
+          },
+          "id": "6uj0z3xtvQ8Y0UWevdQlIx",
+          "name": "Sheer Heart Attack",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "TgRWIqSzR-KfF_zZxza8ZA",
+           "shareUrl": "https://open.spotify.com/album/6uj0z3xtvQ8Y0UWevdQlIx?si=TgRWIqSzR-KfF_zZxza8ZA"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:6uj0z3xtvQ8Y0UWevdQlIx"
+         },
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020f0b764e930d478c16b8d2cc",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510f0b764e930d478c16b8d2cc",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730f0b764e930d478c16b8d2cc",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "year": 1991
+          },
+          "id": "0CNfnxzURJtjzeyELCBfvj",
+          "name": "Innuendo",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "3PC983SNTWGwUMaei77tnw",
+           "shareUrl": "https://open.spotify.com/album/0CNfnxzURJtjzeyELCBfvj?si=3PC983SNTWGwUMaei77tnw"
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:0CNfnxzURJtjzeyELCBfvj"
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  },
+  "meV2": {
+   "ianaTimezoneId": "America/Santiago"
+  }
+ }
+}
