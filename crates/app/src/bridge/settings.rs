@@ -28,6 +28,7 @@ pub mod ffi {
         #[qproperty(bool, tint_ui)]
         #[qproperty(bool, show_lyrics)]
         #[qproperty(bool, close_to_tray)]
+        #[qproperty(bool, check_updates)]
         #[qproperty(QString, window_controls)]
         #[qproperty(i32, cache_size_mb, READ, NOTIFY)]
         #[qproperty(i32, cover_cache_limit_mb)]
@@ -115,6 +116,7 @@ pub struct SettingsRust {
     tint_ui: bool,
     show_lyrics: bool,
     close_to_tray: bool,
+    check_updates: bool,
     window_controls: QString,
     cache_size_mb: i32,
     cover_cache_limit_mb: i32,
@@ -169,6 +171,7 @@ impl Default for SettingsRust {
             tint_ui: s.background.tint_ui,
             show_lyrics: s.playback.show_lyrics,
             close_to_tray: prefs.extras().close_to_tray,
+            check_updates: s.updates.check_updates,
             window_controls: QString::from(prefs.extras().window_controls.as_str()),
             cache_size_mb: 0,
             cover_cache_limit_mb: s.cache.cover_limit_mb as i32,
@@ -224,6 +227,7 @@ fn persist(q: &ffi::Settings) {
     }
     let prefs = &core().env.prefs;
     prefs.update_settings(|s| {
+        s.updates.check_updates = *q.check_updates();
         s.appearance.theme = q.theme().to_string();
         s.appearance.language = q.language().to_string();
         s.appearance.reduce_motion = *q.reduce_motion();
@@ -285,6 +289,9 @@ fn persist_and_sync(mut q: Pin<&mut ffi::Settings>) {
 
 impl cxx_qt::Initialize for ffi::Settings {
     fn initialize(mut self: Pin<&mut Self>) {
+        self.as_mut()
+            .on_check_updates_changed(|q| persist(&q))
+            .release();
         self.as_mut()
             .on_player_bar_visualizer_changed(persist_and_sync)
             .release();
@@ -399,6 +406,7 @@ impl cxx_qt::Initialize for ffi::Settings {
 impl ffi::Settings {
     fn sync_preferences(mut self: Pin<&mut Self>, s: &velo_domain::Settings) {
         self.as_mut().rust_mut().refreshing = true;
+        self.as_mut().set_check_updates(s.updates.check_updates);
         self.as_mut().set_cover_blur(s.background.cover_blur);
         self.as_mut().set_drift(s.background.drift);
         self.as_mut().set_tint_ui(s.background.tint_ui);

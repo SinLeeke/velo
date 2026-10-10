@@ -30,6 +30,7 @@ mod library;
 mod lyrics;
 mod player;
 mod settings;
+mod updater;
 mod visualizer;
 
 #[cxx_qt::bridge]

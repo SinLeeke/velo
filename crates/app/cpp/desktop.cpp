@@ -343,3 +343,9 @@ extern "C" void velo_desktop_update(const char *tooltip, bool playing, bool cont
     Q_UNUSED(tooltip); Q_UNUSED(playing); Q_UNUSED(controllable); Q_UNUSED(liked); Q_UNUSED(likeAvailable);
 #endif
 }
+
+// U1: leave the event loop normally so Rust main flushes preferences and stops audio.
+extern "C" void velo_desktop_quit()
+{
+    qGuiApp->quit();
+}
