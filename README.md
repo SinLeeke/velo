@@ -26,6 +26,25 @@ El release 0.9.1 trae dos opciones desde la página de Releases del repositorio:
 
 Inicia sesión con tu cuenta de Spotify en la pantalla de inicio. Puedes cerrar sesión desde Ajustes.
 
+## Actualizaciones
+
+Al abrir Velo se busca una versión estable nueva en GitHub Releases. Si no hay novedades,
+no aparece ningún aviso. «Actualizar» descarga y verifica el instalador, cierra Velo,
+instala la versión y vuelve a abrirla. «Más tarde» oculta el aviso hasta el próximo inicio.
+En la versión portable, «Actualizar» abre la publicación para descargarla manualmente.
+En Ajustes › Acerca de puedes desactivar la búsqueda al iniciar o pulsar «Buscar ahora».
+
+## Publicar una versión
+
+1. Sube `version` en `[workspace.package]` de `Cargo.toml` a `X.Y.Z`.
+2. Compila con `cargo build --release -p velo -j 4`.
+3. Ejecuta `scripts\package.ps1 -Installer` (requiere Inno Setup 6).
+4. Crea el release estable con tag `vX.Y.Z` y sube los tres archivos de `dist` con estos
+   nombres exactos: `Velo-Setup-X.Y.Z.exe`, `Velo-win64.zip` y `SHA256SUMS.txt`.
+
+El script toma la versión del workspace y genera sumas SHA-256 con líneas
+`<sha256 hex>  <nombre de archivo>`. Sin la suma del instalador, Velo rechaza la instalación.
+
 ## Compilar desde el código
 
 Necesitas Rust estable con la toolchain MSVC, las herramientas C++ de Visual Studio y Qt 6.10.3 `msvc2022_64`. `scripts\setup-windows.ps1`, ejecutado en PowerShell como administrador, prepara las herramientas en un PC nuevo.

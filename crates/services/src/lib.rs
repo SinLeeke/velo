@@ -4,6 +4,7 @@ pub mod history;
 mod lyrics;
 mod palette;
 mod settings;
+pub mod update;
 
 pub use covers::{CoverArtCache, DEFAULT_CACHE_MAX_BYTES};
 pub use lyrics::{LrcLibClient, parse_lrc};

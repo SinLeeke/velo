@@ -5,6 +5,7 @@ singleton Visualizer 1.0 Visualizer.qml
 singleton Library 1.0 Library.qml
 singleton Account 1.0 Account.qml
 singleton Settings 1.0 Settings.qml
+singleton Updater 1.0 Updater.qml
 singleton Actions 1.0 Actions.qml
 singleton Desktop 1.0 Desktop.qml
 singleton History 1.0 History.qml

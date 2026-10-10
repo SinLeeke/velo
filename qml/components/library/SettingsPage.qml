@@ -1786,7 +1786,7 @@ FocusScope {
                     Card {
                         SettingRow {
                             label: Qt.application.name
-                            hint: Qt.application.version !== "" ? qsTr("Versión %1").arg(Qt.application.version) : ""
+                            hint: qsTr("Versión %1").arg(Backend.Updater.currentVersion)
                             keywords: qsTr("versión logo")
                             Image {
                                 source: Qt.resolvedUrl("../../icons/velo.svg")
@@ -1796,6 +1796,45 @@ FocusScope {
                                 asynchronous: true
                                 Accessible.ignored: true
                             }
+                        }
+                        SettingRow {
+                            label: qsTr("Buscar actualizaciones al iniciar")
+                            keywords: qsTr("actualizar versión automática")
+                            VToggle {
+                                objectName: "settingsCheckUpdates"
+                                checked: Backend.Settings.checkUpdates
+                                onToggled: Backend.Settings.checkUpdates = checked
+                            }
+                        }
+                        SettingRow {
+                            id: updateCheckRow
+                            objectName: "settingsUpdateResult"
+                            property bool waiting: false
+                            property string result: ""
+                            label: qsTr("Actualizaciones")
+                            keywords: qsTr("actualizar versión buscar")
+                            hint: waiting ? qsTr("Buscando…") : result
+                            hintColor: Backend.Updater.error !== "" ? Theme.danger : Theme.textTertiary
+                            Connections {
+                                target: Backend.Updater
+                                function onCheckFinished(newer) {
+                                    updateCheckRow.waiting = false
+                                    updateCheckRow.result = Backend.Updater.error !== "" ? Backend.Updater.error
+                                        : newer ? qsTr("Velo %1 disponible").arg(Backend.Updater.latestVersion)
+                                        : qsTr("Tienes la última versión")
+                                }
+                            }
+                            VButton {
+                                objectName: "settingsCheckNow"
+                                text: qsTr("Buscar ahora")
+                                enabled: !updateCheckRow.waiting && Backend.Updater.state !== "downloading" && Backend.Updater.state !== "ready"
+                                onClicked: { updateCheckRow.waiting = true; Backend.Updater.checkNow() }
+                            }
+                        }
+                        Note {
+                            visible: Backend.Updater.portable
+                            text: qsTr("Versión portable: descarga la nueva versión desde la página de la publicación.")
+                            color: Theme.textSecondary
                         }
                         Note { text: qsTr("Datos y reproducción vía Spotify."); color: Theme.textSecondary }
                         Note { text: qsTr("Letras sincronizadas de LRCLIB."); color: Theme.textSecondary }

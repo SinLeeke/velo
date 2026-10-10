@@ -496,6 +496,20 @@ pub struct Settings {
     pub library: LibrarySettings,
     pub proxy: ProxySettings,
     pub equalizer: EqualizerSettings,
+    pub updates: UpdateSettings,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct UpdateSettings {
+    pub check_updates: bool,
+}
+impl Default for UpdateSettings {
+    fn default() -> Self {
+        Self {
+            check_updates: true,
+        }
+    }
 }
 
 /// Limits in MiB. Audio storage contains only librespot's encrypted stream cache.

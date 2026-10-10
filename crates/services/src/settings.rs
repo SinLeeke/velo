@@ -239,6 +239,7 @@ mod tests {
         let store = TomlSettingsStore::with_path(&path).await.unwrap();
         let s = store.load();
         assert_eq!(s.appearance.theme, "dark");
+        assert!(s.updates.check_updates);
         assert_eq!(s.cache.audio_limit_mb, 1024);
         assert_eq!(
             s.library.pinned_uris,
@@ -262,6 +263,7 @@ mod tests {
         let path = dir.path().join("settings.toml");
         let store = TomlSettingsStore::with_path(&path).await.unwrap();
         let mut s = store.load();
+        s.updates.check_updates = false;
         s.visualizer.player_bar_mode = "bars".into();
         s.background.cover_blur = false;
         s.background.drift = false;

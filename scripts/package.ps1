@@ -15,6 +15,12 @@ $distDir = Join-Path $repoRoot 'dist'
 $stageDir = Join-Path $distDir '.Velo-staging'
 $packageDir = Join-Path $distDir 'Velo'
 $zipPath = Join-Path $distDir 'Velo-win64.zip'
+$workspaceToml = [IO.File]::ReadAllText((Join-Path $repoRoot 'Cargo.toml'))
+$versionMatch = [regex]::Match($workspaceToml, '(?ms)^\[workspace\.package\]\s*.*?^version\s*=\s*"(\d+\.\d+\.\d+)"')
+if (!$versionMatch.Success) { throw 'No se encontró la versión X.Y.Z del workspace.' }
+$veloVersion = $versionMatch.Groups[1].Value
+$setupPath = Join-Path $distDir "Velo-Setup-$veloVersion.exe"
+$sumsPath = Join-Path $distDir 'SHA256SUMS.txt'
 $deployQt = Join-Path $QtBin 'windeployqt.exe'
 
 # Windows PowerShell 5 convierte stderr de herramientas nativas en ErrorRecord al
@@ -78,7 +84,7 @@ try {
             $exePath = [IO.Path]::GetFullPath($ExecutablePath)
             Write-Host 'Usando el release indicado: debe haber sido compilado para distribución con la app compartida.'
         } else {
-            Invoke-CheckedNative 'cargo' @('build', '--release', '-p', 'velo')
+            Invoke-CheckedNative 'cargo' @('build', '--release', '-p', 'velo', '-j', '4')
             $metadataJson = Invoke-CheckedNative 'cargo' @('metadata', '--offline', '--format-version', '1', '--no-deps')
             $targetDir = ($metadataJson | ConvertFrom-Json).target_directory
             $exePath = Join-Path $targetDir 'release\velo.exe'
@@ -182,15 +188,23 @@ Para salir: pulsa tu avatar/nombre → Cerrar sesión (o en Ajustes → Cuenta).
                 if (Test-Path -LiteralPath $candidate -PathType Leaf -ErrorAction SilentlyContinue) { $isccPath = $candidate }
             }
             if ($isccPath) {
-                Invoke-CheckedNative $isccPath @((Join-Path $repoRoot 'installer\velo.iss'))
-                if (!(Test-Path -LiteralPath (Join-Path $distDir 'Velo-Setup-0.9.1.exe'))) {
-                    throw 'ISCC terminó sin generar dist/Velo-Setup-0.9.1.exe.'
+                Invoke-CheckedNative $isccPath @("/DVeloVersion=$veloVersion", (Join-Path $repoRoot 'installer\velo.iss'))
+                if (!(Test-Path -LiteralPath $setupPath)) {
+                    throw "ISCC terminó sin generar dist/Velo-Setup-$veloVersion.exe."
                 }
-                Write-Host 'Listo: dist/Velo-Setup-0.9.1.exe.'
+                Write-Host "Listo: dist/Velo-Setup-$veloVersion.exe."
             } else {
                 Write-Warning 'No se encontró un ISCC.exe accesible (Inno Setup 6); el zip portable está listo, pero no se generó el instalador.'
             }
         }
+        $checksumAssets = @($zipPath)
+        if ($Installer -and $isccPath) { $checksumAssets += $setupPath }
+        $sumLines = foreach ($asset in $checksumAssets) {
+            $hash = (Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $([IO.Path]::GetFileName($asset))"
+        }
+        [IO.File]::WriteAllText($sumsPath, ($sumLines -join "`n") + "`n", [Text.UTF8Encoding]::new($false))
+        Write-Host 'Listo: dist/SHA256SUMS.txt.'
     } finally { Pop-Location }
 } finally {
     $env:Path = $oldPath

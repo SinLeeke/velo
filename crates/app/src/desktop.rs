@@ -27,6 +27,7 @@ pub extern "C" fn velo_desktop_action(action: u32) {
 unsafe extern "C" {
     fn velo_desktop_install(engine: *mut std::ffi::c_void);
     fn velo_desktop_show();
+    fn velo_desktop_quit();
     fn velo_window_command(cmd: u32);
     fn velo_set_maximize_button_rect(x: f64, y: f64, width: f64, height: f64);
     fn velo_desktop_update(
@@ -50,6 +51,14 @@ pub fn show() {
     // SAFETY: el singleton se invoca con QGuiApplication vivo y en su hilo.
     unsafe {
         velo_desktop_show();
+    }
+}
+
+/// Exit the Qt event loop; main flushes preferences and shuts down audio afterwards.
+pub fn quit() {
+    // SAFETY: called only by qt_thread.queue with QGuiApplication alive.
+    unsafe {
+        velo_desktop_quit();
     }
 }
 
