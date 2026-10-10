@@ -1,0 +1,12 @@
+[package]
+name = "velo-domain"
+description = "Shared types and traits (the contract between backend crates and the Qt bridge)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
