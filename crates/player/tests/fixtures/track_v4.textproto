@@ -1,0 +1,12 @@
+gid: "dddddddddddddddd"
+name: "Popular de prueba"
+duration: 234000
+explicit: true
+artist { gid: "aaaaaaaaaaaaaaaa" name: "Artista de prueba" }
+album {
+  gid: "gggggggggggggggg"
+  name: "Álbum de prueba"
+  date { year: 2024 month: 3 day: 1 }
+  type: EP
+  cover_group { image { file_id: "bbbbbbbbbbbbbbbbbbbb" width: 300 height: 300 } }
+}

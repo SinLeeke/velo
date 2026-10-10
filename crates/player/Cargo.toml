@@ -1,0 +1,46 @@
+[package]
+name = "velo-player"
+description = "Velo's own playback engine: librespot (streaming with the user's Premium account) as the Spotify Connect device \"Velo\"."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+velo-domain = { workspace = true }
+velo-spotify = { path = "../spotify" }
+tokio = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+url = { workspace = true }
+protobuf = "3"
+http = "1"
+bytes = "1"
+http-body-util = "0.1"
+# E5b: la voz de DJ Livi llega como MP3 (solo memoria; ya en el lockfile vía librespot/rodio).
+symphonia = { version = "0.5", default-features = false, features = ["mp3"] }
+librespot-protocol = "0.8"
+# Two TLS crypto providers end up compiled (reqwest: aws-lc-rs, librespot: ring); the
+# engine installs aws-lc-rs as the process default so rustls does not panic choosing.
+rustls = { version = "0.23", default-features = false, features = ["aws_lc_rs"] }
+librespot-core = { version = "0.8", default-features = false, features = ["rustls-tls-native-roots"] }
+librespot-playback = { version = "0.8", default-features = false, features = ["rodio-backend", "rustls-tls-native-roots"] }
+librespot-metadata = { version = "0.8", default-features = false, features = ["rustls-tls-native-roots"] }
+librespot-connect = { version = "0.8", default-features = false, features = ["rustls-tls-native-roots"] }
+librespot-oauth = { version = "0.8", default-features = false, features = ["rustls-tls-native-roots"] }
+# Same Rodio as librespot's backend; Velo's own sink (pcm.rs) drives it directly for low latency.
+rodio = { version = "0.21", default-features = false, features = ["playback"] }
+
+[build-dependencies]
+protobuf-codegen = "3"
+
+[dev-dependencies]
+wiremock = "0.6"
+futures-util = "0.3"
+reqwest = { workspace = true }
+tokio = { workspace = true, features = ["test-util"] }
+velo-viz = { path = "../viz" }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }

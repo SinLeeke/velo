@@ -1,0 +1,12 @@
+{
+  "_fixture": "Synthetic from the documented user-profile-view/v3 shape; leader will replace with a real probe capture.",
+  "name": "Fixture Listener",
+  "image_url": "https://i.scdn.co/image/fixture-avatar",
+  "followers_count": 42,
+  "total_public_playlists_count": 3,
+  "public_playlists": [
+    {"uri": "spotify:playlist:fixtureA", "name": "Quiet", "image_url": "https://i.scdn.co/image/fixture-cover", "owner_name": "Fixture Listener", "owner_uri": "spotify:user:fixture.user", "followers_count": 7},
+    {"uri": "spotify:playlist:fixtureB", "name": "Bright", "owner_name": "Fixture Listener", "owner_uri": "spotify:user:fixture.user", "followers_count": 0},
+    {"uri": "spotify:playlist:fixtureC", "name": "Other owner", "owner_name": "Other", "owner_uri": "spotify:user:other", "followers_count": 11}
+  ]
+}

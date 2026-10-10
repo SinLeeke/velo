@@ -1,0 +1,954 @@
+{
+ "data": {
+  "artistUnion": {
+   "__typename": "Artist",
+   "discography": {
+    "all": {
+     "items": [
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02d1567333c2b5d84544c53518",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851d1567333c2b5d84544c53518",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273d1567333c2b5d84544c53518",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2026-09-25T00:00:00Z",
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1LTJ0KNMXcbQnewKg8P4qf",
+          "name": "Don't Stop Me Now / In Only Seven Days",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "EpvCpiQXTrONAVaLW2ePhw",
+           "shareUrl": "https://open.spotify.com/album/1LTJ0KNMXcbQnewKg8P4qf?si=EpvCpiQXTrONAVaLW2ePhw"
+          },
+          "tracks": {
+           "totalCount": 2
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:1LTJ0KNMXcbQnewKg8P4qf"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e023f30d64eec022b27edcf2bb7",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048513f30d64eec022b27edcf2bb7",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2733f30d64eec022b27edcf2bb7",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2026-09-10T00:00:00Z",
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1BGiS3fcRGNi1Fw68WCC2W",
+          "name": "Tie Your Mother Down (Live in Budapest)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "2UIcxqlQQAmb-U2CbrDO2g",
+           "shareUrl": "https://open.spotify.com/album/1BGiS3fcRGNi1Fw68WCC2W?si=2UIcxqlQQAmb-U2CbrDO2g"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:1BGiS3fcRGNi1Fw68WCC2W"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0212d3568a9ed52054da352c7e",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485112d3568a9ed52054da352c7e",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27312d3568a9ed52054da352c7e",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2026-08-21T00:00:00Z",
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1phOF1iJfhjm64XX3P6Vny",
+          "name": "Who Wants to Live Forever (Live in Budapest)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "CxTrDiVRRQeDNuwfwWnVEA",
+           "shareUrl": "https://open.spotify.com/album/1phOF1iJfhjm64XX3P6Vny?si=CxTrDiVRRQeDNuwfwWnVEA"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:1phOF1iJfhjm64XX3P6Vny"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02afa2d15179f78c55b5fac40b",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851afa2d15179f78c55b5fac40b",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273afa2d15179f78c55b5fac40b",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2026-07-27T00:00:00Z",
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "2i3G9uRIMioVziTJ4T5fxI",
+          "name": "Radio Ga Ga (Live in Budapest)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "9a6LrxTKTia1XIXZRs9fMQ",
+           "shareUrl": "https://open.spotify.com/album/2i3G9uRIMioVziTJ4T5fxI?si=9a6LrxTKTia1XIXZRs9fMQ"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:2i3G9uRIMioVziTJ4T5fxI"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02fd7d4d2da0f58b40e1897316",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851fd7d4d2da0f58b40e1897316",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273fd7d4d2da0f58b40e1897316",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2026-03-27T00:00:00Z",
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1VQqxna6HR1QUrJsoQF0pT",
+          "name": "Queen II (2026 Mix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "dcKhLB-lTpqNG5PvbYPSXQ",
+           "shareUrl": "https://open.spotify.com/album/1VQqxna6HR1QUrJsoQF0pT?si=dcKhLB-lTpqNG5PvbYPSXQ"
+          },
+          "tracks": {
+           "totalCount": 11
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:1VQqxna6HR1QUrJsoQF0pT"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020445bdb4d3a1ba7ab6b84fa4",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510445bdb4d3a1ba7ab6b84fa4",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730445bdb4d3a1ba7ab6b84fa4",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2026-03-27T00:00:00Z",
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "2TETbr0O1HGNdy1thnKYXJ",
+          "name": "Queen II (Collector's Edition)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "NJGiSKGtTmOI6sHROP5QYw",
+           "shareUrl": "https://open.spotify.com/album/2TETbr0O1HGNdy1thnKYXJ?si=NJGiSKGtTmOI6sHROP5QYw"
+          },
+          "tracks": {
+           "totalCount": 58
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:2TETbr0O1HGNdy1thnKYXJ"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02f41188be93c25d48ac684775",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851f41188be93c25d48ac684775",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273f41188be93c25d48ac684775",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2026-02-27T00:00:00Z",
+           "precision": "DAY",
+           "year": 2026
+          },
+          "id": "1Ut0XBnNtyfgbdwBSkQ3xZ",
+          "name": "Seven Seas of Rhye (2026 Mix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "9KPuXA-lQMuBwZ09oK2vbQ",
+           "shareUrl": "https://open.spotify.com/album/1Ut0XBnNtyfgbdwBSkQ3xZ?si=9KPuXA-lQMuBwZ09oK2vbQ"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:1Ut0XBnNtyfgbdwBSkQ3xZ"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e022f24ee4173262ea0522075ce",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048512f24ee4173262ea0522075ce",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2732f24ee4173262ea0522075ce",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-11-06T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "3apsijVtRaziEzZZn5Uc2a",
+          "name": "Who Wants to Live Forever (Stranger Things Remix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "ZKKyE7sPQ1CnR7bYbLa-fQ",
+           "shareUrl": "https://open.spotify.com/album/3apsijVtRaziEzZZn5Uc2a?si=ZKKyE7sPQ1CnR7bYbLa-fQ"
+          },
+          "tracks": {
+           "totalCount": 1
+          },
+          "type": "SINGLE",
+          "uri": "spotify:album:3apsijVtRaziEzZZn5Uc2a"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020adcdc1d05798f65fea8eb42",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510adcdc1d05798f65fea8eb42",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730adcdc1d05798f65fea8eb42",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-08-22T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "6PNr7e7B0qd1JFlqPd0BlP",
+          "name": "Acoustic",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "49TU3EqxQmK7m9ZNaqAoXQ",
+           "shareUrl": "https://open.spotify.com/album/6PNr7e7B0qd1JFlqPd0BlP?si=49TU3EqxQmK7m9ZNaqAoXQ"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:6PNr7e7B0qd1JFlqPd0BlP"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e025791dc7ce46680451a728352",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048515791dc7ce46680451a728352",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2735791dc7ce46680451a728352",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-08-15T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "3l9HcdRSnvphaJOwvbHL3l",
+          "name": "B-Sides",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "s79lkfqdSRG356eKKMjUzw",
+           "shareUrl": "https://open.spotify.com/album/3l9HcdRSnvphaJOwvbHL3l?si=s79lkfqdSRG356eKKMjUzw"
+          },
+          "tracks": {
+           "totalCount": 12
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:3l9HcdRSnvphaJOwvbHL3l"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0227607455650faca73b39283b",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485127607455650faca73b39283b",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27327607455650faca73b39283b",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-08-08T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "1jDMSbrn6fy1a2p7gyziNy",
+          "name": "Rock N Roll",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "l4bpdPx_The7PKhL6Tb1OQ",
+           "shareUrl": "https://open.spotify.com/album/1jDMSbrn6fy1a2p7gyziNy?si=l4bpdPx_The7PKhL6Tb1OQ"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:1jDMSbrn6fy1a2p7gyziNy"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e021438cd8c2675c20c53eb7428",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048511438cd8c2675c20c53eb7428",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2731438cd8c2675c20c53eb7428",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-08-01T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "3FFOhUbtUqOJrUNGaY0KXw",
+          "name": "Slightly Mad",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "ILKLB-DbQcuUDS-O8QiO2A",
+           "shareUrl": "https://open.spotify.com/album/3FFOhUbtUqOJrUNGaY0KXw?si=ILKLB-DbQcuUDS-O8QiO2A"
+          },
+          "tracks": {
+           "totalCount": 12
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:3FFOhUbtUqOJrUNGaY0KXw"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02d5ffa646d7aa2f02710c1f1a",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851d5ffa646d7aa2f02710c1f1a",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273d5ffa646d7aa2f02710c1f1a",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-07-25T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "4mCWCZ5vTxmRNC4lfVzwKY",
+          "name": "Ballads",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "iGrTbPKlS4OfMVc_Kark1g",
+           "shareUrl": "https://open.spotify.com/album/4mCWCZ5vTxmRNC4lfVzwKY?si=iGrTbPKlS4OfMVc_Kark1g"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:4mCWCZ5vTxmRNC4lfVzwKY"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02e9e0bc3df0c8eb37cdb8d4be",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851e9e0bc3df0c8eb37cdb8d4be",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273e9e0bc3df0c8eb37cdb8d4be",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-07-18T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "1lesofKUPL5Rl27grY4alW",
+          "name": "Funk",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "1Bx2k8iSSqu0y7nE8xSgMQ",
+           "shareUrl": "https://open.spotify.com/album/1lesofKUPL5Rl27grY4alW?si=1Bx2k8iSSqu0y7nE8xSgMQ"
+          },
+          "tracks": {
+           "totalCount": 11
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:1lesofKUPL5Rl27grY4alW"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0259febf3f6f3738538dfd1360",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485159febf3f6f3738538dfd1360",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27359febf3f6f3738538dfd1360",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-07-11T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "6VdPzzQe2QIU0H7hx4jqmG",
+          "name": "Anthems",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "gOxXPiw-TiGVHbL_luwmzg",
+           "shareUrl": "https://open.spotify.com/album/6VdPzzQe2QIU0H7hx4jqmG?si=gOxXPiw-TiGVHbL_luwmzg"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:6VdPzzQe2QIU0H7hx4jqmG"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e020dab8a2a4b3c01e4cddf0a66",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048510dab8a2a4b3c01e4cddf0a66",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2730dab8a2a4b3c01e4cddf0a66",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-07-04T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "7vwI0rfb9RIZHNdkUJH1yw",
+          "name": "Pop",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "P7NQn1PNTVecZz_K_VrifQ",
+           "shareUrl": "https://open.spotify.com/album/7vwI0rfb9RIZHNdkUJH1yw?si=P7NQn1PNTVecZz_K_VrifQ"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:7vwI0rfb9RIZHNdkUJH1yw"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0271875512369fd3f03e34b347",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485171875512369fd3f03e34b347",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27371875512369fd3f03e34b347",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-06-27T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "1aY5pGGVLivuAeWlaYQglP",
+          "name": "Riffs",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "y7I1BTJ8TzKEDtAmfUSUxg",
+           "shareUrl": "https://open.spotify.com/album/1aY5pGGVLivuAeWlaYQglP?si=y7I1BTJ8TzKEDtAmfUSUxg"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:1aY5pGGVLivuAeWlaYQglP"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e0215e03881589378a11e0a93cd",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d0000485115e03881589378a11e0a93cd",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b27315e03881589378a11e0a93cd",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-06-20T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "3G6WiQ8LYl4c6FFPvtXjgV",
+          "name": "Heavy",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "FLZXntEvS8G3oymWjdN5UQ",
+           "shareUrl": "https://open.spotify.com/album/3G6WiQ8LYl4c6FFPvtXjgV?si=FLZXntEvS8G3oymWjdN5UQ"
+          },
+          "tracks": {
+           "totalCount": 10
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:3G6WiQ8LYl4c6FFPvtXjgV"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e028541836b0bb1ee708bca682b",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d000048518541836b0bb1ee708bca682b",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b2738541836b0bb1ee708bca682b",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2025-06-13T00:00:00Z",
+           "precision": "DAY",
+           "year": 2025
+          },
+          "id": "5cD48TT2i1x5zzB1XfaQKs",
+          "name": "Epic",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "csTIxP1fR7qYMH4LgSMe8A",
+           "shareUrl": "https://open.spotify.com/album/5cD48TT2i1x5zzB1XfaQKs?si=csTIxP1fR7qYMH4LgSMe8A"
+          },
+          "tracks": {
+           "totalCount": 12
+          },
+          "type": "COMPILATION",
+          "uri": "spotify:album:5cD48TT2i1x5zzB1XfaQKs"
+         }
+        ]
+       }
+      },
+      {
+       "releases": {
+        "items": [
+         {
+          "coverArt": {
+           "sources": [
+            {
+             "height": 300,
+             "url": "https://i.scdn.co/image/ab67616d00001e02d6e66e7fa9080daf42bd0c11",
+             "width": 300
+            },
+            {
+             "height": 64,
+             "url": "https://i.scdn.co/image/ab67616d00004851d6e66e7fa9080daf42bd0c11",
+             "width": 64
+            },
+            {
+             "height": 640,
+             "url": "https://i.scdn.co/image/ab67616d0000b273d6e66e7fa9080daf42bd0c11",
+             "width": 640
+            }
+           ]
+          },
+          "date": {
+           "isoString": "2024-10-25T00:00:00Z",
+           "precision": "DAY",
+           "year": 2024
+          },
+          "id": "0DF6o6LLOB0OTd70ylsSp0",
+          "name": "Queen I (2024 Mix)",
+          "playability": {
+           "playable": true,
+           "reason": "PLAYABLE"
+          },
+          "sharingInfo": {
+           "shareId": "HTHe48bVRdaCzv-U74wYOQ",
+           "shareUrl": "https://open.spotify.com/album/0DF6o6LLOB0OTd70ylsSp0?si=HTHe48bVRdaCzv-U74wYOQ"
+          },
+          "tracks": {
+           "totalCount": 11
+          },
+          "type": "ALBUM",
+          "uri": "spotify:album:0DF6o6LLOB0OTd70ylsSp0"
+         }
+        ]
+       }
+      }
+     ],
+     "totalCount": 88
+    }
+   }
+  }
+ }
+}

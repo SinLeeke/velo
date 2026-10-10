@@ -1,0 +1,28 @@
+{
+ "data": {
+  "me": {
+   "profile": {
+    "accountId": "velo_fixture_account",
+    "avatar": {
+     "sources": [
+      {
+       "height": 64,
+       "url": "https://i.scdn.co/image/velo_fixture_avatar",
+       "width": 64
+      },
+      {
+       "height": 300,
+       "url": "https://i.scdn.co/image/velo_fixture_avatar",
+       "width": 300
+      }
+     ]
+    },
+    "avatarBackgroundColor": 5282805,
+    "name": "velo_fixture_user",
+    "socialHandle": null,
+    "uri": "spotify:user:velo_fixture_user",
+    "username": "velo_fixture_user"
+   }
+  }
+ }
+}

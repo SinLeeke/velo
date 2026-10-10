@@ -1,0 +1,75 @@
+{
+ "_note": "Persisted queries que respondieron 200 el 2026-10-08 (GET https://api-partner.spotify.com/pathfinder/v1/query, Authorization: Bearer <login5>, client-token). Los hashes cambian cuando Spotify actualiza su web player.",
+ "search.json": {
+  "operationName": "searchDesktop",
+  "sha256Hash": "eef7cc54888d91bdd6802623477873caa3948ae173a0c34fd86827b267e94c03",
+  "variables": {
+   "searchTerm": "queen",
+   "offset": 0,
+   "limit": 10,
+   "numberOfTopResults": 5,
+   "includeAudiobooks": false,
+   "includeArtistHasConcertsField": false,
+   "includePreReleases": true,
+   "includeLocalConcertsField": false,
+   "includeAuthors": false
+  }
+ },
+ "search_suggestions.json": {
+  "operationName": "searchSuggestions",
+  "sha256Hash": "f244254b94c0e824d458ac216e0f8406a73f2f69a9ff52831a2f78fa774ff6ce",
+  "variables": {
+   "query": "quee",
+   "limit": 10,
+   "numberOfTopResults": 10,
+   "offset": 0,
+   "includeAuthors": false
+  }
+ },
+ "album.json": {
+  "operationName": "getAlbum",
+  "sha256Hash": "11c9cad9cb24c4f9e25ef9456f68621cfd6006a90f679e729c1d2f2fd70dfe16",
+  "variables": {
+   "uri": "spotify:album:6i6folBtxKV28WX3msQ4FE",
+   "locale": "",
+   "offset": 0,
+   "limit": 50
+  }
+ },
+ "artist.json": {
+  "operationName": "queryArtistOverview",
+  "sha256Hash": "9f8134ef565e78621f1e1793555bd6633c5ac144ae0f89604ed3ae3f80b3c8e6",
+  "variables": {
+   "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d",
+   "locale": "",
+   "includePrerelease": true
+  }
+ },
+ "artist_discography.json": {
+  "operationName": "queryArtistDiscographyAll",
+  "sha256Hash": "5e07d323febb57b4a56a42abbf781490e58764aa45feb6e3dc0591564fc56599",
+  "variables": {
+   "uri": "spotify:artist:1dfeR4HaWDbWqFHLkxsg1d",
+   "offset": 0,
+   "limit": 20,
+   "order": "DATE_DESC"
+  }
+ },
+ "home.json": {
+  "operationName": "home",
+  "sha256Hash": "5fb7da7a03ee2776c0670856609cb85a189a3cecc36cc160b91cde79063b9cf1",
+  "variables": {
+   "homeEndUserIntegration": "INTEGRATION_WEB_PLAYER",
+   "timeZone": "America/Santiago",
+   "sp_t": "",
+   "facet": "",
+   "sectionItemsLimit": 10,
+   "includeEpisodeContentRatingsV2": false
+  }
+ },
+ "profile_attributes.json": {
+  "operationName": "profileAttributes",
+  "sha256Hash": "08ffb4730af3746e04a8301396f20875dbbce10c75243803091a9274eacc8ac0",
+  "variables": {}
+ }
+}
