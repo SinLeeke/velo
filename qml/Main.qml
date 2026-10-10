@@ -369,6 +369,11 @@ Window {
                 show(text, actionKind === "ownApp" ? qsTr("Usar mi propia app de Spotify") : "", severity)
             }
         }
+        UpdateNotice {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: appToast.shown ? appToast.y + appToast.height + Theme.space.sm : Theme.size.titleBar + Theme.space.md
+            z: appToast.z
+        }
         Connections {
             target: Backend.Account
             function onAppWarningChanged() {

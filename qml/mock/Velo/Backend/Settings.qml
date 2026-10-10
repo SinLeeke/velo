@@ -16,6 +16,7 @@ QtObject {
     property bool tintUi: true
     property bool showLyrics: true
     property bool closeToTray: true
+    property bool checkUpdates: true
     property string windowControls: "mac"   // "mac" | "windows"
     property int coverCacheLimitMb: 50
     readonly property int usedCacheMb: mockUsedCacheMb
