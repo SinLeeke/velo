@@ -1,0 +1,6 @@
+{
+  "tracks":{"offset":0,"limit":10,"total":21,"items":[{"id":"4uLU6hMCjMI75M1A2tKUQC","uri":"spotify:track:4uLU6hMCjMI75M1A2tKUQC","name":"Mac Song","type":"track","duration_ms":180000,"artists":[{"id":"4LLpKhyESsyAXpc4laK94U","name":"Mac"}],"album":{"id":"4LLpKhyESsyAXpc4laK94U","name":"Album","images":[]}}]},
+  "artists":{"offset":0,"limit":10,"total":1,"items":[{"id":"4LLpKhyESsyAXpc4laK94U","uri":"spotify:artist:4LLpKhyESsyAXpc4laK94U","name":"Mac","images":[]}]},
+  "albums":{"offset":0,"limit":10,"total":0,"items":[]},
+  "playlists":{"offset":0,"limit":10,"total":0,"items":[null]}
+}
