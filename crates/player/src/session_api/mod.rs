@@ -122,6 +122,24 @@ impl SessionApi {
         }
     }
 
+    async fn connect_action(&self, command: Value) -> Result<()> {
+        if self.source.connect_devices().is_none() {
+            return Err(VeloError::NoActiveDevice);
+        }
+        let session = self.session().await?;
+        let state = crate::queue::connect_snapshot::cluster_state(&session)
+            .ok_or(VeloError::NoActiveDevice)?;
+        let target = state
+            .devices
+            .iter()
+            .find(|d| d.is_active)
+            .and_then(|d| d.id.as_deref())
+            .ok_or(VeloError::NoActiveDevice)?;
+        crate::extras::connect_command(&session, target, command)
+            .await
+            .map_err(|_| unavailable())
+    }
+
     /// Full library metadata with collection timestamps, sharing the cached collection read.
     pub async fn sidebar_collection(&self) -> Result<Vec<LibraryEntry>> {
         let session = self.session().await?;
@@ -556,42 +574,103 @@ impl MusicProvider for SessionApi {
         self.or_web("me", self.own_profile(), self.web.me()).await
     }
 
-    // Playback through the Web API (Velo's own device is driven by the engine directly).
+    // Connect session first; the Web API is only a fallback.
     async fn playback(&self) -> Result<Option<PlaybackState>> {
+        if self.source.connect_devices().is_some() {
+            if let Some(session) = self.source.session().await {
+                if let Some(cluster) = crate::queue::connect_snapshot::cluster_state(&session) {
+                    if cluster.playback.is_some() {
+                        return Ok(cluster.playback);
+                    }
+                    if !cluster.devices.iter().any(|d| d.is_active) {
+                        return Ok(None);
+                    }
+                }
+            }
+        }
         self.web.playback().await
     }
     async fn devices(&self) -> Result<Vec<Device>> {
+        if self.source.connect_devices().is_some() {
+            if let Some(session) = self.source.session().await {
+                if let Some(cluster) = crate::queue::connect_snapshot::cluster_state(&session) {
+                    return Ok(cluster.devices);
+                }
+            }
+        }
         let web = tokio::time::timeout(TIMEOUT, self.web.devices())
             .await
             .unwrap_or_else(|_| Err(unavailable()));
         crate::connect_devices::with_connect(web, self.source.connect_devices())
     }
     async fn transfer(&self, device_id: &str, play: bool) -> Result<()> {
-        self.web.transfer(device_id, play).await
+        let internal = async {
+            if self.source.connect_devices().is_none() {
+                return Err(VeloError::NoActiveDevice);
+            }
+            let session = self.session().await?;
+            let cluster = crate::queue::connect_snapshot::cluster_state(&session)
+                .ok_or(VeloError::NoActiveDevice)?;
+            let from = cluster
+                .devices
+                .iter()
+                .find(|d| d.is_active)
+                .and_then(|d| d.id.as_deref())
+                .ok_or(VeloError::NoActiveDevice)?;
+            if from == device_id {
+                return Ok(());
+            }
+            crate::extras::transfer(&session, from, device_id, play)
+                .await
+                .map_err(|_| unavailable())
+        };
+        self.or_web("transfer", internal, self.web.transfer(device_id, play))
+            .await
     }
     async fn play(&self) -> Result<()> {
-        self.web.play().await
+        self.or_web(
+            "resume",
+            self.connect_action(serde_json::json!({"endpoint":"resume","logging_params":{}})),
+            self.web.play(),
+        )
+        .await
     }
     async fn pause(&self) -> Result<()> {
-        self.web.pause().await
+        self.or_web(
+            "pause",
+            self.connect_action(serde_json::json!({"endpoint":"pause","logging_params":{}})),
+            self.web.pause(),
+        )
+        .await
     }
     async fn next(&self) -> Result<()> {
-        self.web.next().await
+        self.or_web(
+            "next",
+            self.connect_action(serde_json::json!({"endpoint":"skip_next","logging_params":{}})),
+            self.web.next(),
+        )
+        .await
     }
     async fn previous(&self) -> Result<()> {
-        self.web.previous().await
+        self.or_web(
+            "previous",
+            self.connect_action(serde_json::json!({"endpoint":"skip_prev","logging_params":{}})),
+            self.web.previous(),
+        )
+        .await
     }
     async fn seek(&self, position_ms: u64) -> Result<()> {
-        self.web.seek(position_ms).await
+        let position = u32::try_from(position_ms).unwrap_or(u32::MAX);
+        self.or_web("seek", self.connect_action(serde_json::json!({"endpoint":"seek_to","value":position,"position":position,"logging_params":{}})), self.web.seek(position_ms)).await
     }
     async fn set_volume(&self, percent: u8) -> Result<()> {
         self.web.set_volume(percent).await
     }
     async fn set_shuffle(&self, on: bool) -> Result<()> {
-        self.web.set_shuffle(on).await
+        self.or_web("shuffle", self.connect_action(serde_json::json!({"endpoint":"set_shuffling_context","value":on,"logging_params":{}})), self.web.set_shuffle(on)).await
     }
     async fn set_repeat(&self, mode: RepeatMode) -> Result<()> {
-        self.web.set_repeat(mode).await
+        self.or_web("repeat", self.connect_action(serde_json::json!({"endpoint":"set_options","repeating_context":mode == RepeatMode::Context,"repeating_track":mode == RepeatMode::Track,"logging_params":{}})), self.web.set_repeat(mode)).await
     }
     async fn play_context(&self, context_uri: &str, offset: Option<u32>) -> Result<()> {
         self.web.play_context(context_uri, offset).await
@@ -600,7 +679,24 @@ impl MusicProvider for SessionApi {
         self.web.play_uris(uris, offset).await
     }
     async fn queue(&self) -> Result<Vec<Track>> {
-        self.web.queue().await
+        let internal = async {
+            if self.source.connect_devices().is_none() {
+                return Err(VeloError::NotFound);
+            }
+            let session = self.session().await?;
+            let cluster = crate::queue::connect_snapshot::cluster_state(&session)
+                .ok_or(VeloError::NotFound)?;
+            let queue = cluster.queue.ok_or(VeloError::NotFound)?;
+            let rows = crate::queue::connect_snapshot::describe(&session, &queue).await;
+            if !crate::queue::connect_snapshot::cluster_state(&session)
+                .and_then(|s| s.queue)
+                .is_some_and(|latest| latest.same_queue(&queue))
+            {
+                return Err(VeloError::NotFound);
+            }
+            Ok(rows)
+        };
+        self.or_web("queue", internal, self.web.queue()).await
     }
     async fn add_to_queue(&self, uri: &str) -> Result<()> {
         self.web.add_to_queue(uri).await
@@ -786,3 +882,60 @@ impl MusicProvider for SessionApi {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod connect_fallback_tests {
+    use super::*;
+    struct NoCluster;
+    #[async_trait]
+    impl SessionSource for NoCluster {
+        async fn session(&self) -> Option<Session> {
+            panic!("no cluster: must not wait for the audio login")
+        }
+    }
+    struct FixedToken;
+    #[async_trait]
+    impl TokenSource for FixedToken {
+        async fn token(&self, _: Option<&str>) -> Result<(String, Duration)> {
+            Ok(("fixture".into(), Duration::from_secs(3600)))
+        }
+    }
+    #[tokio::test]
+    async fn commands_and_playback_without_a_cluster_fall_back_without_waiting_for_audio() {
+        use wiremock::{
+            Mock, MockServer, ResponseTemplate,
+            matchers::{method, path},
+        };
+        let server = MockServer::start().await;
+        for (verb, route, status) in [
+            ("PUT", "/me/player/pause", 204),
+            ("PUT", "/me/player", 204),
+            ("GET", "/me/player", 204),
+            ("GET", "/me/player/queue", 200),
+        ] {
+            Mock::given(method(verb))
+                .and(path(route))
+                .respond_with(
+                    ResponseTemplate::new(status).set_body_json(serde_json::json!({"queue":[]})),
+                )
+                .expect(1)
+                .mount(&server)
+                .await;
+        }
+        let web = Arc::new(SpotifyProvider::with_token_source(
+            SpotifyConfig {
+                client_id: String::new(),
+                api_base: server.uri(),
+                accounts_base: server.uri(),
+                redirect_port: 0,
+            },
+            Arc::new(FixedToken),
+        ));
+        let api = SessionApi::with_web(Arc::new(NoCluster), web);
+        api.pause().await.unwrap();
+        api.transfer("phone", true).await.unwrap();
+        assert!(api.playback().await.unwrap().is_none());
+        assert!(api.queue().await.unwrap().is_empty());
+        server.verify().await;
+    }
+}

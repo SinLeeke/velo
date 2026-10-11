@@ -523,4 +523,33 @@ mod tests {
         ctl.publish(ticket, None, 0);
         assert_eq!(ctl.view.borrow().status, "none");
     }
+
+    // T4: with another device playing, the position channel carries the remote's interpolated
+    // clock; the active line follows it, a remote seek backwards moves it back, and a new remote
+    // track starts from the position known when its lyrics arrive (not from the previous song's).
+    #[test]
+    fn remote_position_drives_the_active_line_across_seeks_and_track_changes() {
+        let ctl = controller();
+        let ticket = ctl.begin_loading();
+        ctl.publish(ticket, Some((synced(), SOURCE_SPOTIFY)), 3_500);
+        assert_eq!(ctl.view.borrow().active_index, 1);
+        ctl.update_active(0);
+        assert_eq!(ctl.view.borrow().active_index, -1);
+        ctl.update_active(1_200);
+        assert_eq!(ctl.view.borrow().active_index, 0);
+        // The remote jumps forward, then back (seek on the other device).
+        ctl.update_active(3_000);
+        assert_eq!(ctl.view.borrow().active_index, 1);
+        ctl.update_active(1_000);
+        assert_eq!(ctl.view.borrow().active_index, 0);
+        // The remote moves to another song: lyrics reload (loading → none of the old index) and
+        // the new ones start at the remote's current position.
+        let ticket = ctl.begin_loading();
+        assert_eq!(ctl.view.borrow().active_index, -1);
+        ctl.update_active(9_000); // while loading there are no lyrics to follow
+        assert_eq!(ctl.view.borrow().active_index, -1);
+        ctl.publish(ticket, Some((synced(), SOURCE_LRCLIB)), 3_200);
+        assert_eq!(ctl.view.borrow().active_index, 1);
+        assert_eq!(ctl.view.borrow().source, SOURCE_LRCLIB);
+    }
 }

@@ -16,7 +16,7 @@ import "../motion"
 //    list and a second Esc leaves the field.
 //  - A suggested artist, album or playlist emits `navigate`; a song runs the full search for it
 //    (so "Mejor resultado" shows it with its play button), as the search page did before T3.
-// Spotify gives no text autocomplete: suggestions are real catalogue rows .
+// Spotify gives no text autocomplete: suggestions are real catalogue rows (docs/F1-F2-busqueda.md).
 // There is no search history in the backend yet, so an empty focused field shows nothing.
 Item {
     id: box

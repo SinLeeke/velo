@@ -21,7 +21,7 @@ Rectangle {
     property bool appeared: false
     readonly property bool waiting: Backend.Account.busy && !Backend.Account.signedIn
     readonly property var window: root.Window.window
-    readonly property bool effectsAllowed: visible && Theme.effectsAllowed && Theme.motion.scale > 0
+    readonly property bool effectsAllowed: visible && Theme.interactionAllowed && Theme.motion.scale > 0
         && (!window || (window.visibility !== Window.Minimized && window.visibility !== Window.Hidden
             && (window.active || !Theme.pauseEffectsInBackground)))
 

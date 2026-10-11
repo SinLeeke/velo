@@ -22,6 +22,7 @@ pub mod eq;
 pub mod extras;
 pub mod login;
 pub mod lyrics;
+pub mod mix;
 mod output;
 mod pcm;
 pub mod playlist;
@@ -33,6 +34,7 @@ pub use dj::{DjSpeech, DjState};
 pub use engine::{Engine, EngineConfig, EngineOptions, LoadTarget, stable_device_id};
 pub use eq::EqConfig;
 pub use librespot_playback::player::PlayerEvent as PlaybackTransportEvent;
+pub use mix::{MixConfig, MixState};
 pub use pcm::{PcmPacket, PlaybackProgress, TrackEndTimerState, VoiceClip, VoiceProgress};
 pub use state::{
     EngineState, EngineTrack, SLOW_LOAD, TrackFailure, percent_to_volume, repeat_mode,

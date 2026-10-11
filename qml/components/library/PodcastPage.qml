@@ -14,6 +14,11 @@ Item {
     property string showId: ""
     property var playAction: index => Backend.Library.playIndex(index)
     property int requestedAtCount: -1
+    // Starting needs no active session (Premium is enough), as on every other page.
+    readonly property bool canStart: Backend.Player.canControl || (Backend.Account.signedIn && Backend.Account.isPremium)
+    readonly property string showUri: showId !== "" ? "spotify:show:" + showId : ""
+    ShareMenu { id: showMenu; uri: page.showUri }
+    ShareMenu { id: episodeMenu; queueEntry: true }
     property string localLoadError: ""
     readonly property string loadError: "loadError" in Backend.Library && Backend.Library.loadError !== ""
         ? Backend.Library.loadError : localLoadError
@@ -77,6 +82,32 @@ Item {
                     }
                 ]
             }
+            // Reproducir = el último episodio (la lista llega del más nuevo al más viejo).
+            Flow {
+                width: parent.width
+                spacing: Theme.space.lg
+                topPadding: Theme.space.lg
+                LibraryButton {
+                    objectName: "podcastPlayButton"
+                    width: Theme.library.cardWidth
+                    primary: true
+                    text: qsTr("Reproducir")
+                    iconSource: Qt.resolvedUrl("../../icons/play_arrow_fill.svg")
+                    enabled: page.canStart && episodes.count > 0
+                    onClicked: page.playAction(0)
+                }
+                IconButton {
+                    id: showMore
+                    objectName: "podcastMoreButton"
+                    width: Theme.size.titleBar
+                    height: Theme.size.titleBar
+                    text: qsTr("Más opciones de %1").arg(Backend.Library.currentTitle)
+                    iconSource: Qt.resolvedUrl("../../icons/more_horiz.svg")
+                    iconSize: Theme.icon.lg
+                    ink: Theme.textSecondary
+                    onClicked: showMenu.popup(showMore, 0, showMore.height)
+                }
+            }
         }
         delegate: LibraryButton {
             id: episode
@@ -94,13 +125,19 @@ Item {
             text: title
             Accessible.name: qsTr("%1, %2").arg(title).arg(addedLabel)
             function play() { page.playAction(index) }
+            function openMenu(x, y) { episodeMenu.uri = episode.uri; episodeMenu.popup(episode, x, y) }
+            TapHandler {
+                acceptedButtons: Qt.RightButton
+                onTapped: (point) => episode.openMenu(point.position.x, point.position.y)
+            }
+            Keys.onMenuPressed: openMenu(width - episodeMenu.width, height)
             // A row selects on click; Enter/Space and double click play that episode.
             onClicked: episodes.currentIndex = index
             onDoubleClicked: play()
             Keys.onShortcutOverride: event => { if (event.key === Qt.Key_Space) event.accepted = true }
-            Keys.onReturnPressed: if (Backend.Player.canControl) play()
-            Keys.onEnterPressed: if (Backend.Player.canControl) play()
-            Keys.onSpacePressed: if (Backend.Player.canControl) play()
+            Keys.onReturnPressed: if (page.canStart) play()
+            Keys.onEnterPressed: if (page.canStart) play()
+            Keys.onSpacePressed: if (page.canStart) play()
             onActiveFocusChanged: if (activeFocus) { episodes.currentIndex = index; episodes.positionViewAtIndex(index, ListView.Contain) }
             Keys.onPressed: event => {
                 const backwards = event.key === Qt.Key_Backtab || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))
@@ -153,7 +190,7 @@ Item {
                 text: qsTr("Reproducir %1").arg(episode.title)
                 iconSource: Qt.resolvedUrl("../../icons/play_arrow_fill.svg")
                 ink: Theme.accent
-                enabled: Backend.Player.canControl
+                enabled: page.canStart
                 onClicked: episode.play()
             }
         }

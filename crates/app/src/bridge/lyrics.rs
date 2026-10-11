@@ -1,4 +1,4 @@
-//! `Lyrics` singleton: `model` (roles `text`, `timeMs`), `activeIndex`,
+//! `Lyrics` singleton (docs/CONTRATO.md): `model` (roles `text`, `timeMs`), `activeIndex`,
 //! `status`, `plainText`, `source`. A view of `engine::lyrics`; no timer of its own.
 
 #[cxx_qt::bridge]

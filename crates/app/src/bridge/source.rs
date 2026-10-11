@@ -77,6 +77,8 @@ pub struct SourceState {
     pub own_engine: bool,
     /// Narración y metadatos viajan en el mismo snapshot: nunca mezclar voz/canción de eventos distintos.
     pub dj: velo_player::DjState,
+    /// Mixear: fundido cruzado sonando en el motor local.
+    pub mixing: bool,
 }
 
 impl Default for SourceState {
@@ -97,6 +99,7 @@ impl Default for SourceState {
             remote: false,
             own_engine: false,
             dj: velo_player::DjState::default(),
+            mixing: false,
         }
     }
 }
@@ -139,7 +142,7 @@ pub trait PlaybackSource: Send + Sync {
 /// Executes an action through the Web API, activating a device first when none is active.
 pub async fn perform_api(env: &Env, action: SourceAction) -> Result<()> {
     let api = env.account.api().ok_or(VeloError::NotAuthenticated)?;
-    match run_action(&*api, action).await {
+    match run_session_or_api(env, &*api, action).await {
         Err(VeloError::NoActiveDevice) => {
             activate_device(env, &*api, starts_playback(action)).await?;
             // The transfer already started playback; a second "play" would be refused.
@@ -147,7 +150,7 @@ pub async fn perform_api(env: &Env, action: SourceAction) -> Result<()> {
                 tokio::time::sleep(Duration::from_millis(800)).await;
                 return Ok(());
             }
-            retry_device_action(|| run_action(&*api, action)).await
+            retry_device_action(|| run_session_or_api(env, &*api, action)).await
         }
         other => other,
     }
@@ -174,6 +177,58 @@ where
         }
     }
     Err(VeloError::NoActiveDevice)
+}
+
+/// Personal Web API accounts also use the audio session for Connect commands.
+async fn run_session_or_api(
+    env: &Env,
+    api: &dyn MusicProvider,
+    action: SourceAction,
+) -> Result<()> {
+    if !env.account.session_mode() {
+        if let Some(engine) = env.audio.engine() {
+            if let Some(cluster) =
+                velo_player::queue::connect_snapshot::cluster_state(engine.session())
+            {
+                if let Some(target) = cluster
+                    .devices
+                    .iter()
+                    .find(|d| d.is_active)
+                    .and_then(|d| d.id.as_deref())
+                {
+                    if let Some(command) = connect_command(action) {
+                        if velo_player::extras::connect_command(engine.session(), target, command)
+                            .await
+                            .is_ok()
+                        {
+                            return Ok(());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    run_action(api, action).await
+}
+fn connect_command(action: SourceAction) -> Option<serde_json::Value> {
+    use serde_json::json;
+    Some(match action {
+        SourceAction::Play => json!({"endpoint":"resume","logging_params":{}}),
+        SourceAction::Pause => json!({"endpoint":"pause","logging_params":{}}),
+        SourceAction::Next => json!({"endpoint":"skip_next","logging_params":{}}),
+        SourceAction::Previous => json!({"endpoint":"skip_prev","logging_params":{}}),
+        SourceAction::Seek(ms) => {
+            let ms = u32::try_from(ms).unwrap_or(u32::MAX);
+            json!({"endpoint":"seek_to","value":ms,"position":ms,"logging_params":{}})
+        }
+        SourceAction::Shuffle(on) => {
+            json!({"endpoint":"set_shuffling_context","value":on,"logging_params":{}})
+        }
+        SourceAction::Repeat(mode) => {
+            json!({"endpoint":"set_options","repeating_context":mode == RepeatMode::Context,"repeating_track":mode == RepeatMode::Track,"logging_params":{}})
+        }
+        SourceAction::Volume(_) => return None,
+    })
 }
 
 async fn run_action(api: &dyn MusicProvider, action: SourceAction) -> Result<()> {

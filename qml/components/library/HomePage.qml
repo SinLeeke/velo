@@ -16,7 +16,7 @@ Item {
             event.accepted = true
     }
     readonly property var window: page.Window.window
-    readonly property bool effectsAllowed: visible && Backend.Player.isPlaying && Theme.motion.scale > 0
+    readonly property bool effectsAllowed: visible && Theme.motion.scale > 0   // regla 1: interacción, no depende de que suene música
         && (!window || (window.visible && window.visibility !== Window.Minimized
             && (window.active || !Theme.pauseEffectsInBackground)))
     // H1: "Buenos días / Buenas tardes / Buenas noches", recomputed whenever Inicio is shown.

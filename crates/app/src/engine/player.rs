@@ -66,6 +66,9 @@ pub struct PlayerView {
     pub queue_editable: bool,
     pub queue_clearable: bool,
     pub device_name: String,
+    pub remote: bool,
+    /// Material Symbols asset basename, shared with DevicePicker.
+    pub device_icon: String,
     pub has_session: bool,
     /// `file:///` URLs; empty without a track.
     pub cover_url: String,
@@ -75,6 +78,15 @@ pub struct PlayerView {
     pub dj_active: bool,
     pub dj_speaking: bool,
     pub dj_line: String,
+    /// Mixear: hay un fundido cruzado sonando en el motor local.
+    pub mixing: bool,
+    /// Se puede mezclar: motor local de Velo, gapless activado y sin DJ.
+    pub mix_available: bool,
+    /// Contexto que suena según Velo (playlist, álbum, artista o `spotify:collection` para
+    /// «Tus me gusta»); vacío si se desconoce. Lo publica el motor de biblioteca.
+    pub context_uri: String,
+    /// Nombre legible del contexto; vacío si se desconoce.
+    pub context_title: String,
 }
 
 pub const LIVI_ART_URL: &str = "qrc:/velo/src/assets/livi.png";
@@ -357,7 +369,81 @@ impl PlayerCtl {
         }
         Self::start_loops(env, &this, kick, kicks);
         Self::attach_listening(env, &this);
+        Self::attach_cluster(env, &this);
         this
+    }
+
+    /// Devices and queue revisions arrive even when the picker is closed or Velo is paused.
+    fn attach_cluster(env: &Arc<Env>, this: &Arc<Self>) {
+        let weak = Arc::downgrade(this);
+        let env = env.clone();
+        let mut audio = env.audio.view.subscribe();
+        let mut account = env.account.view.subscribe();
+        env.rt.clone().spawn(async move {
+            loop {
+                let engine = env.audio.engine();
+                let mut cluster = engine.as_ref().and_then(|e| velo_player::queue::connect_snapshot::cluster_updates(e.session()));
+                let mut previous_queue = None;
+                let mut previous_devices = None;
+                loop {
+                    let Some(player) = weak.upgrade() else { return; };
+                    if let Some(rx) = cluster.as_mut() {
+                        let snapshot = rx.borrow_and_update().clone();
+                        if let Some(snapshot) = snapshot.filter(|_| env.account.snapshot().signed_in) {
+                            if previous_devices.as_ref() != Some(&snapshot.devices) {
+                                player.devices_generation.fetch_add(1, Ordering::SeqCst);
+                                previous_devices = Some(snapshot.devices.clone());
+                                player.publish_devices(snapshot.devices);
+                            }
+                            let changed = match (&previous_queue, &snapshot.queue) {
+                                (Some(old), Some(new)) => !velo_player::queue::connect_snapshot::Snapshot::same_queue(old, new),
+                                (None, None) => false,
+                                _ => true,
+                            };
+                            previous_queue = snapshot.queue;
+                            if changed { player.refresh_queue(); }
+                            player.recompute();
+                        } else if previous_devices.take().is_some() {
+                            player.publish_devices(Vec::new());
+                            player.refresh_devices();
+                        }
+                    }
+                    drop(player);
+                    tokio::select! {
+                        changed = account.changed() => {
+                            if changed.is_err() { return; }
+                            account.borrow_and_update();
+                            previous_devices = None;
+                            previous_queue = None;
+                        }
+                        changed = async { match cluster.as_mut() { Some(rx) => rx.changed().await, None => std::future::pending().await } } => {
+                            if changed.is_err() { break; }
+                        }
+                        changed = audio.changed() => {
+                            if changed.is_err() { return; }
+                            let current = env.audio.engine();
+                            if !matches!((&engine, &current), (Some(a), Some(b)) if Arc::ptr_eq(a,b)) {
+                                if let Some(player) = weak.upgrade() {
+                                    player.publish_devices(Vec::new());
+                                    player.refresh_devices();
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    fn publish_devices(&self, mut devices: Vec<velo_domain::Device>) {
+        let local = self.env.audio.device_id();
+        velo_player::queue::connect_snapshot::group_devices(&mut devices, local.as_deref());
+        self.lock().devices_available = devices.iter().any(|d| d.id.is_some());
+        self.ui.send(PlayerUi::DevicesFinished {
+            rows: Some(ModelOp::Replace(devices.iter().map(device_row).collect())),
+            error: "",
+        });
     }
 
     /// Feeds the listening history with the real PCM progress of Velo's own engine. It is
@@ -532,13 +618,38 @@ impl PlayerCtl {
             s.refresh(Refresh::AfterAction);
         }
         // Loading another context can keep the very same current URI/transport flags.
-        self.refresh_queue();
+        // A fresh play can precede the first source snapshot. Its track event will read the
+        // queue; an explicit refresh (e.g. after appending tracks) still reads immediately.
+        if self.media_state.borrow().active
+            || self.sources.iter().any(|s| s.state().borrow().active)
+        {
+            self.refresh_queue();
+        }
     }
 
     // ------------------------------------------------------------------ state
 
     fn recompute(self: &Arc<Self>) {
-        let idx = active_source_index(&self.sources);
+        let remote_cluster = self
+            .env
+            .audio
+            .engine()
+            .and_then(|e| velo_player::queue::connect_snapshot::cluster_state(e.session()))
+            .is_some_and(|c| {
+                c.devices
+                    .iter()
+                    .any(|d| d.is_active && d.id.as_deref() != Some(c.local_device_id.as_str()))
+            });
+        let idx = if remote_cluster
+            && self
+                .sources
+                .last()
+                .is_some_and(|s| s.state().borrow().active)
+        {
+            self.sources.len() - 1
+        } else {
+            active_source_index(&self.sources)
+        };
         let state = self.sources[idx].state().borrow().clone();
         self.apply(idx, state);
     }
@@ -661,6 +772,23 @@ impl PlayerCtl {
             next.queue_editable = queue_editable(&st, account.signed_in, self.env.audio.is_ready());
             next.queue_clearable = next.queue_editable;
             next.device_name = st.device_name.clone();
+            next.remote = st.active && st.remote;
+            let device = self
+                .env
+                .audio
+                .engine()
+                .and_then(|e| velo_player::queue::connect_snapshot::cluster_state(e.session()))
+                .and_then(|c| c.devices.into_iter().find(|d| d.is_active));
+            if let Some(device) = device.as_ref().filter(|_| st.active) {
+                next.device_name.clone_from(&device.name);
+            }
+            next.device_icon = device_icon(
+                device
+                    .as_ref()
+                    .map(|d| d.kind.as_str())
+                    .unwrap_or(if st.own_engine { "Computer" } else { "Unknown" }),
+            )
+            .into();
             next.has_session = st.active;
             next.dj_available = account.signed_in
                 && account.is_premium
@@ -675,6 +803,13 @@ impl PlayerCtl {
                 .filter(|_| next.dj_speaking)
                 .map(|s| s.line.clone())
                 .unwrap_or_default();
+            next.mixing = st.own_engine && st.active && st.mixing;
+            next.mix_available = st.own_engine
+                && self
+                    .env
+                    .audio
+                    .engine()
+                    .is_some_and(|engine| engine.mix_available());
             if track_changed {
                 next.liked = false;
             }
@@ -1079,7 +1214,8 @@ impl PlayerCtl {
     }
 
     pub fn seek(self: &Arc<Self>, ms: i64) {
-        if !self.can_control() {
+        // DJ Livi's voice is not a track: the progress bar is locked while she speaks.
+        if !self.can_control() || self.view.borrow().dj_speaking {
             return;
         }
         let (duration, playing) = {
@@ -1227,14 +1363,9 @@ impl PlayerCtl {
             }
             let before = this.media_state.borrow().clone();
             // A hung metadata/HTTP read must release the queue operation and finish loading.
-            let result = tokio::time::timeout(
-                Duration::from_secs(10),
-                this.env
-                    .account
-                    .queue_snapshot(before.own_engine, before.shuffle),
-            )
-            .await
-            .unwrap_or(Err(VeloError::Network("queue timeout".into())));
+            let result = tokio::time::timeout(Duration::from_secs(10), this.read_queue(&before))
+                .await
+                .unwrap_or(Err(VeloError::Network("queue timeout".into())));
             match result {
                 Ok((ticket, snapshot)) => {
                     let committed = this.env.account.commit_if_current(ticket, || {
@@ -1286,6 +1417,53 @@ impl PlayerCtl {
                 Err(_) => {}
             }
         });
+    }
+
+    async fn read_queue(
+        &self,
+        before: &SourceState,
+    ) -> velo_domain::Result<(u64, velo_spotify::QueueSnapshot)> {
+        if let Some(engine) = self.env.audio.engine() {
+            if let Some(cluster) =
+                velo_player::queue::connect_snapshot::cluster_state(engine.session())
+            {
+                if let Some(snapshot) = cluster.queue {
+                    let (_, ticket) = self
+                        .env
+                        .account
+                        .api_ticket()
+                        .ok_or(VeloError::NotAuthenticated)?;
+                    let current = before.track.as_ref().and_then(|t| t.uri.as_deref());
+                    if current == Some(snapshot.current.as_str())
+                        && before.shuffle == snapshot.shuffle
+                    {
+                        let tracks = velo_player::queue::connect_snapshot::describe(
+                            engine.session(),
+                            &snapshot,
+                        )
+                        .await;
+                        if !velo_player::queue::connect_snapshot::cluster_state(engine.session())
+                            .and_then(|s| s.queue)
+                            .is_some_and(|s| s.same_queue(&snapshot))
+                        {
+                            return Err(VeloError::NotFound);
+                        }
+                        return Ok((
+                            ticket,
+                            velo_spotify::QueueSnapshot {
+                                current: Some(snapshot.current),
+                                tracks,
+                            },
+                        ));
+                    }
+                    return Err(VeloError::NotFound);
+                }
+            }
+        }
+        self.env
+            .account
+            .queue_snapshot(before.own_engine, before.shuffle)
+            .await
     }
 
     /// Avance inmediato por evento, incluso si la Web API todavía describe la pista anterior.
@@ -1832,9 +2010,15 @@ impl PlayerCtl {
         });
         if should_enable_audio(account.signed_in, self.env.audio.is_ready(), other_active) {
             // Confirm with Spotify once: a phone or speaker may be playing unseen by the sources.
+            // If that check fails (429 with the shared Client ID, no network) play here instead of
+            // giving up: the first click after launch used to do nothing (user 2026-10-10).
             let api = self.env.account.api().ok_or(VeloError::NotAuthenticated)?;
-            if api.devices().await?.iter().any(|d| d.is_active) {
-                return Ok(Some(PlayRoute::WebApi));
+            match api.devices().await {
+                Ok(devices) if devices.iter().any(|d| d.is_active) => {
+                    return Ok(Some(PlayRoute::WebApi));
+                }
+                Ok(_) => {}
+                Err(e) => tracing::debug!(error = %e, "device check failed; playing on Velo"),
             }
             if !self.env.audio.ensure_ready().await {
                 return Ok(None);
@@ -1855,9 +2039,19 @@ impl PlayerCtl {
         };
         let this = self.clone();
         self.env.rt.spawn(async move {
-            let result = tokio::time::timeout(Duration::from_secs(20), api.devices())
-                .await
-                .unwrap_or_else(|_| Err(VeloError::Network("devices timed out".into())));
+            // Clone and order the cluster off Qt, just like the Web fallback.
+            let result = if let Some(cluster) = this
+                .env
+                .audio
+                .engine()
+                .and_then(|e| velo_player::queue::connect_snapshot::cluster_state(e.session()))
+            {
+                Ok(cluster.devices)
+            } else {
+                tokio::time::timeout(Duration::from_secs(20), api.devices())
+                    .await
+                    .unwrap_or_else(|_| Err(VeloError::Network("devices timed out".into())))
+            };
             if this.devices_generation.load(Ordering::SeqCst) != generation {
                 return;
             }
@@ -1867,12 +2061,7 @@ impl PlayerCtl {
                 }
                 match result {
                     Ok(devices) => {
-                        this.lock().devices_available = devices.iter().any(|d| d.id.is_some());
-                        let rows = devices.iter().map(device_row).collect();
-                        this.ui.send(PlayerUi::DevicesFinished {
-                            rows: Some(ModelOp::Replace(rows)),
-                            error: "",
-                        });
+                        this.publish_devices(devices);
                     }
                     Err(e) => this.ui.send(PlayerUi::DevicesFinished {
                         rows: None,
@@ -1927,7 +2116,40 @@ impl PlayerCtl {
         );
         let this = self.clone();
         self.env.rt.spawn(async move {
-            match api.transfer(&device_id, true).await {
+            let internal = async {
+                if this.env.account.session_mode() {
+                    return api.transfer(&device_id, true).await;
+                }
+                if let Some(engine) = this.env.audio.engine() {
+                    if let Some(cluster) =
+                        velo_player::queue::connect_snapshot::cluster_state(engine.session())
+                    {
+                        if let Some(from) = cluster
+                            .devices
+                            .iter()
+                            .find(|d| d.is_active)
+                            .and_then(|d| d.id.as_deref())
+                        {
+                            if from == device_id {
+                                return Ok(());
+                            }
+                            if velo_player::extras::transfer(
+                                engine.session(),
+                                from,
+                                &device_id,
+                                true,
+                            )
+                            .await
+                            .is_ok()
+                            {
+                                return Ok(());
+                            }
+                        }
+                    }
+                }
+                api.transfer(&device_id, true).await
+            };
+            match internal.await {
                 Ok(()) => {
                     // The Web API needs a moment to report the new active device.
                     tokio::time::sleep(Duration::from_millis(700)).await;
@@ -1942,6 +2164,16 @@ impl PlayerCtl {
 
 /// Role names of `Player.devices` (re-exported for the bridge).
 pub const DEVICES_ROLES: &str = DEVICE_ROLES;
+
+fn device_icon(kind: &str) -> &'static str {
+    match kind.to_ascii_lowercase().as_str() {
+        "computer" => "computer",
+        "smartphone" | "tablet" => "smartphone",
+        "speaker" | "castaudio" | "avr" | "audiodongle" => "speaker",
+        "tv" | "castvideo" | "stb" | "gameconsole" => "tv",
+        _ => "devices",
+    }
+}
 
 fn devices_error(error: &VeloError) -> &'static str {
     match error {
@@ -2332,6 +2564,21 @@ mod tests {
     }
 
     #[test]
+    fn inactive_resync_waits_for_a_source_before_reading_the_queue() {
+        use super::super::r4b_test_support::{Server, runtime, settle};
+        let rt = runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        rt.block_on(async {
+            let mut server = Server::new().await;
+            env.account.set_test_provider(server.provider());
+            let player = controller(&env);
+            player.resync();
+            settle().await;
+            assert!(server.requests.try_recv().is_err());
+        });
+    }
+
+    #[test]
     fn v92_remote_session_mode_and_repeat_refresh_queue() {
         use super::super::r4b_test_support::{ManualTime, Server, runtime, settle};
         let rt = runtime();
@@ -2553,6 +2800,12 @@ mod tests {
             assert!(view.uri.is_empty() && !view.liked && !view.queue_editable);
         }
         assert_eq!(*env.position.borrow(), 1000);
+        player.seek(4000);
+        assert_eq!(
+            *env.position.borrow(),
+            1000,
+            "seek is locked while the DJ speaks"
+        );
         engine.dj.speech.as_mut().unwrap().playing = false;
         env.audio.state.send_replace(engine.clone());
         player.apply(0, crate::bridge::source_velo::state_of(&engine, "Velo"));
@@ -2611,6 +2864,38 @@ mod tests {
             }),
             ..SourceState::default()
         }
+    }
+
+    #[test]
+    fn remote_transport_publishes_the_same_position_channel_for_lyrics() {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let (_dir, env) = super::super::test_env(&rt);
+        env.account.view.send_modify(|v| v.signed_in = true);
+        env.update_flags(|f| f.visible = true);
+        let player = controller(&env);
+        let mut state = snapshot(2_000, true);
+        state.own_engine = false;
+        state.remote = true;
+        state.device_name = "Pixel".into();
+        state.position_at = Instant::now() - Duration::from_secs(1);
+        player.apply(0, state.clone());
+        assert!(player.view.borrow().remote);
+        assert_eq!(player.view.borrow().device_name, "Pixel");
+        assert!(*env.position.borrow() >= 3_000);
+        state.is_playing = false;
+        state.position_ms = 7_000;
+        state.position_at = Instant::now();
+        player.apply(0, state);
+        assert_eq!(*env.position.borrow(), 7_000);
+        assert!(!should_tick(&env.flags.borrow()));
+        player.apply(0, snapshot(0, false));
+        assert!(!player.view.borrow().remote);
+        assert_eq!(device_icon("Smartphone"), "smartphone");
+        assert_eq!(device_icon("CastAudio"), "speaker");
+        assert_eq!(device_icon("GameConsole"), "tv");
     }
 
     #[test]

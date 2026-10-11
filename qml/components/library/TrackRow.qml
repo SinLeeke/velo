@@ -38,20 +38,42 @@ FocusScope {
     signal selected(int rowIndex)
     implicitHeight: compact ? Theme.trackList.compactRow : Theme.size.trackRow
     activeFocusOnTab: true
+    // Mouse focus keeps keyboard actions available without showing the focus ring.
+    property bool mouseFocus: false
     Accessible.role: Accessible.ListItem
     Accessible.name: qsTr("%1, %2, %3").arg(title).arg(artist).arg(album)
     // Lists that are not Library.tracks (artist "Populares") pass their own play function.
     property var playAction: null
     property int keyboardCount: ListView.view ? ListView.view.count : 0
-    function play() { if (playAction) playAction(index); else Backend.Library.playIndex(index) }
-    function focusFirst(reason) { more.focus = false; forceActiveFocus(reason) }
+    // Rule 3: pulsar una canción se ve en la fila antes de oírse. `pending` (optimista) vale desde
+    // que se pide reproducir hasta que cambia la canción del reproductor, falla, o pasan 6 s.
+    property bool pending: false
+    function play() {
+        if (!playingHere) pending = true
+        if (playAction) playAction(index); else Backend.Library.playIndex(index)
+    }
+    // El «#» y la carátula de búsqueda: reproducen, o alternan pausa si la fila ya suena.
+    function playOrToggle() { if (playingHere) Backend.Player.playPause(); else play() }
+    onPendingChanged: { if (pending) pendingGuard.restart(); else pendingGuard.stop() }
+    SequentialAnimation {
+        id: pendingGuard   // tope de seguridad sin Timer: si nunca llega nada, la fila vuelve
+        PauseAnimation { duration: 6000 }
+        ScriptAction { script: row.pending = false }
+    }
+    Connections {
+        target: Backend.Player
+        function onTrackUriChanged() { row.pending = false }
+        function onError() { row.pending = false }
+    }
+    function focusFirst(reason) { mouseFocus = false; more.focus = false; forceActiveFocus(reason) }
     function focusLast() { more.forceActiveFocus(Qt.BacktabFocusReason) }
     function openMenu() {
         if (!sharedMenu) ownMenu.active = true
         contextMenu.openFor(row, width - contextMenu.width, height)
     }
-    ListView.onPooled: if (contextMenu && contextMenu.row === row) contextMenu.close()
+    ListView.onPooled: { pending = false; if (contextMenu && contextMenu.row === row) contextMenu.close() }
     onActiveFocusChanged: {
+        if (!activeFocus) mouseFocus = false
         if (activeFocus && ListView.view) {
             ListView.view.currentIndex = index
             ListView.view.positionViewAtIndex(index, ListView.Contain)
@@ -109,13 +131,29 @@ FocusScope {
         Behavior on opacity {
             OpacityAnimator { duration: Math.max(1, row.surfaceShown ? Theme.motion.instant : Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
         }
-        border.width: row.activeFocus ? Theme.stroke.focus : 0
+        border.width: row.activeFocus && !row.mouseFocus ? Theme.stroke.focus : 0
         border.color: Theme.focusRing
+    }
+    // Presión: solo color (sin escala: moverla desplazaría el texto en listas largas). Entra en
+    // `instant`, sale en `fast`.
+    Rectangle {
+        objectName: "trackPressLayer"
+        anchors.fill: parent
+        radius: Theme.radius.md
+        color: Theme.surface3
+        opacity: pointer.pressed || numberHit.pressed ? 1 : 0
+        Behavior on opacity {
+            OpacityAnimator { duration: Math.max(1, pointer.pressed || numberHit.pressed ? Theme.motion.instant : Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        }
     }
     // C7: the row of the song that is playing swaps its number for three accent bars. While the
     // visualizer runs they follow its bands (the screen clock, no timer of their own; only this
     // row reads them); otherwise they rest at fixed heights. Scale transforms only.
     readonly property bool playingHere: uri !== "" && uri === Backend.Player.trackUri
+    // Suena o está pendiente de sonar: barras + título en acento.
+    readonly property bool lit: playingHere || pending
+    // Hover sobre una fila con «#»: el número se cambia por el ícono de reproducir/pausar.
+    readonly property bool hoverPlay: pointer.containsMouse && numberWidth > 0
     // S9 (4b): only while this row can be seen. Under Now Playing the library is hidden (and the
     // Visualizer keeps publishing for the big band): `visible` is the effective visibility, so the
     // bars stop re-evaluating there too. Paused or minimized: not playing / not running.
@@ -128,7 +166,8 @@ FocusScope {
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: mouse => {
-            row.forceActiveFocus(); row.selected(row.index)
+            row.mouseFocus = true
+            row.forceActiveFocus(Qt.MouseFocusReason); row.selected(row.index)
             if (mouse.button === Qt.RightButton) row.openMenu()
         }
         onDoubleClicked: mouse => { if (mouse.button === Qt.LeftButton) row.play() }
@@ -154,20 +193,54 @@ FocusScope {
                 horizontalAlignment: Text.AlignRight
                 elide: Text.ElideNone
                 font.features: Theme.tabularFeatures
-                visible: !row.playingHere
+                opacity: row.lit || row.hoverPlay ? 0 : 1
+                Behavior on opacity {
+                    OpacityAnimator { duration: Math.max(1, Theme.motion.instant); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                }
             }
-            Loader {   // created only in the playing row: the other delegates stay light
-                active: row.playingHere
+            Loader {   // created only in the lit row: the other delegates stay light
+                active: row.lit
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
+                opacity: row.hoverPlay ? 0 : 1
                 sourceComponent: nowBars
+            }
+            IconImage {
+                id: playGlyph
+                objectName: "trackPlayGlyph"
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                source: row.playingHere && Backend.Player.isPlaying ? Qt.resolvedUrl("../../icons/pause_fill.svg") : Qt.resolvedUrl("../../icons/play_arrow_fill.svg")
+                sourceSize: Qt.size(Theme.icon.sm, Theme.icon.sm)
+                color: row.lit ? Theme.accent : Theme.text
+                opacity: row.hoverPlay ? 1 : 0
+                Behavior on opacity {
+                    OpacityAnimator { duration: Math.max(1, Theme.motion.instant); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                }
+            }
+            // Un clic sobre el «#» reproduce (o pausa si ya suena): sin doble clic.
+            MouseArea {
+                id: numberHit
+                objectName: "trackNumberHit"
+                anchors.fill: parent
+                anchors.margins: -Theme.space.xs
+                acceptedButtons: Qt.LeftButton
+                onClicked: { row.mouseFocus = true; row.forceActiveFocus(Qt.MouseFocusReason); row.selected(row.index); row.playOrToggle() }
             }
         }
         Component {
             id: nowBars
             Row {
+                id: bars
                 height: Theme.icon.sm
                 spacing: Theme.space.xxs
+                // Entrada: opacidad y escala desde `dotFrom` (solo cambia una fila a la vez).
+                ParallelAnimation {
+                    running: true
+                    NumberAnimation { target: bars; property: "opacity"; from: 0; to: 1; duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                    NumberAnimation { target: barsScale; property: "xScale"; from: Theme.feel.dotFrom; to: 1; duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                }
+                transform: Scale { id: barsScale; origin.x: bars.width; origin.y: bars.height / 2 }
                 Accessible.role: Accessible.StaticText
                 Accessible.name: qsTr("Sonando ahora")
                 Repeater {
@@ -194,13 +267,51 @@ FocusScope {
             height: width
             anchors.verticalCenter: parent.verticalCenter
             source: row.compact ? "" : row.imageUrl
+            // Búsqueda (sin «#»): al pasar el puntero la carátula muestra reproducir/pausar.
+            Rectangle {
+                objectName: "trackArtPlay"
+                anchors.fill: parent
+                radius: Theme.radius.md
+                color: Theme.scrim
+                opacity: pointer.containsMouse && row.numberWidth === 0 ? 1 : 0
+                visible: opacity > 0
+                Behavior on opacity {
+                    OpacityAnimator { duration: Math.max(1, Theme.motion.instant); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                }
+                IconImage {
+                    anchors.centerIn: parent
+                    source: row.playingHere && Backend.Player.isPlaying ? Qt.resolvedUrl("../../icons/pause_fill.svg") : Qt.resolvedUrl("../../icons/play_arrow_fill.svg")
+                    sourceSize: Qt.size(Theme.icon.md, Theme.icon.md)
+                    color: Theme.accent
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton
+                    onClicked: { row.mouseFocus = true; row.forceActiveFocus(Qt.MouseFocusReason); row.selected(row.index); row.playOrToggle() }
+                }
+            }
         }
         Column {
             visible: !row.compact
             width: row.titleWidth
             anchors.verticalCenter: parent.verticalCenter
             spacing: Theme.space.xxs
-            LibraryLabel { width: parent.width; text: row.title; font.weight: Theme.type.medium }
+            // Título en acento al sonar: dos etiquetas con opacidad cruzada (el color no se anima).
+            Item {
+                width: parent.width
+                height: titleBase.implicitHeight
+                LibraryLabel { id: titleBase; width: parent.width; text: row.title; font.weight: Theme.type.medium; opacity: 1 - titleLit.opacity }
+                LibraryLabel {
+                    id: titleLit
+                    objectName: "trackTitleLit"
+                    width: parent.width; text: row.title; font.weight: Theme.type.medium; color: Theme.accent
+                    opacity: row.lit ? 1 : 0
+                    visible: opacity > 0
+                    Behavior on opacity {
+                        OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut }
+                    }
+                }
+            }
             LibraryLabel { width: parent.width; text: row.artist; color: Theme.textSecondary; font.pixelSize: Theme.type.caption }
         }
         Row {
@@ -214,6 +325,7 @@ FocusScope {
                 anchors.baseline: compactArtist.baseline
                 text: row.title
                 font.weight: Theme.type.medium
+                color: row.lit ? Theme.accent : Theme.text
             }
             LibraryLabel {
                 id: compactArtist

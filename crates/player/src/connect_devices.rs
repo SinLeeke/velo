@@ -1,24 +1,20 @@
-//! Read-only dealer observer alongside Spirc. No polling or second connection.
-use std::sync::{Arc, Mutex};
+//! Dealer observer installed before Spirc registers the device. No polling or second connection.
+use std::sync::Arc;
 
 use librespot_core::{Session, dealer::protocol::Message};
 use librespot_protocol::{connect::ClusterUpdate, devices::DeviceType};
-use tokio::task::JoinHandle;
+use tokio::{sync::watch, task::JoinHandle};
 use velo_domain::{Device, Result};
 
-pub(crate) struct ConnectDevices {
-    rows: Arc<Mutex<Option<Snapshot>>>,
-    task: JoinHandle<()>,
-}
+use crate::queue::connect_snapshot::{self, ClusterState};
 
-struct Snapshot {
-    timestamp: i64,
-    devices: Vec<Device>,
+pub(crate) struct ConnectDevices {
+    rows: Arc<watch::Sender<Option<ClusterState>>>,
+    task: JoinHandle<()>,
 }
 
 impl ConnectDevices {
     /// Subscribe before Spirc registers the device, preserving the initial cluster.
-    /// Dealer's SubscriberMap supports multiple observers of the same URI.
     pub fn observe(session: &Session) -> Option<Self> {
         let mut stream = session
             .dealer()
@@ -27,48 +23,35 @@ impl ConnectDevices {
                 Message::from_raw::<ClusterUpdate>,
             )
             .ok()?;
-        let rows = Arc::new(Mutex::new(None::<Snapshot>));
+        let rows = Arc::new(watch::channel(None).0);
+        connect_snapshot::register(session, &rows);
         let latest = rows.clone();
+        let local_id = session.device_id().to_owned();
         let task = tokio::spawn(async move {
             while let Some(update) = std::future::poll_fn(|cx| stream.as_mut().poll_next(cx)).await
             {
                 if let Ok(update) = update {
-                    let next = update.cluster.as_ref().and_then(|cluster| {
-                        cluster_devices(&update).map(|devices| Snapshot {
-                            timestamp: cluster.changed_timestamp_ms,
-                            devices,
-                        })
-                    });
-                    let mut current = latest.lock().unwrap_or_else(|e| e.into_inner());
-                    if let (Some(old), Some(new)) = (current.as_ref(), next.as_ref()) {
-                        if new.timestamp < old.timestamp {
-                            continue;
-                        }
-                    }
-                    *current = next;
+                    connect_snapshot::publish_cluster(&latest, &update, &local_id);
                 }
             }
-            *latest.lock().unwrap_or_else(|e| e.into_inner()) = None;
+            latest.send_replace(None);
         });
         Some(Self { rows, task })
     }
 
     pub fn snapshot(&self) -> Option<Vec<Device>> {
-        self.rows
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .as_ref()
-            .map(|snapshot| snapshot.devices.clone())
+        self.rows.borrow().as_ref().map(|s| s.devices.clone())
     }
 }
 
 impl Drop for ConnectDevices {
     fn drop(&mut self) {
         self.task.abort();
+        self.rows.send_replace(None);
     }
 }
 
-fn cluster_devices(update: &ClusterUpdate) -> Option<Vec<Device>> {
+pub(crate) fn cluster_devices(update: &ClusterUpdate) -> Option<Vec<Device>> {
     let cluster = update.cluster.as_ref()?;
     let mut rows: Vec<_> = cluster
         .device
@@ -119,35 +102,27 @@ fn cluster_devices(update: &ClusterUpdate) -> Option<Vec<Device>> {
     Some(rows)
 }
 
-/// Web API metadata wins for known IDs; dealer fills missing devices or a failed read.
+/// Cluster is authoritative for membership and the active endpoint. Web metadata only fills
+/// unknown types/volume; stale Web rows never resurrect an endpoint absent from the cluster.
 pub(crate) fn with_connect(
     web: Result<Vec<Device>>,
     connect: Option<Vec<Device>>,
 ) -> Result<Vec<Device>> {
-    match (web, connect) {
-        (Ok(mut rows), Some(connect)) => {
-            let web_active = rows.iter().any(|d| d.is_active);
-            for mut device in connect {
-                if let Some(existing) = device
-                    .id
-                    .as_ref()
-                    .and_then(|id| rows.iter_mut().find(|r| r.id.as_ref() == Some(id)))
-                {
-                    if !web_active {
-                        existing.is_active = device.is_active;
-                    }
-                    continue;
+    let Some(mut rows) = connect else { return web };
+    if let Ok(web) = web {
+        for row in &mut rows {
+            if let Some(metadata) = web.iter().find(|d| row.id.is_some() && d.id == row.id) {
+                if row.kind == "Unknown" {
+                    row.kind.clone_from(&metadata.kind);
                 }
-                if web_active {
-                    device.is_active = false;
+                if row.volume_percent.is_none() && metadata.supports_volume {
+                    row.volume_percent = metadata.volume_percent;
+                    row.supports_volume = metadata.supports_volume;
                 }
-                rows.push(device);
             }
-            Ok(rows)
         }
-        (Err(_), Some(rows)) if !rows.is_empty() => Ok(rows),
-        (result, _) => result,
     }
+    Ok(rows)
 }
 
 #[cfg(test)]
@@ -230,7 +205,11 @@ mod tests {
             with_connect(Ok(rows.clone()), Some(rows.clone())).unwrap(),
             rows
         );
-        assert!(with_connect(Err(VeloError::NotAuthenticated), Some(vec![])).is_err());
+        assert!(
+            with_connect(Err(VeloError::NotAuthenticated), Some(vec![]))
+                .unwrap()
+                .is_empty()
+        );
         let mut web = rows.clone();
         web[0].is_active = false;
         assert!(with_connect(Ok(web), Some(rows.clone())).unwrap()[0].is_active);

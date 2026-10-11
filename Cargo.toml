@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.9.2"
+version = "0.9.3"
 edition = "2024"
 license = "MIT"
 rust-version = "1.85"
@@ -41,3 +41,8 @@ debug = "line-tables-only"   # backtraces keep file:line; full debug info triple
 [profile.dev.package."*"]
 opt-level = 2   # image decoding / FFT stay fast in debug builds
 debug = false
+
+# Parche de Velo sobre librespot-connect 0.8.0 (sesion privada anunciada a Spotify).
+# Ver third_party/librespot-connect/VELO-PATCH.md.
+[patch.crates-io]
+librespot-connect = { path = "third_party/librespot-connect" }

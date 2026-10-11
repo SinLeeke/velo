@@ -19,6 +19,11 @@ Item {
     TrackMenu { id: songMenu }
     readonly property bool profileReady: Backend.Library.artistStatus === "ready"
     readonly property string artistUri: artistId !== "" ? "spotify:artist:" + artistId : ""
+    // Motion (G2, A-P1): sections enter when the profile data arrives after the page is open.
+    readonly property var window: page.Window.window
+    readonly property bool revealAllowed: visible && Theme.motion.scale > 0
+        && (!window || (window.visibility !== Window.Minimized && window.visibility !== Window.Hidden
+            && (window.active || !Theme.pauseEffectsInBackground)))
     property bool popularExpanded: false
     property bool bioExpanded: false
     property string localLoadError: ""
@@ -190,23 +195,19 @@ Item {
                         primary: true
                         text: qsTr("Reproducir")
                         iconSource: Qt.resolvedUrl("../../icons/play_arrow_fill.svg")
-                        enabled: Backend.Player.canControl
+                        enabled: Backend.Player.canControl || (Backend.Account.signedIn && Backend.Account.isPremium)   // starting needs no active session
                         onClicked: Backend.Player.shuffle ? Backend.Library.shuffleCurrent()
                             : popularList.count > 0 ? Backend.Library.playArtistPopular(0) : Backend.Library.playCurrent()
                     }
-                    IconButton {
-                        objectName: "artistShuffleSwitch"
-                        width: Theme.size.titleBar
-                        height: Theme.size.titleBar
-                        text: Backend.Player.shuffle ? qsTr("Desactivar aleatorio") : qsTr("Activar aleatorio")
+                    // Regla 6/8: el mismo «Aleatorio» que en listas y álbumes, utilizable en frío (sin
+                    // sesión activa, con Premium) en vez del interruptor apagado.
+                    LibraryButton {
+                        objectName: "artistShuffleButton"
+                        width: Theme.library.cardWidth
+                        text: qsTr("Aleatorio")
                         iconSource: Qt.resolvedUrl("../../icons/shuffle.svg")
-                        iconSize: Theme.icon.lg
-                        active: Backend.Player.shuffle
-                        activeFill: Theme.library.clearPaint
-                        activeInk: Theme.accent
-                        Accessible.checkable: true
-                        enabled: Backend.Player.canControl
-                        onClicked: Backend.Player.toggleShuffle()
+                        enabled: Backend.Player.canControl || (Backend.Account.signedIn && Backend.Account.isPremium)
+                        onClicked: Backend.Library.shuffleCurrent()
                     }
                     LibraryButton {
                         objectName: "artistFollowButton"
@@ -243,7 +244,10 @@ Item {
             Column {
                 width: parent.width
                 spacing: Theme.space.md
+                id: sec_popular
                 visible: page.profileReady && popularList.count > 0
+                transform: Translate { id: shift_popular }
+                SectionReveal { item: sec_popular; shift: shift_popular; order: 0; effectsAllowed: page.revealAllowed }
                 SectionTitle { text: qsTr("Populares") }
                 ListView {
                     id: popularList
@@ -281,7 +285,10 @@ Item {
             Column {
                 width: parent.width
                 spacing: Theme.space.md
+                id: sec_disco
                 visible: discography.count > 0 || (page.profileReady && Backend.Library.artistDiscographyType !== "all")
+                transform: Translate { id: shift_disco }
+                SectionReveal { item: sec_disco; shift: shift_disco; order: 1; effectsAllowed: page.revealAllowed }
                 SectionTitle { text: qsTr("Discografía") }
                 Row {
                     visible: page.profileReady
@@ -318,7 +325,10 @@ Item {
             Column {
                 width: parent.width
                 spacing: Theme.space.md
+                id: sec_related
                 visible: page.profileReady && relatedList.count > 0
+                transform: Translate { id: shift_related }
+                SectionReveal { item: sec_related; shift: shift_related; order: 2; effectsAllowed: page.revealAllowed }
                 SectionTitle { text: qsTr("Fans también escuchan") }
                 ListView {
                     id: relatedList
@@ -355,7 +365,10 @@ Item {
             Column {
                 width: parent.width
                 spacing: Theme.space.md
+                id: sec_appears
                 visible: page.profileReady && appearsOn.count > 0
+                transform: Translate { id: shift_appears }
+                SectionReveal { item: sec_appears; shift: shift_appears; order: 3; effectsAllowed: page.revealAllowed }
                 SectionTitle { text: qsTr("Aparece en") }
                 AlbumShelf {
                     id: appearsOn
@@ -368,7 +381,10 @@ Item {
             Column {
                 width: parent.width
                 spacing: Theme.space.md
+                id: sec_about
                 visible: page.profileReady && (Backend.Library.artistBiography !== "" || photos.count > 0)
+                transform: Translate { id: shift_about }
+                SectionReveal { item: sec_about; shift: shift_about; order: 4; effectsAllowed: page.revealAllowed }
                 SectionTitle { text: qsTr("Acerca de") }
                 ListView {
                     id: photos

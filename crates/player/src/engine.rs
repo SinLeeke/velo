@@ -31,7 +31,7 @@ use tokio::{
     sync::{broadcast, mpsc, watch},
     task::JoinHandle,
 };
-use velo_domain::{EqConfig, RepeatMode};
+use velo_domain::{EqConfig, MixConfig, RepeatMode};
 use velo_spotify::TokenStore;
 
 use crate::{
@@ -39,6 +39,7 @@ use crate::{
     dj::{self, DjCommand, DjError, DjHost, DjState},
     eq::EqControl,
     login,
+    mix::{MixControl, MixStatus},
     pcm::{
         OutputControl, PcmPacket, PcmTap, PlaybackProgress, TapActivation, TappedSink,
         TrackEndTimerState, VoiceClip, VoiceProgress, VolumeOverride,
@@ -116,6 +117,8 @@ pub struct EngineConfig {
     pub device_id: String,
     /// 0–100, until a client sets another one.
     pub initial_volume: u8,
+    /// «Ocultar actividad»: se anuncia a Spotify como sesión privada del dispositivo.
+    pub private_session: bool,
 }
 
 impl EngineConfig {
@@ -131,6 +134,7 @@ impl EngineConfig {
             name: name.to_string(),
             device_id: stable_device_id(&format!("Velo|{host}|{user}")),
             initial_volume: 50,
+            private_session: false,
         }
     }
 }
@@ -239,6 +243,10 @@ pub struct Engine {
     volume_commands: Mutex<()>,
     volume_override: VolumeOverride,
     eq_control: EqControl,
+    mix_control: MixControl,
+    mix_status: watch::Receiver<MixStatus>,
+    /// Mixear exige gapless: sin él librespot para el sink en cada carga.
+    gapless: bool,
     progress: broadcast::Sender<PlaybackProgress>,
     transport_events: broadcast::Sender<librespot_playback::player::PlayerEvent>,
     output_switch: crate::output::OutputSwitch,
@@ -262,6 +270,8 @@ pub struct Engine {
     dj: Mutex<Option<DjHandle>>,
     /// Sube con cada arranque/parada del DJ: un controlador viejo ya no publica ni actúa.
     dj_generation: AtomicU64,
+    /// Huella del primer bloque de la última sesión DJ: el siguiente inicio no la repite.
+    dj_last_session: Arc<Mutex<Option<String>>>,
 }
 
 struct DjHandle {
@@ -390,6 +400,8 @@ impl Engine {
         let output_control = OutputControl::new(tap, soft_volume, pause_request);
         let eq_control = EqControl::default();
         eq_control.set(options.eq);
+        let mix_control = MixControl::default();
+        mix_control.set(effective_mix(options.mix, options.gapless));
         let volume_override = VolumeOverride::default();
         let (progress, _) = broadcast::channel(256);
         let (transport_events, _) = broadcast::channel(256);
@@ -397,7 +409,10 @@ impl Engine {
             eq_control.clone(),
             volume_override.clone(),
             progress.clone(),
+            mix_control.clone(),
         );
+        let mix_status = output_control.mix_status();
+        let mut event_mix = mix_status.clone();
         let sink_control = output_control.clone();
         let player = Player::new(
             player_config(&options),
@@ -416,6 +431,8 @@ impl Engine {
             name: config.name.clone(),
             device_type: DeviceType::Computer,
             initial_volume: state::percent_to_volume(config.initial_volume),
+            // VELO PATCH (third_party/librespot-connect): valor inicial; también tras reconectar.
+            is_private_session: config.private_session,
             ..ConnectConfig::default()
         };
         let connect_devices = crate::connect_devices::ConnectDevices::observe(&session);
@@ -459,6 +476,9 @@ impl Engine {
         let event_volume = volume_override.clone();
         let event_transport = transport_events.clone();
         let forwarder = tokio::spawn(async move {
+            // Mixear: la pista que librespot decodifica y el último inicio audible aplicado.
+            let mut request = None;
+            let mut mix_started = None;
             loop {
                 tokio::select! {
                     event = events.recv() => match event {
@@ -468,11 +488,24 @@ impl Engine {
                                 tracing::debug!(volume, latest_requested_volume = ?event_volume.requested_volume(), request_to_spirc_ack_us = ?event_volume.elapsed_us(), "volume: Spirc acknowledgement received");
                                 event_volume.acknowledge(*volume);
                             }
+                            if let librespot_playback::player::PlayerEvent::PlayRequestIdChanged { play_request_id } = &event {
+                                request = Some(*play_request_id);
+                            }
                             let _ = event_transport.send(event.clone());
                             event_known.lock().unwrap_or_else(|e| e.into_inner()).event(&event, state_tx.borrow().repeat);
-                            state_tx.send_if_modified(|s| state::apply_event(s, &event, Instant::now()));
+                            // Publicado por el decoder antes de su EndOfTrack: el fin adelantado
+                            // por la ventana de mezcla no es un corte de la pista.
+                            let ahead = event_mix.borrow().ahead_ms;
+                            state_tx.send_if_modified(|s| {
+                                s.mix.ahead_ms = ahead;
+                                state::apply_event(s, &event, Instant::now())
+                            });
                         }
                         None => break,
+                    },
+                    Ok(()) = event_mix.changed() => {
+                        let status = *event_mix.borrow_and_update();
+                        state_tx.send_if_modified(|s| state::apply_mix(s, &status, request, &mut mix_started));
                     },
                     Some(reply) = pause_rx.recv() => {
                         if let Some(player) = pause_player.upgrade() {
@@ -496,6 +529,9 @@ impl Engine {
             volume_commands: Mutex::new(()),
             volume_override,
             eq_control,
+            mix_control,
+            mix_status,
+            gapless: options.gapless,
             progress,
             transport_events,
             output_switch,
@@ -514,6 +550,7 @@ impl Engine {
             known,
             dj: Mutex::new(None),
             dj_generation: AtomicU64::new(0),
+            dj_last_session: Arc::new(Mutex::new(None)),
         })
     }
 
@@ -531,8 +568,24 @@ impl Engine {
     pub fn set_output_buffer_ms(&self, ms: u32) -> Result<(), PlayerError> {
         self.output_switch.set_buffer_ms(ms)
     }
+    /// Cambia en caliente la sesión privada anunciada a Spotify (parche de librespot-connect).
+    pub fn set_private_session(&self, private: bool) -> Result<(), PlayerError> {
+        self.send(self.spirc.set_private_session(private))
+    }
     pub fn set_eq(&self, config: EqConfig) {
         self.eq_control.set(config);
+    }
+    /// Mixear en caliente: fundido cruzado entre canciones consecutivas (sin gapless, nunca).
+    pub fn set_mix(&self, config: MixConfig) {
+        self.mix_control.set(effective_mix(config, self.gapless));
+    }
+    /// Hay un fundido cruzado sonando ahora.
+    pub fn mixing(&self) -> bool {
+        self.mix_status.borrow().active
+    }
+    /// Se puede mezclar en este motor: gapless activado y sin DJ (la voz nunca se mezcla).
+    pub fn mix_available(&self) -> bool {
+        self.gapless && !self.dj_active()
     }
     /// Consumers must handle Lagged. Values are cumulative, so dropped intermediate values
     /// do not lose listening time. Subscribe before issuing load; IDs scope to this Engine.
@@ -828,7 +881,7 @@ impl Engine {
             active: true,
             ..DjState::default()
         });
-        let first = match dj::fetch_block(&self.session, None).await {
+        let first = match fresh_dj_block(&self.session, &self.dj_last_session).await {
             Ok(block) => block,
             Err(error) => {
                 tracing::debug!(%error, "DJ: Spotify no entregó la sesión");
@@ -857,6 +910,7 @@ impl Engine {
             generation,
         });
         let task = tokio::spawn(dj::run(host, first, rx));
+        self.mix_control.set_blocked(true);
         *slot = Some(DjHandle {
             commands,
             task: task.abort_handle(),
@@ -889,6 +943,7 @@ impl Engine {
         if let Some(dj) = self.dj.lock().unwrap_or_else(|e| e.into_inner()).take() {
             dj.task.abort();
         }
+        self.mix_control.set_blocked(false);
         self.output_control.stop_voice();
         self.output_control.cancel_dj_timer();
         self.publish_dj(DjState::default());
@@ -956,6 +1011,17 @@ impl Drop for Engine {
     }
 }
 
+/// Una sesión DJ nueva que no repite el set del inicio anterior; recuerda la huella del nuevo.
+async fn fresh_dj_block(
+    session: &Session,
+    last: &Mutex<Option<String>>,
+) -> Result<dj::DjBlock, DjError> {
+    let avoid = last.lock().unwrap_or_else(|e| e.into_inner()).clone();
+    let block = dj::fetch_fresh_block(session, avoid.as_deref()).await?;
+    *last.lock().unwrap_or_else(|e| e.into_inner()) = block.fingerprint();
+    Ok(block)
+}
+
 /// El motor visto por el controlador del DJ. Débil: el DJ nunca mantiene vivo el motor.
 struct EngineDj {
     engine: Weak<Engine>,
@@ -980,7 +1046,18 @@ impl DjHost for EngineDj {
         url: Option<String>,
     ) -> impl Future<Output = Result<dj::DjBlock, DjError>> + Send {
         let session = self.session();
-        async move { dj::fetch_block(&session.ok_or(DjError::Stopped)?, url.as_deref()).await }
+        let last = self.engine().ok().map(|e| e.dj_last_session.clone());
+        async move {
+            let session = session.ok_or(DjError::Stopped)?;
+            match url {
+                Some(url) => dj::fetch_block(&session, Some(&url)).await,
+                // Sin URL: una sesión DJ nueva (inicio o «Cambiar de onda» sin más páginas).
+                None => {
+                    let last = last.ok_or(DjError::Stopped)?;
+                    fresh_dj_block(&session, &last).await
+                }
+            }
+        }
     }
     fn fetch_voice(
         &self,
@@ -1053,6 +1130,14 @@ impl DjHost for EngineDj {
                 s.dj_error = Some(error);
             });
         }
+    }
+}
+
+/// Sin gapless librespot llama `sink.stop()` en cada carga: no hay mezcla posible.
+fn effective_mix(config: MixConfig, gapless: bool) -> MixConfig {
+    MixConfig {
+        enabled: config.enabled && gapless,
+        ..config.clamped()
     }
 }
 
@@ -1136,6 +1221,27 @@ mod tests {
             EngineConfig::velo("Velo").device_id,
             EngineConfig::velo("Renamed device").device_id
         );
+    }
+    #[test]
+    fn mix_needs_gapless_and_is_clamped_before_reaching_the_sink() {
+        let on = MixConfig {
+            enabled: true,
+            seconds: 40,
+        };
+        assert_eq!(
+            effective_mix(on, true),
+            MixConfig {
+                enabled: true,
+                seconds: 12
+            }
+        );
+        assert!(!effective_mix(on, false).enabled);
+        let control = MixControl::default();
+        control.set(effective_mix(on, false));
+        assert_eq!(control.allowed(), None);
+        control.set(effective_mix(on, true));
+        assert_eq!(control.allowed(), Some(12));
+        assert_eq!(EngineOptions::default().mix, MixConfig::default());
     }
     #[test]
     fn audio_cache_has_no_credentials_or_volume_locations() {

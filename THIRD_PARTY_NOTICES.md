@@ -76,3 +76,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## librespot-connect (parcheado)
+
+- Nombre: librespot-connect 0.8.0 (parte de librespot)
+- URL: https://github.com/librespot-org/librespot
+- Licencia: MIT
+- Incluida en `third_party/librespot-connect/` y sustituida vía `[patch.crates-io]`.
+  Parche de Velo: anuncia la sesión privada (`DeviceInfo.is_private_session`) a Spotify.
+  Detalle en `third_party/librespot-connect/VELO-PATCH.md`.

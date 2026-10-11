@@ -28,7 +28,9 @@ IconButton {
         padding: Theme.space.sm
         focus: true
         modal: false
-        closePolicy: T.Popup.CloseOnEscape | T.Popup.CloseOnPressOutside
+        // Outside its parent (this button): a press on the button itself does not close it from
+        // "outside" first, so the click toggles it shut instead of reopening it.
+        closePolicy: T.Popup.CloseOnEscape | T.Popup.CloseOnPressOutsideParent
         // Motion (S1-2): like the menus: fade + scale 0.98 -> 1 from the bottom-right corner (its
         // button), `fast`; closing is immediate, so focus is back on the button at once.
         // Rows change instantly.

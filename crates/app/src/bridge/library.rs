@@ -1,4 +1,4 @@
-//! `Library` singleton. A thin view of
+//! `Library` singleton (docs/CONTRATO.md, including the wave-2 additions). A thin view of
 //! `engine::library`: lists are `QAbstractListModel`s (`VeloListModel`) filled with ordered row
 //! operations; every invokable returns immediately and works on the tokio runtime.
 
@@ -60,6 +60,8 @@ pub mod ffi {
         #[qproperty(bool, sort_descending, READ, NOTIFY)]
         #[qproperty(bool, compact_view, READ, NOTIFY)]
         #[qproperty(bool, view_busy, READ, NOTIFY)]
+        #[qproperty(bool, mix_current, READ, NOTIFY)]
+        #[qproperty(bool, mix_playing, READ, NOTIFY)]
         #[qproperty(*mut QAbstractListModel, search_suggestions, READ, CONSTANT)]
         #[qproperty(*mut QAbstractListModel, search_results, READ, CONSTANT)]
         #[qproperty(*mut QAbstractListModel, search_tracks, READ, CONSTANT)]
@@ -153,6 +155,10 @@ pub mod ffi {
         fn play_current(self: &Library);
         #[qinvokable]
         fn shuffle_current(self: &Library);
+        #[qinvokable]
+        fn toggle_mix_current(self: &Library);
+        #[qinvokable]
+        fn toggle_mix_playing(self: &Library);
         #[qinvokable]
         fn toggle_pin(self: &Library, playlist_id: &QString);
         #[qinvokable]
@@ -325,6 +331,8 @@ pub struct LibraryRust {
     sort_key: QString,
     sort_descending: bool,
     compact_view: bool,
+    mix_current: bool,
+    mix_playing: bool,
     view_busy: bool,
     /// Indexed by `LibModel as usize`.
     models: Vec<ListModel>,
@@ -431,6 +439,8 @@ impl Default for LibraryRust {
             sort_key: QString::from(m.sort_key.as_str()),
             sort_descending: m.sort_descending,
             compact_view: m.compact,
+            mix_current: m.mix_current,
+            mix_playing: m.mix_playing,
             view_busy: m.view_busy,
             models: Vec::new(),
         }
@@ -1067,6 +1077,8 @@ impl ffi::Library {
         );
         set_ro!(self, compact_view, compact_view_changed, m.compact);
         set_ro!(self, view_busy, view_busy_changed, m.view_busy);
+        set_ro!(self, mix_current, mix_current_changed, m.mix_current);
+        set_ro!(self, mix_playing, mix_playing_changed, m.mix_playing);
         set_ro!(
             self,
             current_owner_id,
@@ -1128,6 +1140,14 @@ impl ffi::Library {
 
     pub fn play_current(&self) {
         core().library.play_current();
+    }
+
+    pub fn toggle_mix_current(&self) {
+        core().library.toggle_mix_current();
+    }
+
+    pub fn toggle_mix_playing(&self) {
+        core().library.toggle_mix_playing();
     }
 
     pub fn shuffle_current(&self) {

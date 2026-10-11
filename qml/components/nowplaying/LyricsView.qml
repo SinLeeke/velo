@@ -26,6 +26,8 @@ Item {
     property real intro: 1
     readonly property real introBlock: intro >= 1 ? 1 : Morph.ease(Theme.motion.npEase, intro)
 
+    // T5: the side panel's card uses a smaller line than Now Playing's.
+    property int lyricSize: Theme.type.lyric
     property bool playing: true
     property string trackKey: ""
     onTrackKeyChanged: resetFollowing()
@@ -189,9 +191,9 @@ Item {
                     OpacityAnimator { duration: Math.max(1, Theme.motion.base); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut }
                 }
                 font.family: Theme.family
-                font.pixelSize: Theme.type.lyric
+                font.pixelSize: root.lyricSize
                 font.weight: Theme.type.bold
-                font.letterSpacing: Theme.type.tracking(Theme.type.lyric)
+                font.letterSpacing: Theme.type.tracking(root.lyricSize)
                 lineHeight: Theme.type.lyricLineHeight
             }
             HoverHandler {
@@ -342,9 +344,9 @@ Item {
             wrapMode: Text.Wrap
             color: Theme.cover.ink
             font.family: Theme.family
-            font.pixelSize: Theme.type.lyric
+            font.pixelSize: root.lyricSize
             font.weight: Theme.type.bold
-            font.letterSpacing: Theme.type.tracking(Theme.type.lyric)
+            font.letterSpacing: Theme.type.tracking(root.lyricSize)
         }
         Text {
             width: parent.width

@@ -71,6 +71,13 @@ FocusScope {
         { key: "about", label: qsTr("Acerca de"), icon: "info" }
     ]
     readonly property bool railMode: width >= Theme.library.settingsRailMinPage
+    // Composition: rail + reading column form one block centred in the page (it hugs the left
+    // edge only when the page is narrower than the block). The scrollbar and the wheel still
+    // belong to the whole width of the page.
+    readonly property int railGap: Theme.space.xl
+    readonly property real blockWidth: railMode ? Theme.library.settingsRail + railGap + Theme.settingsPage.column : 0
+    readonly property real blockX: railMode ? Math.max(0, Math.round((width - blockWidth - Theme.space.lg) / 2)) : 0
+    readonly property real columnX: railMode ? blockX + Theme.library.settingsRail + railGap : 0
     function sectionItem(key) {
         const c = sectionsColumn.children
         for (let i = 0; i < c.length; ++i)
@@ -96,12 +103,45 @@ FocusScope {
         }
         return current
     }
-    function scrollTo(key) {
+    function targetY(key) {
         const item = sectionItem(key)
-        if (item === null) return
+        if (item === null) return -1
         const y = item.mapToItem(flick.contentItem, 0, 0).y - Theme.space.lg
-        const to = Math.max(0, Math.min(y, flick.contentHeight - flick.height))
+        return Math.max(0, Math.min(y, flick.contentHeight - flick.height))
+    }
+    function scrollTo(key) {
+        const to = targetY(key)
+        if (to < 0) return
+        navAnim.stop(); wheel.stop()
         flick.contentY = to
+    }
+    // Index click (occasional): the page glides to the section so the jump reads as a move.
+    // navTarget pins the selected entry to the destination while it travels, so the scroll-spy
+    // does not flash the sections in between. Opening the page at a section stays instant
+    // (scrollTo), as does the keyboard focus reveal.
+    property string navTarget: ""
+    readonly property string selectedSection: navTarget !== "" ? navTarget : currentSection
+    function glideTo(key) {
+        const to = targetY(key)
+        if (to < 0) return
+        wheel.stop()
+        if (Theme.motion.slow <= 0 || Math.abs(to - flick.contentY) > 3 * flick.height) {
+            navAnim.stop(); navTarget = ""; flick.contentY = to
+            return
+        }
+        navTarget = key
+        navAnim.stop()
+        navAnim.to = to
+        navAnim.start()
+    }
+    NumberAnimation {
+        id: navAnim
+        target: flick
+        property: "contentY"
+        duration: Math.max(1, Theme.motion.slow)
+        easing.type: Easing.Bezier
+        easing.bezierCurve: Theme.motion.easeInOut
+        onStopped: root.navTarget = ""
     }
     function revealControl(item) {
         if (!item) return
@@ -110,6 +150,7 @@ FocusScope {
         if (!ancestor) return
         const top = item.mapToItem(flick.contentItem, 0, 0).y
         const bottom = top + item.height
+        navAnim.stop(); wheel.stop()
         const to = top < flick.contentY ? top : bottom > flick.contentY + flick.height ? bottom - flick.height : flick.contentY
         flick.contentY = Math.max(0, Math.min(to, Math.max(0, flick.contentHeight - flick.height)))
     }
@@ -303,9 +344,33 @@ FocusScope {
                                 : Math.max(Theme.settingsPage.rowMinHeight, texts.height, slot.height)
         height: implicitHeight
         opacity: dimmed ? Theme.library.disabledOpacity : 1
+        // Master switch dims/restores dependent rows softly. One owner per property: the filter
+        // reveal below owns opacity while it runs, so this stays off then.
+        Behavior on opacity {
+            enabled: !reveal.running
+            OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        }
 
         Accessible.role: Accessible.Grouping
         Accessible.name: label
+
+        // Hairline between the rows of a card (not above the first visible one): it sits in the
+        // middle of the gap the card's Column leaves above this row.
+        readonly property bool leading: {
+            const c = row.parent ? row.parent.children : []
+            for (let i = 0; i < c.length; ++i) {
+                if (c[i] === row) return true
+                if (c[i].visible && c[i].matched === true) return false
+            }
+            return true
+        }
+        Rectangle {
+            visible: !row.leading
+            x: 0; width: row.width
+            y: -Math.round(Theme.settingsPage.rowGap / 2)
+            height: Theme.stroke.hairline
+            color: Theme.hairline
+        }
 
         Column {
             id: texts
@@ -423,7 +488,7 @@ FocusScope {
             x: Theme.settingsPage.cardPadding
             y: Theme.settingsPage.cardPadding
             width: card.width - 2 * Theme.settingsPage.cardPadding
-            spacing: Theme.space.md
+            spacing: Theme.settingsPage.rowGap
             Text {
                 // `matched: false`: a heading never keeps its card visible on its own.
                 readonly property bool matched: false
@@ -447,6 +512,8 @@ FocusScope {
         property string sectionKey: ""
         property string title: ""
         property int order: 0
+        readonly property string icon: ({ account: "account_circle", playback: "play_circle", appearance: "palette",
+                                          proxy: "computer", equalizer: "graphic_eq", storage: "storage", about: "info" })[sectionKey] || ""
         readonly property string settingsSearchText: title
         default property alias cards: cardsColumn.data
         readonly property bool shown: {
@@ -481,16 +548,35 @@ FocusScope {
             id: body
             width: section.width
             spacing: Theme.space.md
-            Text {
+            Row {
                 width: parent.width
-                text: section.title
-                font.family: Theme.family
-                font.pixelSize: Theme.type.title
-                font.weight: Theme.type.bold
-                font.letterSpacing: Theme.type.tracking(Theme.type.title)
-                color: Theme.text
-                Accessible.role: Accessible.Heading
-                Accessible.name: text
+                spacing: Theme.space.md
+                bottomPadding: Theme.space.xxs
+                Rectangle {   // section badge: the same glyph as the index entry
+                    width: Theme.settingsPage.badge; height: width
+                    anchors.verticalCenter: titleText.verticalCenter
+                    radius: Theme.radius.md
+                    color: Theme.accentSoft
+                    IconImage {
+                        anchors.centerIn: parent
+                        source: section.icon !== "" ? Qt.resolvedUrl("../../icons/" + section.icon + ".svg") : ""
+                        sourceSize: Qt.size(Theme.icon.sm, Theme.icon.sm)
+                        color: Theme.accent
+                    }
+                }
+                Text {
+                    id: titleText
+                    width: parent.width - Theme.settingsPage.badge - Theme.space.md
+                    text: section.title
+                    elide: Text.ElideRight
+                    font.family: Theme.family
+                    font.pixelSize: Theme.type.title
+                    font.weight: Theme.type.bold
+                    font.letterSpacing: Theme.type.tracking(Theme.type.title)
+                    color: Theme.text
+                    Accessible.role: Accessible.Heading
+                    Accessible.name: text
+                }
             }
             Column {
                 id: cardsColumn
@@ -612,6 +698,8 @@ FocusScope {
     Column {
         id: rail
         objectName: "settingsIndex"
+        x: root.blockX
+        z: 1
         visible: root.railMode
         width: Theme.library.settingsRail
         spacing: Theme.space.xs
@@ -629,8 +717,8 @@ FocusScope {
                 text: modelData.label
                 iconSource: Qt.resolvedUrl("../../icons/" + modelData.icon + ".svg")
                 visible: root.sectionShown(modelData.key)
-                selected: root.currentSection === modelData.key
-                onClicked: root.scrollTo(modelData.key)
+                selected: root.selectedSection === modelData.key
+                onClicked: root.glideTo(modelData.key)
                 function step(by) {
                     for (let i = index + by; i >= 0 && i < railRepeater.count; i += by) {
                         const next = railRepeater.itemAt(i)
@@ -660,8 +748,8 @@ FocusScope {
                 sectionKey: modelData.key
                 text: modelData.label
                 visible: root.sectionShown(modelData.key)
-                selected: root.currentSection === modelData.key
-                onClicked: root.scrollTo(modelData.key)
+                selected: root.selectedSection === modelData.key
+                onClicked: root.glideTo(modelData.key)
             }
         }
     }
@@ -674,18 +762,23 @@ FocusScope {
         anchors.topMargin: root.railMode ? 0 : Theme.space.lg
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-        anchors.left: root.railMode ? rail.right : parent.left
-        anchors.leftMargin: root.railMode ? Theme.space.xl : 0
+        anchors.left: parent.left
         contentWidth: width
         contentHeight: page.height + Theme.space.xxl
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         flickableDirection: Flickable.VerticalFlick
         T.ScrollBar.vertical: LibraryScrollBar {}
+        // The user takes over (wheel, drag, scrollbar): the glide yields at once.
+        onMovingChanged: if (moving) { navAnim.stop(); wheel.stop() }
+
+        // The mouse wheel moves ~3 rows per notch and glides (components/WheelScroll.qml).
+        WheelScroll { id: wheel; rowHeight: Theme.settingsPage.rowMinHeight }
 
         Column {
             id: page
-            width: Math.min(flick.width - Theme.space.lg, Theme.settingsPage.column)
+            x: root.columnX
+            width: Math.min(flick.width - root.columnX - Theme.space.lg, Theme.settingsPage.column)
             spacing: Theme.settingsPage.sectionGap
 
             // ---- header: title + search ----------------------------------------------
@@ -982,6 +1075,16 @@ FocusScope {
                             }
                         }
                         SettingRow {
+                            label: qsTr("Ocultar actividad") // English: Hide activity
+                            hint: qsTr("No guardar en Recientes de Velo y ocultar tu actividad en Spotify")
+                            keywords: qsTr("privacidad historial recientes")
+                            VToggle {
+                                text: qsTr("Ocultar actividad")
+                                checked: Backend.Settings.privateSession
+                                onToggled: Backend.Settings.privateSession = checked
+                            }
+                        }
+                        SettingRow {
                             label: qsTr("Sin pausas entre canciones")
                             hint: qsTr("Una canción empieza justo cuando termina la anterior.")
                             keywords: qsTr("gapless")
@@ -989,6 +1092,49 @@ FocusScope {
                                 text: qsTr("Sin pausas entre canciones")
                                 checked: Backend.Settings.gapless
                                 onToggled: Backend.Settings.gapless = checked
+                            }
+                        }
+                        SettingRow {
+                            objectName: "mixAutoRow"
+                            label: qsTr("Mixear automáticamente")
+                            hint: Backend.Settings.gapless
+                                ? qsTr("Mezcla el final de cada canción con el comienzo de la siguiente. También puedes activarlo por playlist.")
+                                : qsTr("Requiere activar «Sin pausas entre canciones».")
+                            keywords: qsTr("mixear mezcla fundido crossfade")
+                            dimmed: !Backend.Settings.gapless
+                            VToggle {
+                                objectName: "mixAutoToggle"
+                                text: qsTr("Mixear automáticamente")
+                                enabled: Backend.Settings.gapless
+                                checked: Backend.Settings.mixAuto
+                                onToggled: Backend.Settings.mixAuto = checked
+                            }
+                        }
+                        SettingRow {
+                            objectName: "mixSecondsRow"
+                            label: qsTr("Duración de la mezcla")
+                            hint: qsTr("Cuántos segundos se solapan dos canciones al mixear.")
+                            keywords: qsTr("mixear segundos fundido crossfade")
+                            dimmed: !Backend.Settings.gapless
+                            Row {
+                                spacing: Theme.space.md
+                                VSlider {
+                                    objectName: "mixSecondsSlider"
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: Theme.settingsPage.fieldWidth
+                                    text: qsTr("Duración de la mezcla")
+                                    enabled: Backend.Settings.gapless
+                                    from: 1
+                                    to: 12
+                                    stepSize: 1
+                                    value: Backend.Settings.mixSeconds
+                                    onMoved: Backend.Settings.mixSeconds = Math.round(value)
+                                }
+                                Figure {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: qsTr("%1 s").arg(Backend.Settings.mixSeconds)
+                                    color: Theme.textSecondary
+                                }
                             }
                         }
                         SettingRow {
@@ -1240,6 +1386,50 @@ FocusScope {
                                 text: qsTr("Deriva lenta")
                                 checked: Backend.Settings.drift
                                 onToggled: Backend.Settings.drift = checked
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Velocidad del fondo")
+                            hint: qsTr("Qué tan rápido gira y se mueve la carátula difuminada.")
+                            dimmed: !Backend.Settings.drift
+                            Row {
+                                spacing: Theme.space.md
+                                VSlider {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: Theme.settingsPage.fieldWidth
+                                    text: qsTr("Velocidad del fondo")
+                                    enabled: Backend.Settings.drift
+                                    from: 0; to: 100; stepSize: 5
+                                    value: Backend.Settings.hypnoticSpeed
+                                    onMoved: Backend.Settings.hypnoticSpeed = Math.round(value)
+                                }
+                                Figure {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: qsTr("%1 %").arg(Backend.Settings.hypnoticSpeed)
+                                    color: Theme.textSecondary
+                                }
+                            }
+                        }
+                        SettingRow {
+                            label: qsTr("Intensidad del fondo")
+                            hint: qsTr("Cuánto se mezclan y brillan los colores de la carátula.")
+                            dimmed: !Backend.Settings.drift
+                            Row {
+                                spacing: Theme.space.md
+                                VSlider {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: Theme.settingsPage.fieldWidth
+                                    text: qsTr("Intensidad del fondo")
+                                    enabled: Backend.Settings.drift
+                                    from: 0; to: 100; stepSize: 5
+                                    value: Backend.Settings.hypnoticIntensity
+                                    onMoved: Backend.Settings.hypnoticIntensity = Math.round(value)
+                                }
+                                Figure {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: qsTr("%1 %").arg(Backend.Settings.hypnoticIntensity)
+                                    color: Theme.textSecondary
+                                }
                             }
                         }
                         SettingRow {

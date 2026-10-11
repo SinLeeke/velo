@@ -50,8 +50,12 @@ Item {
         }
         return creator
     }
+    // DJ Livi is a playlist for the library (and so for Recientes) but it has no tracks to list:
+    // its row starts the DJ (or «Cambia de onda» if it already plays) instead of opening a page.
+    readonly property string djUri: "spotify:playlist:37i9dQZF1EYkqdzj48dyYq"
     function iconFor(kind) {
-        return kind === "artist" ? Qt.resolvedUrl("../../icons/person.svg")
+        return kind === "dj" ? Qt.resolvedUrl("../../icons/record_voice_over_fill.svg")
+             : kind === "artist" ? Qt.resolvedUrl("../../icons/person.svg")
              : kind === "album" ? Qt.resolvedUrl("../../icons/library_music.svg")
              : kind === "show" ? Qt.resolvedUrl("../../icons/record_voice_over.svg")
              : Qt.resolvedUrl("../../icons/music_note.svg")
@@ -277,9 +281,13 @@ Item {
             }
         }
         Row {
+            id: createRow
             width: parent.width
             visible: sidebar.creating
             spacing: Theme.space.sm
+            // G2 (A-SB1): fades in when opened (fast, easeOut), like the search field; closing is instant.
+            onVisibleChanged: if (visible && Theme.motion.fast > 0) createIn.restart()
+            OpacityAnimator { id: createIn; target: createRow; from: 0; to: 1; duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
             LibraryField {
                 id: playlistName
                 objectName: "newPlaylistName"
@@ -404,17 +412,25 @@ Item {
             required property string imageUrl
             required property bool pinned
             required property bool owned
-            readonly property bool menuShown: playlistMenu.visible && playlistMenu.uri === uri
+            readonly property bool isDj: uri === sidebar.djUri
+            // Regla 4: la playlist/álbum/artista que suena se marca (acento + ícono), como en la
+            // fila de una lista.
+            readonly property bool playingHere: !isDj && uri !== "" && uri === Backend.Player.contextUri
+            readonly property string shownName: isDj ? qsTr("DJ Livi") : name
+            readonly property bool menuShown: !isDj && playlistMenu.visible && playlistMenu.uri === uri
             // "…" while pointed at, focused or showing its menu; otherwise the pin, if pinned.
-            readonly property bool showMore: hovered || more.hovered || activeFocus || more.activeFocus || menuShown
+            readonly property bool showMore: !isDj && hovered || more.hovered || activeFocus || more.activeFocus || menuShown
             width: playlists.width - Theme.space.sm
             height: sidebar.rowHeight
-            text: name
-            Accessible.name: qsTr("%1, %2").arg(name).arg(sidebar.subtitleFor(kind, creator))
+            text: shownName
+            Accessible.name: qsTr("%1, %2").arg(shownName).arg(isDj ? qsTr("Música elegida por Livi") : sidebar.subtitleFor(kind, creator))
             leftPadding: sidebar.compact ? Theme.space.md : Theme.space.sm
             rightPadding: Theme.size.iconButton
-            selected: sidebar.currentPage === kind && sidebar.currentId === objectId
-            onClicked: sidebar.open(kind, objectId, creator)
+            selected: !isDj && sidebar.currentPage === kind && sidebar.currentId === objectId
+            onClicked: {
+                if (isDj) { if (Backend.Player.djActive) Backend.Actions.djNextSegment(); else Backend.Actions.startDj() }
+                else sidebar.open(kind, objectId, creator)
+            }
             // R3 (P1-2): the focused row (or its "…") scrolls into view, so Tab and ↑/↓ reach rows
             // the ListView has not created yet (the list only builds what is near the view).
             function reveal() {
@@ -452,8 +468,8 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: sidebar.artSize
                     height: width
-                    kind: entry.kind
-                    imageUrl: sidebar.compact ? "" : entry.imageUrl
+                    kind: entry.isDj ? "dj" : entry.kind
+                    imageUrl: sidebar.compact || entry.isDj ? "" : entry.imageUrl
                 }
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
@@ -461,8 +477,8 @@ Item {
                     spacing: Theme.space.xxs
                     LibraryLabel {
                         width: parent.width
-                        text: entry.name
-                        color: entry.selected ? Theme.accent : Theme.text
+                        text: entry.shownName
+                        color: entry.selected || entry.playingHere ? Theme.accent : Theme.text
                         font.weight: Theme.type.medium
                     }
                     Row {
@@ -480,14 +496,26 @@ Item {
                         }
                         LibraryLabel {
                             width: parent.width - (entry.pinned ? Theme.type.caption + parent.spacing : 0)
-                            text: sidebar.subtitleFor(entry.kind, entry.creator)
+                                - (entry.playingHere ? Theme.type.caption + parent.spacing : 0)
+                            text: entry.isDj ? qsTr("Música elegida por Livi") : sidebar.subtitleFor(entry.kind, entry.creator)
                             color: Theme.textSecondary
                             font.pixelSize: Theme.type.caption
+                        }
+                        IconImage {
+                            objectName: "sidebarPlayingMark"
+                            visible: entry.playingHere
+                            anchors.verticalCenter: parent.verticalCenter
+                            source: Qt.resolvedUrl("../../icons/graphic_eq.svg")
+                            sourceSize: Qt.size(Theme.type.caption, Theme.type.caption)
+                            color: Theme.accent
+                            Accessible.role: Accessible.StaticText
+                            Accessible.name: qsTr("Sonando ahora")
                         }
                     }
                 }
             }
             function openMenu(atPointer) {
+                if (isDj) return
                 playlistMenu.kind = kind
                 playlistMenu.objectId = objectId
                 playlistMenu.uri = uri
@@ -539,6 +567,7 @@ Item {
                 Behavior on opacity {
                     OpacityAnimator { duration: Math.max(1, entry.showMore ? Theme.motion.instant : Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
                 }
+                visible: !entry.isDj
                 text: qsTr("Más opciones para %1").arg(entry.name)
                 iconSource: Qt.resolvedUrl("../../icons/more_horiz.svg")
                 iconSize: Theme.icon.sm

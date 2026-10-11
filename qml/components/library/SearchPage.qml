@@ -8,7 +8,7 @@ import "../../theme"
 // this page, which shows type chips (Todo, Canciones, Artistas, Playlists, Álbumes). "Todo" is
 // "Mejor resultado" + the first songs, then shelves of artists, albums and playlists; a type chip
 // shows that list alone (songs reuse the track list, the rest a card grid). The best result is
-// Velo's heuristic . The page has no field of its own.
+// Velo's heuristic (docs/F1-F2-busqueda.md). The page has no field of its own.
 Item {
     id: page
     property string query: ""
@@ -436,7 +436,7 @@ Item {
                     iconSize: Theme.icon.lg
                     text: qsTr("Reproducir %1").arg(best.title)
                     iconSource: Qt.resolvedUrl("../../icons/play_arrow_fill.svg")
-                    enabled: Backend.Player.canControl
+                    enabled: Backend.Player.canControl || (Backend.Account.signedIn && Backend.Account.isPremium)   // B-9: arrancar no necesita sesión activa
                     onClicked: Backend.Library.playBestSearchResult()
                     Behavior on y {
                         YAnimator { duration: Theme.motion.fast; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }

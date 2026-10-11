@@ -52,7 +52,16 @@ T.Popup {
         Player.refreshDevices()
     }
     onAboutToShow: refresh()
-    onClosed: refreshing = false
+    onClosed: { refreshing = false; pendingId = "" }
+
+    // E-1: a transfer is not instant (Spotify has to answer). The picked row shows «Conectando…»
+    // (its subtitle fades in, `fast`) and the popup stays until that device is the active one.
+    // It gives up (back to the plain row, still open) when Player reports an error or after
+    // `connectGiveUp` ms. PauseAnimation, not a Timer: it only exists while a transfer is pending.
+    property string pendingId: ""
+    readonly property int connectGiveUp: Theme.motion.connectGiveUp
+    onPendingIdChanged: if (pendingId !== "") giveUp.restart(); else giveUp.stop()
+    PauseAnimation { id: giveUp; duration: root.connectGiveUp; onFinished: root.pendingId = "" }
 
     // Waiting for the refresh asked on opening (only matters while the list is empty).
     property bool refreshing: false
@@ -60,6 +69,7 @@ T.Popup {
     readonly property bool loading: refreshing && list.count === 0
     Connections {
         target: Player
+        function onError(message) { root.pendingId = "" }
         function onDevicesRefreshed(errorCode) {
             root.errorCode = errorCode
             root.refreshing = false
@@ -146,6 +156,8 @@ T.Popup {
                 required property var model
                 required property int index
                 readonly property bool active: model.isActive
+                readonly property bool pending: root.pendingId !== "" && root.pendingId === model.deviceId && !active
+                onActiveChanged: if (active && root.pendingId === model.deviceId) root.close()
 
                 width: ListView.view.width
                 height: Theme.panel.deviceRow
@@ -158,16 +170,17 @@ T.Popup {
                 Accessible.role: Accessible.Button
 
                 function activate() {
-                    if (!model.deviceId) return
-                    if (!active)
-                        Player.transferTo(model.deviceId)
-                    root.close()
+                    if (!model.deviceId || root.pendingId !== "") return
+                    if (active) { root.close(); return }
+                    root.pendingId = model.deviceId
+                    Player.transferTo(model.deviceId)
+                    if (model.isActive) root.close()   // the transfer already finished (local engine)
                 }
                 onClicked: activate()
 
                 background: Rectangle {
                     radius: Theme.radius.md
-                    color: dev.active ? Theme.accentSoft : dev.hovered || dev.pressed ? Theme.surface2 : Theme.library.clearPaint
+                    color: dev.active ? Theme.accentSoft : dev.hovered || dev.pressed || dev.pending ? Theme.surface2 : Theme.library.clearPaint
                     border.width: dev.ListView.isCurrentItem && list.keyboardNav ? Theme.stroke.focus : 0
                     border.color: Theme.focusRing
                 }
@@ -198,9 +211,15 @@ T.Popup {
                             color: dev.active ? Theme.accent : Theme.text
                         }
                         Text {
-                            visible: dev.active
+                            // The subtitle fades in for «Conectando…» and for «Reproduciendo aquí»
+                            // (opacity, `fast`, easeOut); the picked row only, never the list.
+                            visible: opacity > 0
+                            opacity: dev.active || dev.pending ? 1 : 0
+                            Behavior on opacity {
+                                OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                            }
                             width: parent.width
-                            text: qsTr("Reproduciendo aquí")
+                            text: dev.pending ? qsTr("Conectando…") : qsTr("Reproduciendo aquí")
                             elide: Text.ElideRight
                             font.family: Theme.family
                             font.pixelSize: Theme.type.caption

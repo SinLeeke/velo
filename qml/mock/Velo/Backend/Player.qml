@@ -46,12 +46,21 @@ QtObject {
     property bool queueEditable: true       // Q1: Velo is the active device
     property bool queueClearable: queueEditable && Account.signedIn && hasSession && trackUri.length > 0
     property string deviceName: "Spotify · ESCRITORIO-JUAN"
+    property bool remote: false              // PREVIEW/tests: true = another device has the playback
+    property string deviceIcon: "computer"
     property bool hasSession: true
     property string artistId: "a1"
     property string albumId: "al1"
     // B3: "loading" | "ready" | "unavailable" (the empty text belongs to "ready" with no rows).
     property string queueStatus: "ready"
     property string queueError: ""
+    // Mixear (read-only in the real bridge): a crossfade is sounding in Velo's engine, and
+    // whether mixing is possible at all (Velo's engine, gapless on, no DJ).
+    property bool mixing: false
+    // Contexto que suena (playlist, álbum, artista o spotify:collection = Tus me gusta); vacío si se desconoce.
+    property string contextUri: ""
+    property string contextTitle: ""
+    readonly property bool mixAvailable: !remote && Settings.gapless && !djActive
 
     // E5b: DJ Livi in Velo (contract: docs/CONTRATO.md). While Livi speaks the real backend
     // sets title/artist ("DJ Livi") and the cover to Livi's logo; the mock imitates it.
@@ -98,8 +107,14 @@ QtObject {
     property string paletteVeilLight: "#D7E8EE"
     property string paletteInkDark: "#F4FAFC"
     property string paletteInkLight: "#0D2129"
+    property list<string> paletteColors: ["#2E6F86", "#7CC9E6", "#D7E8EE", "#14323D", "#B6A27A"]
+    property list<real> paletteWeights: [0.40, 0.25, 0.18, 0.12, 0.05]
     // R5: veil alpha computed for contrast (0..1), published with paletteReady.
     property real paletteVeilDarkOpacity: 1.0
+    property real paletteVeilDarkMovingOpacity: 1.0
+    property real paletteBlobDarkMovingOpacity: 1.0
+    property real paletteBlobLightMovingOpacity: 1.0
+    property real paletteVeilLightMovingOpacity: 1.0
     property real paletteVeilLightOpacity: 1.0
     // v0.9.2: alpha of the local scrim behind text and controls (same colour as the veil).
     property real paletteScrimDarkOpacity: 0.0

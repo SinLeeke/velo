@@ -1,4 +1,4 @@
-//! `Account` singleton: Spotify sign-in state. A view of
+//! `Account` singleton (docs/CONTRATO.md): Spotify sign-in state. A view of
 //! `engine::account::Account`; sign-in runs in the system browser on the runtime.
 //! By default (L1) there is ONE login, librespot's: it starts the audio engine (the Connect
 //! device "Velo") and the library is read through that session. With a personal Spotify app

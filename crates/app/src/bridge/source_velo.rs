@@ -89,6 +89,7 @@ pub fn state_of(s: &EngineState, name: &str) -> SourceState {
         remote: false,
         own_engine: true,
         dj: s.dj.clone(),
+        mixing: s.active && s.mix.active,
     }
 }
 

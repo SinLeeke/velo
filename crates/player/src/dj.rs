@@ -16,8 +16,11 @@ use std::{
     collections::HashMap,
     future::Future,
     io::Cursor,
-    sync::Arc,
-    time::{Duration, Instant},
+    sync::{
+        Arc,
+        atomic::{AtomicU64, Ordering},
+    },
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
 use bytes::Bytes;
@@ -94,7 +97,7 @@ pub struct DjTrack {
     pub intro: Option<Narration>,
     pub outro: Option<Narration>,
     /// `dj.jump_target`: se conserva para depurar; Velo «cambia de onda» pidiendo el bloque
-    /// siguiente de la sesión DJ.
+    /// siguiente (ver docs/E5-E6.md).
     pub jump_target: Option<String>,
     pub segment: Option<String>,
 }
@@ -115,6 +118,13 @@ impl DjBlock {
     fn uris(&self) -> Vec<String> {
         self.tracks.iter().map(|t| t.uri.clone()).collect()
     }
+    /// Huella del bloque (primera canción y su presentación): dos sesiones con la misma
+    /// huella son el mismo set que Spotify devolvió de nuevo.
+    pub(crate) fn fingerprint(&self) -> Option<String> {
+        let first = self.tracks.first()?;
+        let intro = first.intro.as_ref().map_or("", |n| n.ssml.as_str());
+        Some(format!("{}|{intro}", first.uri))
+    }
 }
 
 /// Lo que la app muestra del DJ (parte de [`EngineState`]).
@@ -124,6 +134,8 @@ pub struct DjState {
     /// Livi está hablando: sustituye a la canción en la UI y en el panel multimedia.
     pub speech: Option<DjSpeech>,
     pub jump_label: Option<String>,
+    /// Cuántos bloques (ondas) empezaron en esta sesión; sube con cada «Cambiar de onda».
+    pub section: u32,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -274,30 +286,90 @@ fn block_from_context(context: &librespot_protocol::context::Context) -> Result<
     parse_value(&json!({"metadata": context.metadata, "pages": pages}))
 }
 
-/// El primer bloque (`None`: resuelve la sesión desde el contexto DJ) o el de `next_page_url`.
-pub async fn fetch_block(session: &Session, url: Option<&str>) -> Result<DjBlock, DjError> {
+/// Marca única por petición: Spotify puede devolver la misma sesión cacheada para la misma
+/// URL, y con esta marca cada inicio pide un set nuevo.
+fn nonce() -> String {
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_or(0, |d| d.as_nanos());
+    format!("{nanos:x}{:x}", COUNTER.fetch_add(1, Ordering::Relaxed))
+}
+
+fn with_nonce(url: &str, nonce: &str) -> String {
+    let sep = if url.contains('?') { '&' } else { '?' };
+    format!("{url}{sep}nonce={nonce}")
+}
+
+/// La sesión DJ: resuelve el contexto y pide el primer bloque (con `nonce`, marcado como
+/// petición nueva).
+async fn fetch_session_block(session: &Session, nonce: Option<&str>) -> Result<DjBlock, DjError> {
     let spclient = session.spclient();
-    let url = match url {
-        Some(url) => url.to_owned(),
-        None => {
-            let context = tokio::time::timeout(TIMEOUT, spclient.get_context(DJ_LIVI_URI))
-                .await
-                .map_err(|_| DjError::Timeout)?
-                .map_err(|_| DjError::Unavailable)?;
-            match context.metadata.get("lexicon_context_url") {
-                Some(url) => url.clone(),
-                None => return block_from_context(&context),
-            }
-        }
+    let context = tokio::time::timeout(TIMEOUT, spclient.get_context(DJ_LIVI_URI))
+        .await
+        .map_err(|_| DjError::Timeout)?
+        .map_err(|_| DjError::Unavailable)?;
+    let url = match context.metadata.get("lexicon_context_url") {
+        Some(url) => match nonce {
+            Some(nonce) => with_nonce(url, nonce),
+            None => url.clone(),
+        },
+        None => return block_from_context(&context),
     };
-    if !valid_page_url(&url) {
+    fetch_page(session, &url).await
+}
+
+async fn fetch_page(session: &Session, url: &str) -> Result<DjBlock, DjError> {
+    if !valid_page_url(url) {
         return Err(DjError::Unavailable);
     }
-    let body = tokio::time::timeout(TIMEOUT, spclient.get_next_page(&url))
+    let body = tokio::time::timeout(TIMEOUT, session.spclient().get_next_page(url))
         .await
         .map_err(|_| DjError::Timeout)?
         .map_err(|_| DjError::Unavailable)?;
     parse_block(&body)
+}
+
+/// El primer bloque (`None`: resuelve la sesión desde el contexto DJ) o el de `next_page_url`.
+pub async fn fetch_block(session: &Session, url: Option<&str>) -> Result<DjBlock, DjError> {
+    match url {
+        Some(url) => fetch_page(session, url).await,
+        None => fetch_session_block(session, None).await,
+    }
+}
+
+/// Una sesión DJ NUEVA: cada petición lleva una marca única y, si aun así Spotify devuelve el
+/// set de `avoid` (huella del anterior), se reintenta con otra marca. Si Spotify rechaza la
+/// marca, cae a la petición simple. Nunca falla por repetir: devuelve lo último que llegó.
+pub(crate) async fn fresh_session<F, Fut>(
+    mut fetch: F,
+    avoid: Option<&str>,
+) -> Result<DjBlock, DjError>
+where
+    F: FnMut(Option<String>) -> Fut,
+    Fut: Future<Output = Result<DjBlock, DjError>>,
+{
+    let mut last = None;
+    for _ in 0..3 {
+        let block = match fetch(Some(nonce())).await {
+            Ok(block) => block,
+            Err(_) => return fetch(None).await,
+        };
+        if avoid.is_none_or(|a| block.fingerprint().as_deref() != Some(a)) {
+            return Ok(block);
+        }
+        last = Some(block);
+    }
+    last.ok_or(DjError::Unavailable)
+}
+
+/// [`fresh_session`] contra Spotify.
+pub async fn fetch_fresh_block(session: &Session, avoid: Option<&str>) -> Result<DjBlock, DjError> {
+    fresh_session(
+        |nonce| async move { fetch_session_block(session, nonce.as_deref()).await },
+        avoid,
+    )
+    .await
 }
 
 // ------------------------------------------------------------------------------ voz (TTS)
@@ -752,6 +824,7 @@ pub(crate) async fn run<H: DjHost>(
             active: true,
             speech: None,
             jump_label: first.jump_label.clone(),
+            section: 0,
         },
         host: host.clone(),
         block: first,
@@ -893,6 +966,7 @@ impl<H: DjHost> Dj<H> {
         self.armed = None;
         self.current = None;
         self.view.jump_label = self.block.jump_label.clone();
+        self.view.section += 1;
         self.publish();
         let first = self.block.tracks.first().cloned().ok_or(End)?;
         self.prefetch(key(&first.uri, "intro"), first.intro.as_ref());
@@ -975,9 +1049,20 @@ impl<H: DjHost> Dj<H> {
             return Ok(None);
         };
         match tokio::time::timeout(TIMEOUT, &mut pending.0).await {
-            Ok(Ok(Ok(block))) => {
+            Ok(Ok(Ok(mut block))) => {
                 if self.was_active && !self.state.borrow().active {
                     return Err(End);
+                }
+                if fresh && block.fingerprint() == self.block.fingerprint() {
+                    // La «página siguiente» devolvió lo mismo que ya sonó: «Cambiar de onda»
+                    // no puede quedarse igual, así que se pide una sesión nueva.
+                    let again = tokio::time::timeout(TIMEOUT, self.host.fetch_block(None)).await;
+                    if let Ok(Ok(other)) = again {
+                        block = other;
+                    }
+                    if self.was_active && !self.state.borrow().active {
+                        return Err(End);
+                    }
                 }
                 self.block = block;
                 self.voices.retain(|k, _| k == "pending|outro");
@@ -1890,6 +1975,108 @@ mod tests {
                 Some(&DjState::default())
             );
         }
+    }
+
+    fn block_starting_with(uri: &str, line: &str) -> DjBlock {
+        let mut block = parse_value(&sample_block()).unwrap();
+        block.tracks.truncate(1);
+        block.tracks[0].uri = uri.into();
+        block.tracks[0].intro = narration(&narration_meta("intro", line), "intro");
+        block
+    }
+
+    #[tokio::test]
+    async fn consecutive_starts_ask_for_a_new_session_and_do_not_repeat_the_set() {
+        use std::sync::Mutex as StdMutex;
+        let old = block_starting_with(A, "Empecemos con");
+        let new = block_starting_with(B, "Otra onda con");
+        // Spotify que ignora la marca: siempre el mismo set; se reintenta y se acaba.
+        let seen = StdMutex::new(Vec::new());
+        let stuck = fresh_session(
+            |nonce| {
+                seen.lock().unwrap().push(nonce);
+                let block = old.clone();
+                async move { Ok(block) }
+            },
+            old.fingerprint().as_deref(),
+        )
+        .await
+        .unwrap();
+        assert_eq!(stuck.fingerprint(), old.fingerprint());
+        let seen = seen.into_inner().unwrap();
+        assert_eq!(seen.len(), 3);
+        assert!(seen.iter().all(Option::is_some));
+        assert_ne!(seen[0], seen[1], "cada petición lleva una marca distinta");
+        // Spotify que cachea por marca: el segundo intento ya trae otro set.
+        let calls = StdMutex::new(0);
+        let fixed = fresh_session(
+            |_| {
+                let mut n = calls.lock().unwrap();
+                *n += 1;
+                let block = if *n == 1 { old.clone() } else { new.clone() };
+                async move { Ok(block) }
+            },
+            old.fingerprint().as_deref(),
+        )
+        .await
+        .unwrap();
+        assert_eq!(fixed.fingerprint(), new.fingerprint());
+        // Primer inicio de todos: una sola petición, con marca.
+        let first = StdMutex::new(Vec::new());
+        fresh_session(
+            |nonce| {
+                first.lock().unwrap().push(nonce);
+                let block = old.clone();
+                async move { Ok(block) }
+            },
+            None,
+        )
+        .await
+        .unwrap();
+        assert_eq!(first.into_inner().unwrap().len(), 1);
+        // Si Spotify rechaza la marca, cae a la petición simple.
+        let urls = StdMutex::new(Vec::new());
+        let plain = fresh_session(
+            |nonce| {
+                urls.lock().unwrap().push(nonce.clone());
+                let block = old.clone();
+                async move { nonce.map_or(Ok(block), |_| Err(DjError::Unavailable)) }
+            },
+            None,
+        )
+        .await
+        .unwrap();
+        assert_eq!(plain.fingerprint(), old.fingerprint());
+        assert_eq!(urls.into_inner().unwrap().last(), Some(&None));
+        assert!(with_nonce("hm://x/s?contextUri=a", "n1").ends_with("a&nonce=n1"));
+        assert!(with_nonce("hm://x/s", "n1").ends_with("s?nonce=n1"));
+    }
+
+    #[tokio::test]
+    async fn jump_advances_the_section_and_never_replays_the_same_block() {
+        let host = FakeHost::new(true);
+        let block = parse_value(&sample_block()).unwrap();
+        // La «página siguiente» devuelve el mismo set; la sesión nueva trae otro.
+        let mut fresh = block_starting_with(C, "Nuevo");
+        fresh.next_page_url = None;
+        host.blocks.lock().unwrap().push(fresh);
+        host.blocks.lock().unwrap().push(block.clone());
+        let (cmds, rx) = mpsc::unbounded_channel();
+        let task = tokio::spawn(run(host.clone(), block, rx));
+        until(&host, "cargar 3 play=true").await;
+        settle().await;
+        assert_eq!(host.published.lock().unwrap().last().unwrap().section, 1);
+        cmds.send(DjCommand::Jump).unwrap();
+        until(&host, "cargar 1 play=true").await;
+        settle().await;
+        let entries = host.entries();
+        assert!(entries.iter().any(|e| e == "bloque true"));
+        assert!(entries.iter().any(|e| e == "bloque false"));
+        let last = host.published.lock().unwrap().last().cloned().unwrap();
+        assert!(last.active);
+        assert_eq!(last.section, 2);
+        drop(cmds);
+        task.await.unwrap();
     }
 
     #[tokio::test]

@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 
-// MOCK of Velo.Backend.Account.
+// MOCK of Velo.Backend.Account (docs/CONTRATO.md).
 QtObject {
     property bool signedIn: true
     property string displayName: "Juan"

@@ -71,6 +71,8 @@ Item {
         onHeightChanged: Qt.callLater(page.fetchNearEnd)
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: LibraryScrollBar {}
+        // Motion (G2, A-P2): one fade of the whole grid when the first albums/artists arrive late.
+        FirstDataFade { target: grid; count: grid.count; allowed: page.visible }
         function tabCard(event, fromIndex) {
             const backwards = event.key === Qt.Key_Backtab || (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier))
             if (event.key !== Qt.Key_Tab && !backwards) return

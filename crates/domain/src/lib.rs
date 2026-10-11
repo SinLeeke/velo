@@ -370,7 +370,7 @@ pub trait NowPlayingSource: Send + Sync {
 
 /// Colors are "#RRGGBB". Opaque inks have >= 4.5:1 contrast over the cover
 /// composed with the global veil and the local scrim (both use the veil color).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Palette {
     pub base: String,
     pub glow: String,
@@ -378,9 +378,28 @@ pub struct Palette {
     pub veil_light: String,
     pub ink_dark: String,
     pub ink_light: String,
+    /// Five unmodified k-means cluster colors and population fractions (0..=1),
+    /// largest first. Missing clusters repeat the last color with zero weight.
+    /// Empty only in legacy caches, which the cover service rebuilds offline.
+    #[serde(default)]
+    pub colors: Vec<(String, f32)>,
     /// Veil opacity in 0..=255; published to QML as a real in 0..=1.
     pub veil_dark_alpha: u8,
     pub veil_light_alpha: u8,
+    /// Global veil opacity (0..=255) used only while the background moves: no scrim
+    /// then, so this alone keeps the ink >= 4.5:1 over the lightest and darkest
+    /// dominant colors. Never below the static alpha. 0 only in legacy caches,
+    /// which the cover service rebuilds offline.
+    #[serde(default)]
+    pub veil_dark_moving_alpha: u8,
+    #[serde(default)]
+    pub veil_light_moving_alpha: u8,
+    /// Highest opacity (0..=255) the colour lights may have while the background moves,
+    /// so the ink keeps 4.5:1 over art + capped veil + light. `None` in legacy caches.
+    #[serde(default)]
+    pub blob_dark_moving_alpha: Option<u8>,
+    #[serde(default)]
+    pub blob_light_moving_alpha: Option<u8>,
     /// Local opacity behind text/controls, in 0..=255. Required fields deliberately
     /// invalidate old cached palettes so the cover cache recomputes them offline.
     pub scrim_dark_alpha: u8,
@@ -612,6 +631,9 @@ pub struct BackgroundSettings {
     pub cover_blur: bool, // false = flat palette veil only
     pub drift: bool,      // slow movement of the blurred art while playing
     pub tint_ui: bool,    // palette tints the chrome
+    /// Hypnotic background (moving art): pace and strength, 0..=100 each.
+    pub hypnotic_speed: i32,
+    pub hypnotic_intensity: i32,
 }
 impl Default for BackgroundSettings {
     fn default() -> Self {
@@ -619,6 +641,8 @@ impl Default for BackgroundSettings {
             cover_blur: true,
             drift: true,
             tint_ui: true,
+            hypnotic_speed: 50,
+            hypnotic_intensity: 60,
         }
     }
 }
@@ -628,6 +652,8 @@ impl Default for BackgroundSettings {
 pub struct PlaybackSettings {
     pub preferred_device: Option<String>,
     pub show_lyrics: bool,
+    /// Suppress Velo's local listening history; Spotify privacy needs Connect support.
+    pub private_session: bool,
     pub device_name: String,
     #[serde(deserialize_with = "deserialize_u32")]
     pub quality: u32,
@@ -636,18 +662,65 @@ pub struct PlaybackSettings {
     pub gapless: bool,
     #[serde(deserialize_with = "deserialize_u32")]
     pub output_buffer_ms: u32,
+    /// «Mixear»: segundos del fundido cruzado entre canciones (1..=12).
+    #[serde(deserialize_with = "deserialize_u32")]
+    pub mix_seconds: u32,
+    /// Mezclar siempre las canciones consecutivas en el motor local (requiere gapless).
+    pub mix_auto: bool,
 }
 impl Default for PlaybackSettings {
     fn default() -> Self {
         Self {
             preferred_device: None,
             show_lyrics: true,
+            private_session: false,
             device_name: "Velo".into(),
             quality: 320,
             normalize_volume: true,
             autoplay: true,
             gapless: true,
             output_buffer_ms: 100,
+            mix_seconds: MixConfig::DEFAULT_SECONDS,
+            mix_auto: false,
+        }
+    }
+}
+impl PlaybackSettings {
+    /// La mezcla que el motor recibe de los ajustes (el botón por playlist puede encenderla).
+    pub fn mix(&self) -> MixConfig {
+        MixConfig {
+            enabled: self.mix_auto,
+            seconds: self.mix_seconds,
+        }
+        .clamped()
+    }
+}
+
+/// «Mixear» (como el botón de Spotify): fundido cruzado en tiempo real entre canciones
+/// consecutivas, en el reproductor local de Velo y solo en memoria. Exige gapless.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct MixConfig {
+    pub enabled: bool,
+    /// Duración del solape, 1..=12 s (el motor la recorta a 1/3 de la pista más corta).
+    pub seconds: u32,
+}
+impl MixConfig {
+    pub const MIN_SECONDS: u32 = 1;
+    pub const MAX_SECONDS: u32 = 12;
+    pub const DEFAULT_SECONDS: u32 = 6;
+    pub fn clamped(self) -> Self {
+        Self {
+            enabled: self.enabled,
+            seconds: self.seconds.clamp(Self::MIN_SECONDS, Self::MAX_SECONDS),
+        }
+    }
+}
+impl Default for MixConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            seconds: Self::DEFAULT_SECONDS,
         }
     }
 }
@@ -919,6 +992,8 @@ pub struct EngineOptions {
     /// A credential-free HTTP CONNECT endpoint (possibly the local adapter).
     pub proxy_url: Option<String>,
     pub eq: EqConfig,
+    /// Valor inicial de la mezcla; los cambios llegan en caliente (`Engine::set_mix`).
+    pub mix: MixConfig,
 }
 impl Default for EngineOptions {
     fn default() -> Self {
@@ -933,6 +1008,7 @@ impl Default for EngineOptions {
             audio_cache_limit_bytes: 1024 * 1024 * 1024,
             proxy_url: None,
             eq: EqConfig::default(),
+            mix: MixConfig::default(),
         }
     }
 }
@@ -949,6 +1025,7 @@ impl Settings {
             audio_cache_limit_bytes: u64::from(self.cache.audio_limit_mb) * 1024 * 1024,
             proxy_url,
             eq: self.equalizer.config(),
+            mix: self.playback.mix(),
         }
     }
     pub fn normalize(&mut self) {
@@ -970,6 +1047,10 @@ impl Settings {
         if ![50, 100, 200].contains(&self.playback.output_buffer_ms) {
             self.playback.output_buffer_ms = 100;
         }
+        self.playback.mix_seconds = self
+            .playback
+            .mix_seconds
+            .clamp(MixConfig::MIN_SECONDS, MixConfig::MAX_SECONDS);
         self.appearance.ui_zoom = ui_zoom(self.appearance.ui_zoom);
         if !["off", "bars", "wave"].contains(&self.visualizer.player_bar_mode.as_str()) {
             self.visualizer.player_bar_mode = "off".into();

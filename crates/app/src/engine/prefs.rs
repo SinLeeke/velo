@@ -52,6 +52,29 @@ pub struct Extras {
     pub window_controls: String,
     #[serde(skip_serializing)] // Read migration input; Settings.library is the sole writer.
     pub pinned_playlists: Vec<String>,
+    /// Mixear por playlist: ids de las playlists cuyas canciones se mezclan con fundido cruzado.
+    pub mixed_playlists: Vec<String>,
+}
+
+/// Clave de «Tus me gusta» en `mixed_playlists` (no es un id de playlist).
+pub const LIKED_MIX_KEY: &str = "liked";
+/// Contexto que Velo asigna a «Tus me gusta» (se reproduce como lista de pistas, sin URI propio).
+pub const LIKED_CONTEXT: &str = "spotify:collection";
+
+/// Clave de `mixed_playlists` de un contexto: el id de la playlist o `"liked"` para la
+/// colección de «Tus me gusta» (`spotify:collection` o `spotify:user:<id>:collection`).
+pub fn mix_key(context_uri: &str) -> Option<&str> {
+    if let Some(id) = context_uri.strip_prefix("spotify:playlist:") {
+        return (!id.is_empty()).then_some(id);
+    }
+    (context_uri == LIKED_CONTEXT
+        || (context_uri.starts_with("spotify:user:") && context_uri.ends_with(":collection")))
+    .then_some(LIKED_MIX_KEY)
+}
+
+/// Regla de contexto de Mixear: «mezclar siempre», una playlist marcada o «Tus me gusta» marcado.
+pub fn mix_wanted(context_uri: &str, mixed_playlists: &[String], mix_auto: bool) -> bool {
+    mix_auto || mix_key(context_uri).is_some_and(|key| mixed_playlists.iter().any(|m| m == key))
 }
 
 impl Default for Extras {
@@ -60,6 +83,7 @@ impl Default for Extras {
             close_to_tray: true,
             window_controls: "mac".into(),
             pinned_playlists: Vec::new(),
+            mixed_playlists: Vec::new(),
         }
     }
 }
@@ -440,11 +464,48 @@ mod tests {
     }
 
     #[test]
+    fn mix_context_rule_is_auto_or_a_marked_playlist() {
+        let marked = vec!["abc".to_string()];
+        assert!(mix_wanted("spotify:playlist:abc", &marked, false));
+        assert!(!mix_wanted("spotify:playlist:other", &marked, false));
+        assert!(!mix_wanted("spotify:album:abc", &marked, false));
+        assert!(!mix_wanted("", &[], false));
+        assert!(mix_wanted("spotify:album:abc", &[], true));
+        assert!(mix_wanted("", &[], true));
+    }
+
+    #[test]
+    fn mix_wanted_understands_liked_songs() {
+        let marked = vec![LIKED_MIX_KEY.to_string()];
+        assert!(mix_wanted(LIKED_CONTEXT, &marked, false));
+        assert!(mix_wanted("spotify:user:juan:collection", &marked, false));
+        assert!(!mix_wanted(LIKED_CONTEXT, &[], false));
+        assert!(!mix_wanted("spotify:album:liked", &marked, false));
+        assert!(!mix_wanted("spotify:playlist:", &marked, false));
+        assert_eq!(mix_key("spotify:playlist:abc"), Some("abc"));
+        assert_eq!(mix_key("spotify:album:abc"), None);
+    }
+
+    #[tokio::test]
+    async fn mixed_playlists_persist_through_update_extras() {
+        let dir = tempfile::tempdir().unwrap();
+        let prefs = Prefs::for_test(tokio::runtime::Handle::current(), dir.path().to_path_buf());
+        prefs.update_extras(|e| e.mixed_playlists.push("abc".into()));
+        assert_eq!(prefs.extras().mixed_playlists, vec!["abc"]);
+        prefs.write_extras();
+        let text = std::fs::read_to_string(dir.path().join("ui.toml")).unwrap();
+        assert!(text.contains("mixed_playlists"));
+        prefs.update_extras(|e| e.mixed_playlists.clear());
+        assert!(prefs.extras().mixed_playlists.is_empty());
+    }
+
+    #[test]
     fn extras_roundtrip_and_defaults() {
         let e = Extras {
             close_to_tray: false,
             window_controls: "windows".into(),
             pinned_playlists: vec!["p1".into()],
+            mixed_playlists: vec!["m1".into(), "m2".into()],
         };
         let text = toml::to_string_pretty(&e).unwrap();
         let parsed = toml::from_str::<Extras>(&text).unwrap();
@@ -452,6 +513,8 @@ mod tests {
         assert_eq!(parsed.window_controls, e.window_controls);
         assert!(parsed.pinned_playlists.is_empty());
         assert!(!text.contains("pinned_playlists"));
+        assert_eq!(parsed.mixed_playlists, e.mixed_playlists);
+        assert!(Extras::default().mixed_playlists.is_empty());
         assert_eq!(toml::from_str::<Extras>("").unwrap(), Extras::default());
         assert_eq!(Extras::default().window_controls, "mac");
         assert!(Extras::default().close_to_tray);

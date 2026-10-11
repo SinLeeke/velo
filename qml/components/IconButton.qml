@@ -55,10 +55,20 @@ T.AbstractButton {
     readonly property bool hot: !active && enabled && (hovered || pressed)
     scale: pressed ? Theme.feel.pressScale : 1
     Behavior on scale {
-        ScaleAnimator { duration: control.pressed ? Theme.motion.instant : Theme.motion.fast; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        ScaleAnimator { duration: Math.max(1, control.pressed ? Theme.motion.instant : Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
     }
     // C6: a short pop of the glyph (1 → likePop → 1, `base` in total), e.g. when a song is saved.
-    function pop() { glyphPop.restart() }
+    function pop() { glyphUnpop.stop(); glyphToggle.stop(); glyphPop.restart() }
+    // Regla 7: a toggle (`toggle: true`) confirms with its glyph: a small pop when it turns ON,
+    // a shrink without overshoot when it turns OFF. Not on first load, not when motion is off.
+    function unpop() { glyphPop.stop(); glyphToggle.stop(); glyphUnpop.restart() }
+    property bool ready: false
+    Component.onCompleted: ready = true
+    onActiveChanged: {
+        if (!toggle || !ready || !visible || Theme.motion.scale <= 0) return
+        if (active) { glyphPop.stop(); glyphUnpop.stop(); glyphToggle.restart() }
+        else unpop()
+    }
 
     // v0.9.2: after a press the tooltip stays away until the pointer leaves (a click that flips
     // the theme changed its text mid-crossfade and the bubble showed up torn at the edge).
@@ -77,7 +87,7 @@ T.AbstractButton {
             objectName: "iconToolTip"
             parent: control
             visible: true
-            delay: Theme.effectsAllowed ? Theme.tip.delay : 0
+            delay: Theme.interactionAllowed ? Theme.tip.delay : 0
             text: control.toolTip
             width: Math.min(Theme.tip.maxWidth, implicitWidth)
             x: Math.round((control.width - width) / 2)
@@ -149,9 +159,19 @@ T.AbstractButton {
                  : control.ink
         }
         SequentialAnimation {
+            id: glyphToggle
+            ScaleAnimator { target: glyph; from: 1; to: Theme.feel.togglePop; duration: Math.max(1, Theme.motion.instant); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+            ScaleAnimator { target: glyph; to: 1; duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        }
+        SequentialAnimation {
+            id: glyphUnpop
+            ScaleAnimator { target: glyph; from: 1; to: Theme.feel.unpopScale; duration: Math.max(1, Theme.motion.instant); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+            ScaleAnimator { target: glyph; to: 1; duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        }
+        SequentialAnimation {
             id: glyphPop
-            ScaleAnimator { target: glyph; from: 1; to: Theme.feel.likePop; duration: Theme.motion.instant; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
-            ScaleAnimator { target: glyph; to: 1; duration: Theme.motion.base - Theme.motion.instant; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut }
+            ScaleAnimator { target: glyph; from: 1; to: Theme.feel.likePop; duration: Math.max(1, Theme.motion.instant); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+            ScaleAnimator { target: glyph; to: 1; duration: Math.max(1, Theme.motion.base - Theme.motion.instant); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut }
         }
     }
 }

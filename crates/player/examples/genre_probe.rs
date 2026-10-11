@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
     engine.shutdown().await;
     if successes == 0 {
         bail!(
-            "Ninguna canción devolvió géneros/ánimos decodificables; no hay etiquetas disponibles."
+            "Ninguna canción devolvió géneros/ánimos decodificables. No habilitar chips; ver docs/F5.md."
         );
     }
     println!(

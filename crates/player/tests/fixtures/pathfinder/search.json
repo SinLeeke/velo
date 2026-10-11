@@ -3040,7 +3040,7 @@
          }
         ]
        },
-       "description": "Synthetic podcast description for search parser tests.",
+       "description": "Who was Emperor Tewodros II, the colourful and controversial Emperor of Abyssinia? Why did he brutally imprison a number of British emissaries, and how did Queen Victoria respond? And, how would this spark one of the most ambitious expeditions undertaken by the British Empire…?  Join Dominic and Tom as they launch into one of the most extraordinary military expeditions in all world history.    Join The Rest Is History Club: Unlock the full experience of the show – with exclusive bonus episodes, ad-free listening, early access to every series and live show tickets, a members-only newsletter, discounted books from the show, and access to our private Discord chatroom. Sign up directly at the⁠⁠restishistory.com⁠⁠.  To read our new newsletter, sign up at: ⁠⁠therestishistory.com/newsletters⁠⁠ _______  Advertise with us: ⁠Partnerships@goalhanger.com⁠ _______  This episode is sponsored by Anthropic, the team behind Claude. Try Claude for free today at http://Claude.ai/restishistory. _______ Twitter: @TheRestHistory @holland_tom @dcsandbrook  Video Editors: Jack Meek, Harry Swan + Adam Thornton  Social Producer: Harry Balden Producers: Tabby Syrett & Aaliyah Akude  Senior Producer: Callum Hill   Executive Producer: Dom Johnson Learn more about your ad choices. Visit podcastchoices.com/adchoices",
        "duration": {
         "totalMilliseconds": 4020202
        },
@@ -3259,7 +3259,7 @@
          }
         ]
        },
-       "description": "Who was Lieutenant General Napier, the man set out to rescue the European hostages held by Emperor Tewodros II? How did he plan to attack the emperor’s fortress, Magdala? And, did they manage to successfully escape Abyssinia?   Join Dominic and Tom as they conclude the story of one of the most epic expeditions in the history of the British Empire.       Join The Rest Is History Club: Unlock the full experience of the show – with exclusive bonus episodes, ad-free listening, early access to every series and live show tickets, a members-only newsletter, discounted books from the show, and access to our private Discord chatroom. Sign up directly at the⁠⁠restishistory.com⁠  To read our new newsletter, sign up at: ⁠therestishistory.com/newsletters⁠  Advertise with us: ⁠contact@example.test _______ Twitter: @TheRestHistory @holland_tom @dcsandbrook  Video Editors: Jack Meek, Harry Swan + Adam Thornton  Social Producer: Harry Balden Producers: Tabby Syrett & Aaliyah Akude  Senior Producer: Callum Hill   Executive Producer: Dom Johnson Learn more about your ad choices. Visit podcastchoices.com/adchoices",
+       "description": "Who was Lieutenant General Napier, the man set out to rescue the European hostages held by Emperor Tewodros II? How did he plan to attack the emperor’s fortress, Magdala? And, did they manage to successfully escape Abyssinia?   Join Dominic and Tom as they conclude the story of one of the most epic expeditions in the history of the British Empire.       Join The Rest Is History Club: Unlock the full experience of the show – with exclusive bonus episodes, ad-free listening, early access to every series and live show tickets, a members-only newsletter, discounted books from the show, and access to our private Discord chatroom. Sign up directly at the⁠⁠restishistory.com⁠  To read our new newsletter, sign up at: ⁠therestishistory.com/newsletters⁠  Advertise with us: ⁠Partnerships@goalhanger.com _______ Twitter: @TheRestHistory @holland_tom @dcsandbrook  Video Editors: Jack Meek, Harry Swan + Adam Thornton  Social Producer: Harry Balden Producers: Tabby Syrett & Aaliyah Akude  Senior Producer: Callum Hill   Executive Producer: Dom Johnson Learn more about your ad choices. Visit podcastchoices.com/adchoices",
        "duration": {
         "totalMilliseconds": 4226859
        },
@@ -4722,10 +4722,10 @@
         "data": {
          "__typename": "User",
          "avatar": null,
-         "name": "Fixture Listener 11",
+         "name": "🟢 ROCK PLAYLISTS 🟢",
          "socialHandle": null,
-         "uri": "spotify:user:fixture_listener_11",
-         "username": "fixture_listener_11"
+         "uri": "spotify:user:31yfb62456dqlvnsjrfsfnd73zay",
+         "username": "31yfb62456dqlvnsjrfsfnd73zay"
         }
        },
        "uri": "spotify:playlist:12UYYKqEYV2MO5OjAJteNp",
@@ -4871,11 +4871,24 @@
         "__typename": "UserResponseWrapper",
         "data": {
          "__typename": "User",
-         "avatar": null,
-         "name": "Fixture Listener 18",
+         "avatar": {
+          "sources": [
+           {
+            "height": 64,
+            "url": "https://i.scdn.co/image/ab67757000003b82b5e4d116f8087f721b759d13",
+            "width": 64
+           },
+           {
+            "height": 300,
+            "url": "https://i.scdn.co/image/ab6775700000ee85b5e4d116f8087f721b759d13",
+            "width": 300
+           }
+          ]
+         },
+         "name": "Queen",
          "socialHandle": null,
-         "uri": "spotify:user:fixture_listener_18",
-         "username": "fixture_listener_18"
+         "uri": "spotify:user:queen_hwr",
+         "username": "queen_hwr"
         }
        },
        "uri": "spotify:playlist:595cY5S1FpMpiEIWsk6dG7",
@@ -5021,11 +5034,24 @@
         "__typename": "UserResponseWrapper",
         "data": {
          "__typename": "User",
-         "avatar": null,
-         "name": "Fixture Listener 21",
+         "avatar": {
+          "sources": [
+           {
+            "height": 64,
+            "url": "https://i.scdn.co/image/ab67757000003b825c238a2aa4a09567672d1b82",
+            "width": 64
+           },
+           {
+            "height": 300,
+            "url": "https://i.scdn.co/image/ab6775700000ee855c238a2aa4a09567672d1b82",
+            "width": 300
+           }
+          ]
+         },
+         "name": "The Happening México",
          "socialHandle": null,
-         "uri": "spotify:user:fixture_listener_21",
-         "username": "fixture_listener_21"
+         "uri": "spotify:user:thehappeningmx",
+         "username": "thehappeningmx"
         }
        },
        "uri": "spotify:playlist:0IyKBLd3r6GLMlsieLMr0e",
@@ -5749,11 +5775,24 @@
         "__typename": "UserResponseWrapper",
         "data": {
          "__typename": "User",
-         "avatar": null,
-         "name": "Fixture Listener 17",
+         "avatar": {
+          "sources": [
+           {
+            "height": 64,
+            "url": "https://i.scdn.co/image/ab67757000003b82dafe733b581c57e1c6a04a5d",
+            "width": 64
+           },
+           {
+            "height": 300,
+            "url": "https://i.scdn.co/image/ab6775700000ee85dafe733b581c57e1c6a04a5d",
+            "width": 300
+           }
+          ]
+         },
+         "name": "Luis Parra",
          "socialHandle": null,
-         "uri": "spotify:user:fixture_listener_17",
-         "username": "fixture_listener_17"
+         "uri": "spotify:user:lrgp93deoz",
+         "username": "lrgp93deoz"
         }
        },
        "uri": "spotify:playlist:4rlGpeiYnSvFoFACrKCQma",
@@ -5899,11 +5938,24 @@
         "__typename": "UserResponseWrapper",
         "data": {
          "__typename": "User",
-         "avatar": null,
-         "name": "Fixture Listener 20",
+         "avatar": {
+          "sources": [
+           {
+            "height": 64,
+            "url": "https://i.scdn.co/image/ab67757000003b82fb67d402702acda4e9e7a202",
+            "width": 64
+           },
+           {
+            "height": 300,
+            "url": "https://i.scdn.co/image/ab6775700000ee85fb67d402702acda4e9e7a202",
+            "width": 300
+           }
+          ]
+         },
+         "name": "rutsusann",
          "socialHandle": null,
-         "uri": "spotify:user:fixture_listener_20",
-         "username": "fixture_listener_20"
+         "uri": "spotify:user:rutsusann",
+         "username": "rutsusann"
         }
        },
        "uri": "spotify:playlist:2t2qZOIwNWudCWIEmrkvfC",
@@ -6050,10 +6102,10 @@
         "data": {
          "__typename": "User",
          "avatar": null,
-         "name": "Fixture Listener 10",
+         "name": "🔵 Lo Mejor del POP 🔵",
          "socialHandle": null,
-         "uri": "spotify:user:fixture_listener_10",
-         "username": "fixture_listener_10"
+         "uri": "spotify:user:31jchbdgrdpfztycyrzk4s7x2764",
+         "username": "31jchbdgrdpfztycyrzk4s7x2764"
         }
        },
        "uri": "spotify:playlist:1QnVxGlkol6ELKTUrfslYW",
@@ -15868,12 +15920,186 @@
       "__typename": "UserResponseWrapper",
       "data": {
        "__typename": "User",
-       "avatar": null,
-       "id": "fixture_listener_18",
-       "displayName": "Fixture Listener 18",
+       "avatar": {
+        "extractedColors": {
+         "colorDark": {
+          "hex": "#535353",
+          "isFallback": true
+         }
+        },
+        "sources": [
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67757000003b82b5e4d116f8087f721b759d13",
+          "width": 64
+         },
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab6775700000ee85b5e4d116f8087f721b759d13",
+          "width": 300
+         }
+        ]
+       },
+       "id": "queen_hwr",
+       "displayName": "Queen",
        "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_18",
-       "username": "fixture_listener_18"
+       "uri": "spotify:user:queen_hwr",
+       "username": "queen_hwr"
+      }
+     },
+     {
+      "__typename": "UserResponseWrapper",
+      "data": {
+       "__typename": "User",
+       "avatar": {
+        "extractedColors": {
+         "colorDark": {
+          "hex": "#9F667D",
+          "isFallback": false
+         }
+        },
+        "sources": [
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67757000003b8239a4af586f3b0fd8f47db085",
+          "width": 64
+         },
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab6775700000ee8539a4af586f3b0fd8f47db085",
+          "width": 300
+         }
+        ]
+       },
+       "id": "9x5pdxndcec1d0ckid2iqaxy2",
+       "displayName": "Queen",
+       "socialHandle": null,
+       "uri": "spotify:user:9x5pdxndcec1d0ckid2iqaxy2",
+       "username": "9x5pdxndcec1d0ckid2iqaxy2"
+      }
+     },
+     {
+      "__typename": "UserResponseWrapper",
+      "data": {
+       "__typename": "User",
+       "avatar": {
+        "extractedColors": {
+         "colorDark": {
+          "hex": "#A86058",
+          "isFallback": false
+         }
+        },
+        "sources": [
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67757000003b82c4f6d886842bfe5c612582c6",
+          "width": 64
+         },
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab6775700000ee85c4f6d886842bfe5c612582c6",
+          "width": 300
+         }
+        ]
+       },
+       "id": "vftv3t9aqtkq5uiqfajsxcs7j",
+       "displayName": "queen",
+       "socialHandle": null,
+       "uri": "spotify:user:vftv3t9aqtkq5uiqfajsxcs7j",
+       "username": "vftv3t9aqtkq5uiqfajsxcs7j"
+      }
+     },
+     {
+      "__typename": "UserResponseWrapper",
+      "data": {
+       "__typename": "User",
+       "avatar": {
+        "extractedColors": {
+         "colorDark": {
+          "hex": "#A04850",
+          "isFallback": false
+         }
+        },
+        "sources": [
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67757000003b82202147e642bed9e316aa2b18",
+          "width": 64
+         },
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab6775700000ee85202147e642bed9e316aa2b18",
+          "width": 300
+         }
+        ]
+       },
+       "id": "victorhugo_27",
+       "displayName": "Queen",
+       "socialHandle": null,
+       "uri": "spotify:user:victorhugo_27",
+       "username": "victorhugo_27"
+      }
+     },
+     {
+      "__typename": "UserResponseWrapper",
+      "data": {
+       "__typename": "User",
+       "avatar": {
+        "extractedColors": {
+         "colorDark": {
+          "hex": "#B02828",
+          "isFallback": false
+         }
+        },
+        "sources": [
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67757000003b8268a0919fa5b54449ca976e9e",
+          "width": 64
+         },
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab6775700000ee8568a0919fa5b54449ca976e9e",
+          "width": 300
+         }
+        ]
+       },
+       "id": "2ls2sa44lltsrsobxwzmvflkw",
+       "displayName": "Queen",
+       "socialHandle": null,
+       "uri": "spotify:user:2ls2sa44lltsrsobxwzmvflkw",
+       "username": "2ls2sa44lltsrsobxwzmvflkw"
+      }
+     },
+     {
+      "__typename": "UserResponseWrapper",
+      "data": {
+       "__typename": "User",
+       "avatar": {
+        "extractedColors": {
+         "colorDark": {
+          "hex": "#403030",
+          "isFallback": false
+         }
+        },
+        "sources": [
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67757000003b820c484e60e3fb0b054f268394",
+          "width": 64
+         },
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab6775700000ee850c484e60e3fb0b054f268394",
+          "width": 300
+         }
+        ]
+       },
+       "id": "queencypijung",
+       "displayName": "queen",
+       "socialHandle": null,
+       "uri": "spotify:user:queencypijung",
+       "username": "queencypijung"
       }
      },
      {
@@ -15881,107 +16107,104 @@
       "data": {
        "__typename": "User",
        "avatar": null,
-       "id": "fixture_listener_13",
-       "displayName": "Fixture Listener 13",
+       "id": "cici-81",
+       "displayName": "Queen",
        "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_13",
-       "username": "fixture_listener_13"
+       "uri": "spotify:user:cici-81",
+       "username": "cici-81"
       }
      },
      {
       "__typename": "UserResponseWrapper",
       "data": {
        "__typename": "User",
-       "avatar": null,
-       "id": "fixture_listener_23",
-       "displayName": "Fixture Listener 23",
+       "avatar": {
+        "extractedColors": {
+         "colorDark": {
+          "hex": "#7F7F7F",
+          "isFallback": true
+         }
+        },
+        "sources": [
+         {
+          "height": 64,
+          "url": "https://scontent-ord5-2.xx.fbcdn.net/v/t39.30808-1/279259182_4543635719069686_7902911611065368494_n.jpg?stp=cp0_dst-jpg_s50x50_tt6&_nc_cat=104&ccb=1-7&_nc_sid=fe59b0&_nc_ohc=4PlVqQ-8TngQ7kNvwEPEtKs&_nc_oc=AdqHdPafeee-f-p-aqHZrKfzx_kzPr-CqkycU6t7bJl4c7tHvcrjYnRlpyyFcfRTcSoG_CDqgfm-JDQwbHs5Zimf&_nc_zt=24&_nc_ht=scontent-ord5-2.xx&edm=AP4hL3IEAAAA&_nc_gid=HdCqjFFZ__-rHOX-y8GD8w&_nc_tpa=Q5bMBQKQm6fAH4NX2C-4ZiXiMFW1Fht38_fot27FBS3KMxN_8noJG4o-oY-T3xPx54pIC_u-ra8Y&oh=00_AQOTiEsnWOUFg9Vuf68N9gRsV7Eifw5rVT-vP1f9P8GDrg&oe=6ACD7FE8",
+          "width": 64
+         },
+         {
+          "height": 300,
+          "url": "https://scontent-ord5-2.xx.fbcdn.net/v/t39.30808-1/279259182_4543635719069686_7902911611065368494_n.jpg?stp=dst-jpg_s320x320_tt6&_nc_cat=104&ccb=1-7&_nc_sid=08baa4&_nc_ohc=4PlVqQ-8TngQ7kNvwEPEtKs&_nc_oc=AdqHdPafeee-f-p-aqHZrKfzx_kzPr-CqkycU6t7bJl4c7tHvcrjYnRlpyyFcfRTcSoG_CDqgfm-JDQwbHs5Zimf&_nc_zt=24&_nc_ht=scontent-ord5-2.xx&edm=AP4hL3IEAAAA&_nc_gid=HdCqjFFZ__-rHOX-y8GD8w&_nc_tpa=Q5bMBQKbINN5mCbNqfJ2ixZjmBvwjwkWCwQyhwYK4EGy20kMYldBHgh5r_7eJFroXZ-B3PlSnVc7&oh=00_AQN0_iyajl-hZLgqKMoMwR4cHHYD3vabyMcsObNwnak8Jw&oe=6ACD7FE8",
+          "width": 300
+         }
+        ]
+       },
+       "id": "11121737214",
+       "displayName": "Queenie",
        "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_23",
-       "username": "fixture_listener_23"
+       "uri": "spotify:user:11121737214",
+       "username": "11121737214"
       }
      },
      {
       "__typename": "UserResponseWrapper",
       "data": {
        "__typename": "User",
-       "avatar": null,
-       "id": "fixture_listener_24",
-       "displayName": "Fixture Listener 24",
+       "avatar": {
+        "extractedColors": {
+         "colorDark": {
+          "hex": "#902808",
+          "isFallback": false
+         }
+        },
+        "sources": [
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67757000003b829cf432d85be74a195b4ce288",
+          "width": 64
+         },
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab6775700000ee859cf432d85be74a195b4ce288",
+          "width": 300
+         }
+        ]
+       },
+       "id": "31cdiko7my4k2bzljeq7uobs44li",
+       "displayName": "QueenKB",
        "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_24",
-       "username": "fixture_listener_24"
+       "uri": "spotify:user:31cdiko7my4k2bzljeq7uobs44li",
+       "username": "31cdiko7my4k2bzljeq7uobs44li"
       }
      },
      {
       "__typename": "UserResponseWrapper",
       "data": {
        "__typename": "User",
-       "avatar": null,
-       "id": "fixture_listener_04",
-       "displayName": "Fixture Listener 04",
+       "avatar": {
+        "extractedColors": {
+         "colorDark": {
+          "hex": "#B83000",
+          "isFallback": false
+         }
+        },
+        "sources": [
+         {
+          "height": 64,
+          "url": "https://i.scdn.co/image/ab67757000003b82188f7a477434abcf964eaa32",
+          "width": 64
+         },
+         {
+          "height": 300,
+          "url": "https://i.scdn.co/image/ab6775700000ee85188f7a477434abcf964eaa32",
+          "width": 300
+         }
+        ]
+       },
+       "id": "12154303837",
+       "displayName": "Queen K",
        "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_04",
-       "username": "fixture_listener_04"
-      }
-     },
-     {
-      "__typename": "UserResponseWrapper",
-      "data": {
-       "__typename": "User",
-       "avatar": null,
-       "id": "fixture_listener_19",
-       "displayName": "Fixture Listener 19",
-       "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_19",
-       "username": "fixture_listener_19"
-      }
-     },
-     {
-      "__typename": "UserResponseWrapper",
-      "data": {
-       "__typename": "User",
-       "avatar": null,
-       "id": "fixture_listener_15",
-       "displayName": "Fixture Listener 15",
-       "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_15",
-       "username": "fixture_listener_15"
-      }
-     },
-     {
-      "__typename": "UserResponseWrapper",
-      "data": {
-       "__typename": "User",
-       "avatar": null,
-       "id": "fixture_listener_01",
-       "displayName": "Fixture Listener 01",
-       "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_01",
-       "username": "fixture_listener_01"
-      }
-     },
-     {
-      "__typename": "UserResponseWrapper",
-      "data": {
-       "__typename": "User",
-       "avatar": null,
-       "id": "fixture_listener_07",
-       "displayName": "Fixture Listener 07",
-       "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_07",
-       "username": "fixture_listener_07"
-      }
-     },
-     {
-      "__typename": "UserResponseWrapper",
-      "data": {
-       "__typename": "User",
-       "avatar": null,
-       "id": "fixture_listener_03",
-       "displayName": "Fixture Listener 03",
-       "socialHandle": null,
-       "uri": "spotify:user:fixture_listener_03",
-       "username": "fixture_listener_03"
+       "uri": "spotify:user:12154303837",
+       "username": "12154303837"
       }
      }
     ],

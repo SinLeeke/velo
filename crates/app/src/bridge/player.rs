@@ -10,6 +10,9 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
+        include!("cxx-qt-lib/qlist.h");
+        type QList_QString = cxx_qt_lib::QList<QString>;
+        type QList_f64 = cxx_qt_lib::QList<f64>;
         include!("cxx-qt-lib/qurl.h");
         type QUrl = cxx_qt_lib::QUrl;
         include!("QtCore/QAbstractListModel");
@@ -35,6 +38,10 @@ pub mod ffi {
         #[qproperty(bool, dj_active, READ, NOTIFY)]
         #[qproperty(bool, dj_speaking, READ, NOTIFY)]
         #[qproperty(QString, dj_line, READ, NOTIFY)]
+        #[qproperty(bool, mixing, READ, NOTIFY)]
+        #[qproperty(bool, mix_available, READ, NOTIFY)]
+        #[qproperty(QString, context_uri, READ, NOTIFY)]
+        #[qproperty(QString, context_title, READ, NOTIFY)]
         #[qproperty(QUrl, blur_url, READ, NOTIFY)]
         #[qproperty(i32, duration_ms, READ, NOTIFY)]
         #[qproperty(i32, position_ms, READ, NOTIFY)]
@@ -48,6 +55,8 @@ pub mod ffi {
         #[qproperty(bool, queue_editable, READ, NOTIFY)]
         #[qproperty(bool, queue_clearable, READ, NOTIFY)]
         #[qproperty(QString, device_name, READ, NOTIFY)]
+        #[qproperty(bool, remote, READ, NOTIFY)]
+        #[qproperty(QString, device_icon, READ, NOTIFY)]
         #[qproperty(bool, has_session, READ, NOTIFY)]
         #[qproperty(QString, palette_base, READ, NOTIFY)]
         #[qproperty(QString, palette_glow, READ, NOTIFY)]
@@ -55,8 +64,14 @@ pub mod ffi {
         #[qproperty(QString, palette_veil_light, READ, NOTIFY)]
         #[qproperty(QString, palette_ink_dark, READ, NOTIFY)]
         #[qproperty(QString, palette_ink_light, READ, NOTIFY)]
+        #[qproperty(QList_QString, palette_colors, READ, NOTIFY)]
+        #[qproperty(QList_f64, palette_weights, READ, NOTIFY)]
         #[qproperty(f64, palette_veil_dark_opacity, READ, NOTIFY)]
         #[qproperty(f64, palette_veil_light_opacity, READ, NOTIFY)]
+        #[qproperty(f64, palette_veil_dark_moving_opacity, READ, NOTIFY)]
+        #[qproperty(f64, palette_veil_light_moving_opacity, READ, NOTIFY)]
+        #[qproperty(f64, palette_blob_dark_moving_opacity, READ, NOTIFY)]
+        #[qproperty(f64, palette_blob_light_moving_opacity, READ, NOTIFY)]
         #[qproperty(f64, palette_scrim_dark_opacity, READ, NOTIFY)]
         #[qproperty(f64, palette_scrim_light_opacity, READ, NOTIFY)]
         #[qproperty(*mut QAbstractListModel, queue, READ, CONSTANT)]
@@ -128,7 +143,7 @@ use core::pin::Pin;
 
 use cxx_qt::casting::Upcast;
 use cxx_qt::{CxxQtType, Threading};
-use cxx_qt_lib::{QString, QUrl};
+use cxx_qt_lib::{QList, QString, QUrl};
 use velo_domain::Palette;
 
 use crate::engine::core;
@@ -151,6 +166,10 @@ pub struct PlayerRust {
     dj_active: bool,
     dj_speaking: bool,
     dj_line: QString,
+    mixing: bool,
+    mix_available: bool,
+    context_uri: QString,
+    context_title: QString,
     blur_url: QUrl,
     duration_ms: i32,
     position_ms: i32,
@@ -164,6 +183,8 @@ pub struct PlayerRust {
     queue_editable: bool,
     queue_clearable: bool,
     device_name: QString,
+    remote: bool,
+    device_icon: QString,
     has_session: bool,
     palette_base: QString,
     palette_glow: QString,
@@ -171,8 +192,14 @@ pub struct PlayerRust {
     palette_veil_light: QString,
     palette_ink_dark: QString,
     palette_ink_light: QString,
+    palette_colors: QList<QString>,
+    palette_weights: QList<f64>,
     palette_veil_dark_opacity: f64,
     palette_veil_light_opacity: f64,
+    palette_veil_dark_moving_opacity: f64,
+    palette_veil_light_moving_opacity: f64,
+    palette_blob_dark_moving_opacity: f64,
+    palette_blob_light_moving_opacity: f64,
     palette_scrim_dark_opacity: f64,
     palette_scrim_light_opacity: f64,
     queue: *mut crate::model::ffi::QAbstractListModel,
@@ -204,6 +231,10 @@ impl Default for PlayerRust {
             dj_active: v.dj_active,
             dj_speaking: v.dj_speaking,
             dj_line: QString::from(v.dj_line.as_str()),
+            mixing: v.mixing,
+            mix_available: v.mix_available,
+            context_uri: QString::from(v.context_uri.as_str()),
+            context_title: QString::from(v.context_title.as_str()),
             blur_url: QUrl::from(v.blur_url.as_str()),
             duration_ms: clamp_ms(v.duration_ms),
             position_ms: clamp_ms(*c.env.position.borrow()),
@@ -217,6 +248,8 @@ impl Default for PlayerRust {
             queue_editable: v.queue_editable,
             queue_clearable: v.queue_clearable,
             device_name: QString::from(v.device_name.as_str()),
+            remote: v.remote,
+            device_icon: QString::from(v.device_icon.as_str()),
             has_session: v.has_session,
             palette_base: QString::from("#2E6F86"),
             palette_glow: QString::from("#7CC9E6"),
@@ -224,8 +257,14 @@ impl Default for PlayerRust {
             palette_veil_light: QString::from("#D7E8EE"),
             palette_ink_dark: QString::from("#F4FAFC"),
             palette_ink_light: QString::from("#0D2129"),
+            palette_colors: QList::default(),
+            palette_weights: QList::default(),
             palette_veil_dark_opacity: 1.0,
             palette_veil_light_opacity: 1.0,
+            palette_veil_dark_moving_opacity: 1.0,
+            palette_veil_light_moving_opacity: 1.0,
+            palette_blob_dark_moving_opacity: 1.0,
+            palette_blob_light_moving_opacity: 1.0,
             palette_scrim_dark_opacity: 0.0,
             palette_scrim_light_opacity: 0.0,
             queue: std::ptr::null_mut(),
@@ -412,6 +451,20 @@ impl ffi::Player {
         set_ro!(self, dj_available, dj_available_changed, v.dj_available);
         set_ro!(self, dj_active, dj_active_changed, v.dj_active);
         set_ro!(self, dj_speaking, dj_speaking_changed, v.dj_speaking);
+        set_ro!(self, mixing, mixing_changed, v.mixing);
+        set_ro!(self, mix_available, mix_available_changed, v.mix_available);
+        set_ro!(
+            self,
+            context_uri,
+            context_uri_changed,
+            QString::from(v.context_uri.as_str())
+        );
+        set_ro!(
+            self,
+            context_title,
+            context_title_changed,
+            QString::from(v.context_title.as_str())
+        );
         set_ro!(
             self,
             dj_line,
@@ -469,6 +522,13 @@ impl ffi::Player {
             device_name_changed,
             QString::from(v.device_name.as_str())
         );
+        set_ro!(self, remote, remote_changed, v.remote);
+        set_ro!(
+            self,
+            device_icon,
+            device_icon_changed,
+            QString::from(v.device_icon.as_str())
+        );
         set_ro!(self, has_session, has_session_changed, v.has_session);
     }
 
@@ -482,8 +542,24 @@ impl ffi::Player {
             rust.palette_veil_light = QString::from(p.veil_light.as_str());
             rust.palette_ink_dark = QString::from(p.ink_dark.as_str());
             rust.palette_ink_light = QString::from(p.ink_light.as_str());
+            rust.palette_colors = p
+                .colors
+                .iter()
+                .map(|(color, _)| QString::from(color.as_str()))
+                .collect();
+            rust.palette_weights = p
+                .colors
+                .iter()
+                .map(|(_, weight)| f64::from(*weight))
+                .collect();
             rust.palette_veil_dark_opacity = f64::from(p.veil_dark_alpha) / 255.0;
             rust.palette_veil_light_opacity = f64::from(p.veil_light_alpha) / 255.0;
+            rust.palette_veil_dark_moving_opacity = f64::from(p.veil_dark_moving_alpha) / 255.0;
+            rust.palette_veil_light_moving_opacity = f64::from(p.veil_light_moving_alpha) / 255.0;
+            rust.palette_blob_dark_moving_opacity =
+                f64::from(p.blob_dark_moving_alpha.unwrap_or(255)) / 255.0;
+            rust.palette_blob_light_moving_opacity =
+                f64::from(p.blob_light_moving_alpha.unwrap_or(255)) / 255.0;
             rust.palette_scrim_dark_opacity = f64::from(p.scrim_dark_alpha) / 255.0;
             rust.palette_scrim_light_opacity = f64::from(p.scrim_light_alpha) / 255.0;
             rust.applied_palette = Some(p.clone());
@@ -494,8 +570,14 @@ impl ffi::Player {
         self.as_mut().palette_veil_light_changed();
         self.as_mut().palette_ink_dark_changed();
         self.as_mut().palette_ink_light_changed();
+        self.as_mut().palette_colors_changed();
+        self.as_mut().palette_weights_changed();
         self.as_mut().palette_veil_dark_opacity_changed();
         self.as_mut().palette_veil_light_opacity_changed();
+        self.as_mut().palette_veil_dark_moving_opacity_changed();
+        self.as_mut().palette_veil_light_moving_opacity_changed();
+        self.as_mut().palette_blob_dark_moving_opacity_changed();
+        self.as_mut().palette_blob_light_moving_opacity_changed();
         self.as_mut().palette_scrim_dark_opacity_changed();
         self.as_mut().palette_scrim_light_opacity_changed();
         self.as_mut().palette_ready();

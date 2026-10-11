@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 
-// MOCK of Velo.Backend.Lyrics. Lines are invented for the preview.
+// MOCK of Velo.Backend.Lyrics (docs/CONTRATO.md). Lines are invented for the preview.
 QtObject {
     property string status: "synced"       // "loading" | "synced" | "plain" | "none" | "instrumental"
     property int activeIndex: 8

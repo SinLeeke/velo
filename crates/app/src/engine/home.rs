@@ -109,7 +109,44 @@ async fn made_for_you(api: &dyn MusicProvider) -> (Vec<Playlist>, bool) {
             _ => failed = true,
         }
     }
+    order_numbered(&mut playlists);
     (playlists, failed)
+}
+
+/// «Daily Mix 4, 2, 3…» came in search order: numbered playlists sharing a name (Daily Mix N)
+/// are put in number order among the slots they already take; everything else stays put.
+fn order_numbered(playlists: &mut [Playlist]) {
+    fn split(name: &str) -> Option<(String, u32)> {
+        let name = name.trim();
+        let digits = name.len() - name.trim_end_matches(|c: char| c.is_ascii_digit()).len();
+        let prefix = name[..name.len() - digits].trim().to_lowercase();
+        let number = name[name.len() - digits..].parse().ok()?;
+        (!prefix.is_empty()).then_some((prefix, number))
+    }
+    let keys: Vec<Option<(String, u32)>> = playlists.iter().map(|p| split(&p.name)).collect();
+    let mut prefixes: Vec<&String> = keys.iter().flatten().map(|(p, _)| p).collect();
+    prefixes.dedup();
+    for prefix in prefixes.into_iter().collect::<HashSet<_>>() {
+        let slots: Vec<usize> = (0..playlists.len())
+            .filter(|&i| keys[i].as_ref().is_some_and(|(p, _)| p == prefix))
+            .collect();
+        if slots.len() < 2 {
+            continue;
+        }
+        let mut items: Vec<(u32, Playlist)> = slots
+            .iter()
+            .map(|&i| {
+                (
+                    keys[i].as_ref().map_or(0, |(_, n)| *n),
+                    playlists[i].clone(),
+                )
+            })
+            .collect();
+        items.sort_by_key(|(n, _)| *n);
+        for (&slot, (_, item)) in slots.iter().zip(items) {
+            playlists[slot] = item;
+        }
+    }
 }
 
 /// Las tres lecturas ya existentes en loadHome, con top tracks de corto plazo (20).
@@ -463,7 +500,7 @@ fn top_uris(tracks: &[Track], index: i32) -> Option<Vec<String>> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::r4b_test_support::{ManualTime, Server, runtime};
+    use super::super::r4b_test_support::{ManualTime, Request, Server, runtime};
     use super::*;
     use velo_domain::ArtistRef;
     use velo_spotify::{MemoryTokenStore, SpotifyConfig, SpotifyProvider, TokenStore};
@@ -472,9 +509,31 @@ mod tests {
         matchers::{path, query_param},
     };
 
-    async fn played(ctl: &HomeCtl) {
-        let task = ctl.play_task.lock().unwrap().take().unwrap();
-        task.await.unwrap();
+    async fn playback_request(
+        task: &mut tokio::task::JoinHandle<()>,
+        server: &mut Server,
+    ) -> Request {
+        tokio::select! {
+            request = server.next() => request,
+            result = task => {
+                result.unwrap();
+                panic!("La reproducción terminó sin emitir la petición esperada");
+            }
+        }
+    }
+
+    async fn bounded_playback_test(test: impl std::future::Future<Output = ()>) {
+        // ManualTime mantiene el reloj pausado incluso mientras el mock espera IO:
+        // un timeout en ese mismo reloj tampoco vencería si falta una petición.
+        // Este guardián solo limita un fallo; las respuestas gobiernan el orden del test.
+        let (finished, completion) = std::sync::mpsc::channel::<()>();
+        let mut watchdog =
+            tokio::task::spawn_blocking(move || completion.recv_timeout(Duration::from_secs(3)));
+        tokio::select! {
+            () = test => drop(finished),
+            result = &mut watchdog => panic!("El test de reproducción excedió 3 s: {result:?}"),
+        }
+        let _ = watchdog.await.unwrap();
     }
 
     async fn finish_with_mock(ctl: &HomeCtl, server: &mut Server) -> Vec<String> {
@@ -499,7 +558,7 @@ mod tests {
     fn r4b_top_play_captures_before_first_poll_and_respects_later_pause_and_shuffle_wait() {
         let rt = runtime();
         let (_dir, env) = super::super::test_env(&rt);
-        rt.block_on(async {
+        rt.block_on(bounded_playback_test(async {
             let _time = ManualTime::new();
             let mut server = Server::new().await;
             env.account.set_test_provider(server.provider());
@@ -508,39 +567,48 @@ mod tests {
             ctl.inner.lock().unwrap().top = vec![track("original", None), track("cola", None)];
             // Ninguna tarea ha tenido su primer poll: pausa es una intención posterior real.
             ctl.play_top(0);
-            player.view.send_modify(|v| { v.can_control = true; v.is_playing = true; });
+            player.view.send_modify(|v| {
+                v.can_control = true;
+                v.is_playing = true;
+            });
             player.play_pause();
-            let pause_ticket = player.begin_playback();
+            // Solo la pausa debe invalidar el play; otro begin_playback ocultaría un fallo.
             assert!(finish_with_mock(&ctl, &mut server).await.is_empty());
-            assert!(player.playback_current(pause_ticket));
+            assert!(!player.view.borrow().is_playing);
             assert!(server.requests.try_recv().is_err());
 
             ctl.play_top(0);
+            let mut task = ctl.play_task.lock().unwrap().take().unwrap();
             ctl.inner.lock().unwrap().top = vec![track("recarga", None)];
-            let devices = server.next().await;
+            let devices = playback_request(&mut task, &mut server).await;
             assert_eq!(devices.path, "/me/player/devices");
             devices.respond(200, json!({"devices":[{"id":"phone","name":"Teléfono","type":"Smartphone","is_active":true}]}));
-            let shuffle = server.next().await;
-            assert!(shuffle.path.starts_with("/me/player/shuffle"));
+            let shuffle = playback_request(&mut task, &mut server).await;
+            assert_eq!(shuffle.path, "/me/player/shuffle?state=false");
+            assert!(!task.is_finished());
             shuffle.respond(204, Value::Null);
-            let play = server.next().await;
+            let play = playback_request(&mut task, &mut server).await;
             assert_eq!(play.path, "/me/player/play");
             assert_eq!(play.body["uris"], json!(["spotify:track:original", "spotify:track:cola"]));
             play.respond(204, Value::Null);
-            played(&ctl).await;
+            task.await.unwrap();
 
             ctl.play_top(0);
-            let devices = server.next().await;
+            let mut task = ctl.play_task.lock().unwrap().take().unwrap();
+            let devices = playback_request(&mut task, &mut server).await;
+            assert_eq!(devices.path, "/me/player/devices");
             devices.respond(200, json!({"devices":[{"id":"phone","name":"Teléfono","type":"Smartphone","is_active":true}]}));
-            let shuffle = server.next().await;
+            let shuffle = playback_request(&mut task, &mut server).await;
+            assert_eq!(shuffle.path, "/me/player/shuffle?state=false");
             // Otra acción durante la espera del PUT shuffle cancela el comando play siguiente.
             let later = player.begin_playback();
             tokio::time::advance(Duration::from_secs(2)).await;
+            assert!(!task.is_finished());
             shuffle.respond(204, Value::Null);
-            played(&ctl).await;
+            task.await.unwrap();
             assert!(player.playback_current(later));
             assert!(server.requests.try_recv().is_err());
-        });
+        }));
     }
 
     fn playlist(id: &str, name: &str) -> Playlist {
@@ -696,6 +764,36 @@ mod tests {
         assert!(top_uris(&recent, 4).is_none());
     }
 
+    #[test]
+    fn daily_mixes_follow_their_number_and_others_stay_put() {
+        let named = |n: &str| playlist(n, n);
+        let mut list: Vec<Playlist> = [
+            "Release Radar",
+            "Daily Mix 4",
+            "Daily Mix 2",
+            "Daily Mix 3",
+            "Daily Mix 6",
+            "Daily Mix 5",
+            "daylist",
+        ]
+        .into_iter()
+        .map(named)
+        .collect();
+        order_numbered(&mut list);
+        let names: Vec<&str> = list.iter().map(|p| p.name.as_str()).collect();
+        assert_eq!(
+            names,
+            [
+                "Release Radar",
+                "Daily Mix 2",
+                "Daily Mix 3",
+                "Daily Mix 4",
+                "Daily Mix 5",
+                "Daily Mix 6",
+                "daylist"
+            ]
+        );
+    }
     #[test]
     fn made_for_you_partial_failure_ready_and_cached_header_for_f4() {
         let rt = tokio::runtime::Runtime::new().unwrap();

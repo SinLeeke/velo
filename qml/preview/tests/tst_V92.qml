@@ -85,7 +85,7 @@ TestCase {
     }
     function backgroundPoint(np) {
         const cover = np.coverArt
-        for (let y = Theme.size.titleBar + Theme.space.lg; y < np.height; y += 4)
+        for (let y = Math.ceil(np.height * Theme.nowPlayingClicks.backdropSplit); y < np.height; y += 4)
             for (let x = 2; x < np.width; x += 8) {
                 if (!np.freeAt(x, y)) continue
                 const q = cover.mapFromItem(np, x, y)
@@ -304,6 +304,9 @@ TestCase {
     }
     function test_scrims_follow_palette_and_visibility() {
         Settings.showLyrics = true
+        // The text panels only show with the background still (user 2026-10-10).
+        const drift = Settings.drift
+        Settings.drift = false
         const np = make(npComponent)
         const controls = findChild(np, "npControlsScrim")
         const lyrics = findChild(np, "npLyricsScrim")
@@ -338,5 +341,82 @@ TestCase {
         delete p.scrimDarkOpacity
         Theme.setCoverPalette(p)
         compare(Theme.cover.scrimOpacity, 0)
+        Settings.drift = drift
+    }
+    // The hypnotic lights only use the cover's own colours and follow the theme (user 2026-10-10).
+    function test_hypnotic_lights_follow_cover_and_theme() {
+        const mode = Theme.mode
+        const glow = Theme.cover.glow, base = Theme.cover.base
+        Theme.cover.glow = "#C9A227"      // gold
+        Theme.cover.base = "#8A8A8A"      // grey
+        const bg = createTemporaryObject(backgroundComponent, test)
+        Theme.mode = "dark"
+        const dark = bg.blobColors.map(c => c.hslLightness)
+        for (const c of bg.blobColors)
+            verify(Math.abs(c.hslHue - Theme.cover.glow.hslHue) < 0.02 || c.hslSaturation < 0.05,
+                   "a light took a hue the cover does not have")
+        Theme.mode = "light"
+        const light = bg.blobColors.map(c => c.hslLightness)
+        for (let i = 0; i < dark.length; ++i)
+            verify(light[i] > dark[i] + 0.15, "light theme lights must be clearly lighter")
+        Theme.mode = mode
+        Theme.cover.glow = glow
+        Theme.cover.base = base
+    }
+
+    // T10: with the cover's five colours, every light keeps a hue the cover has (greys exempt).
+    function test_hypnotic_lights_use_the_five_cover_colours() {
+        const mode = Theme.mode
+        const saved = Theme.cover.colors
+        const cover = ["#8A8A8A", "#C9A227", "#6E6E6E", "#E0C050", "#3A3A3A"]   // grey and gold only
+        Theme.cover.colors = cover
+        const bg = createTemporaryObject(backgroundComponent, test)
+        for (const m of ["dark", "light"]) {
+            Theme.mode = m
+            compare(bg.blobColors.length, 6)
+            for (const c of bg.blobColors) {
+                if (c.hslSaturation < 0.05)
+                    continue
+                let present = false
+                for (const k of cover) {
+                    const q = Qt.color(k)
+                    if (q.hslSaturation < 0.05)
+                        continue
+                    const d = Math.abs(c.hslHue - q.hslHue)
+                    if (Math.min(d, 1 - d) < 0.02)
+                        present = true
+                }
+                verify(present, "a light took a hue the cover does not have: " + c)
+            }
+        }
+        Theme.mode = mode
+        Theme.cover.colors = saved
+    }
+    // T1: the palette carries the veil for the moving background; never below the static one.
+    function test_moving_veil_follows_palette_and_never_drops_below_static() {
+        const p = palette()
+        p.veilDarkOpacity = 0.4
+        p.veilDarkMovingOpacity = 0.7
+        p.colors = ["#112233", "#445566"]
+        Theme.mode = "dark"
+        Theme.setCoverPalette(p)
+        compare(Theme.cover.veilMovingOpacity, 0.7)
+        compare(Theme.cover.colors.length, 2)
+        p.veilDarkMovingOpacity = 0.1
+        Theme.setCoverPalette(p)
+        compare(Theme.cover.veilMovingOpacity, 0.4)
+        delete p.veilDarkMovingOpacity
+        Theme.setCoverPalette(p)
+        compare(Theme.cover.veilMovingOpacity, 0.4)
+    }
+    // T1: still background uses the static veil; moving uses the higher one (no animation here:
+    // reduceMotion/coverFade is not zero, so settle with tryCompare).
+    function test_veil_rises_only_while_the_background_moves() {
+        const bg = createTemporaryObject(backgroundComponent, test, {veilOpacity: 0.3, veilMovingOpacity: 0.8})
+        compare(bg.movingMix, 0)
+        verify(!bg.driftOn)
+        const layer = bg.front
+        compare(layer.veilAlpha, 0.3)
+        compare(layer.veilMovingAlpha, 0.8)
     }
 }

@@ -13,7 +13,7 @@ Item {
     property color color: Theme.accent
     readonly property bool speaking: Backend.Player.djActive && Backend.Player.djSpeaking
     readonly property var window: halo.Window.window
-    readonly property bool breathing: speaking && visible && Backend.Player.isPlaying && Theme.dj.pulse > 0
+    readonly property bool breathing: speaking && visible && Backend.Player.isPlaying && Theme.effectsAllowed && Theme.dj.pulse > 0
         && (!window || (window.visibility !== Window.Minimized && window.visibility !== Window.Hidden
             && (window.active || !Theme.pauseEffectsInBackground)))
     opacity: speaking ? 1 : 0

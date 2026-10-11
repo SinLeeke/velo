@@ -20,6 +20,7 @@ T.AbstractButton {
     focusPolicy: Qt.TabFocus
     padding: 0
     opacity: enabled ? 1 : Theme.library.disabledOpacity
+    Behavior on opacity { OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut } }
     Accessible.name: text
     Accessible.role: Accessible.Button
     // Space activates the focused disc; the window's Space shortcut must not take it first (P1-3).
@@ -40,7 +41,7 @@ T.AbstractButton {
     // over the accent (opacity: instant in, fast out). Transform and opacity only.
     scale: pressed ? Theme.feel.pressScale : 1
     Behavior on scale {
-        ScaleAnimator { duration: control.pressed ? Theme.motion.instant : Theme.motion.fast; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        ScaleAnimator { duration: Math.max(1, control.pressed ? Theme.motion.instant : Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
     }
     background: Rectangle {
         radius: height / 2

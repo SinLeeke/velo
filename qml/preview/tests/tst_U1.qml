@@ -42,7 +42,7 @@ TestCase {
         const notice = make(noticeComponent)
         Backend.Updater.state = "available"
         tryCompare(notice, "visible", true)
-        compare(findChild(notice, "updateMessage").text, "Velo 1.0.0 disponible")
+        compare(findChild(notice, "updateMessage").text, "Velo 1.0.0 está listo")
         const update = findChild(notice, "updateInstall")
         const later = findChild(notice, "updateDismiss")
         verify(update.visible); compare(update.text, "Actualizar")
@@ -62,7 +62,7 @@ TestCase {
         mouseClick(findChild(notice, "updateInstall"))
         compare(Backend.Updater.installCalls, 1)
         Backend.Updater.progress = 0.42
-        compare(findChild(notice, "updateMessage").text, "Descargando… 42 %")
+        compare(findChild(notice, "updateMessage").text, "Descargando Velo " + Backend.Updater.latestVersion)
         verify(!findChild(notice, "updateDismiss").visible)
     }
     function test_portable_opens_release() {
@@ -78,7 +78,7 @@ TestCase {
         const notice = make(noticeComponent)
         Backend.Updater.state = "error"
         Backend.Updater.error = "La descarga está incompleta. Inténtalo de nuevo."
-        compare(findChild(notice, "updateMessage").text, Backend.Updater.error)
+        compare(findChild(notice, "updateMessage").text, "No se pudo actualizar")
         const retry = findChild(notice, "updateInstall")
         compare(retry.text, "Reintentar")
         waitForRendering(notice)

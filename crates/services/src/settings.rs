@@ -220,6 +220,78 @@ impl Drop for TomlSettingsStore {
 mod tests {
     use super::*;
     #[tokio::test]
+    async fn t6_private_session_defaults_off_and_persists_both_values() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("settings.toml");
+        tokio::fs::write(&path, "[playback]\nshow_lyrics = false\n")
+            .await
+            .unwrap();
+        let mut store = TomlSettingsStore::with_path(&path).await.unwrap();
+        assert!(!store.load().playback.private_session);
+        assert!(!store.load().playback.show_lyrics);
+        for private_session in [true, false] {
+            let mut settings = store.load();
+            settings.playback.private_session = private_session;
+            store.save(&settings);
+            tokio::task::spawn_blocking(move || drop(store))
+                .await
+                .unwrap();
+            let text = tokio::fs::read_to_string(&path).await.unwrap();
+            assert!(text.contains(&format!("private_session = {private_session}")));
+            let roundtrip: Settings = toml::from_str(&text).unwrap();
+            assert_eq!(roundtrip, settings);
+            store = TomlSettingsStore::with_path(&path).await.unwrap();
+            assert_eq!(store.load(), settings);
+        }
+        tokio::task::spawn_blocking(move || drop(store))
+            .await
+            .unwrap();
+    }
+    #[tokio::test]
+    async fn mix_defaults_off_at_six_seconds_persists_and_clamps() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("settings.toml");
+        tokio::fs::write(&path, "[playback]\ngapless = true\n")
+            .await
+            .unwrap();
+        let store = TomlSettingsStore::with_path(&path).await.unwrap();
+        let mut settings = store.load();
+        assert_eq!(
+            (settings.playback.mix_seconds, settings.playback.mix_auto),
+            (6, false)
+        );
+        settings.playback.mix_seconds = 9;
+        settings.playback.mix_auto = true;
+        store.save(&settings);
+        tokio::task::spawn_blocking(move || drop(store))
+            .await
+            .unwrap();
+        let text = tokio::fs::read_to_string(&path).await.unwrap();
+        assert!(text.contains("mix_seconds = 9") && text.contains("mix_auto = true"));
+        let store = TomlSettingsStore::with_path(&path).await.unwrap();
+        assert_eq!(store.load(), settings);
+        assert_eq!(
+            store.load().playback.mix(),
+            velo_domain::MixConfig {
+                enabled: true,
+                seconds: 9
+            }
+        );
+        tokio::task::spawn_blocking(move || drop(store))
+            .await
+            .unwrap();
+        for (raw, seconds) in [(40, 12), (0, 1), (-3, 1)] {
+            tokio::fs::write(&path, format!("[playback]\nmix_seconds = {raw}\n"))
+                .await
+                .unwrap();
+            let store = TomlSettingsStore::with_path(&path).await.unwrap();
+            assert_eq!(store.load().playback.mix_seconds, seconds);
+            tokio::task::spawn_blocking(move || drop(store))
+                .await
+                .unwrap();
+        }
+    }
+    #[tokio::test]
     async fn s9_old_toml_migrates_audio_and_pins_once() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("settings.toml");

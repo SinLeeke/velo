@@ -28,7 +28,7 @@ T.Button {
 // (instant in, fast out). Opacity and scale only.
     scale: down ? Theme.feel.pressScale : 1
     Behavior on scale {
-        ScaleAnimator { duration: chip.down ? Theme.motion.instant : Theme.motion.fast; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        ScaleAnimator { duration: Math.max(1, chip.down ? Theme.motion.instant : Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
     }
     readonly property bool hoverShown: live && !selected
     background: Item {

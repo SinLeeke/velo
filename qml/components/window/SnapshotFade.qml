@@ -36,7 +36,7 @@ Item {
     Connections {
         target: Theme
         function onEffectsAllowedChanged() {
-            if (Theme.effectsAllowed) return
+            if (Theme.interactionAllowed) return
             const apply = root.pendingApply
             root.pendingApply = null
             root.finish()
@@ -46,7 +46,7 @@ Item {
 
     function windowShown() {
         const w = root.Window.window
-        return Theme.effectsAllowed && w !== null && w.visible && w.visibility !== Window.Minimized && w.visibility !== Window.Hidden
+        return Theme.interactionAllowed && w !== null && w.visible && w.visibility !== Window.Minimized && w.visibility !== Window.Hidden
     }
 
     function run(apply, duration, curve, zoomTarget) {

@@ -15,6 +15,9 @@ Rectangle {
     signal nowPlayingRequested()
     signal queueRequested()
     signal devicesRequested()
+    // T5: the «Reproduciendo» side panel button (state kept by the library).
+    property bool sidePanelActive: false
+    signal sidePanelToggled()
     Keys.onShortcutOverride: event => {
         const w = bar.Window.window
         if (event.key === Qt.Key_Space && w && w.activeFocusItem && w.activeFocusItem.activeFocusOnTab)
@@ -84,6 +87,8 @@ Rectangle {
     Menu {
         id: vizMenu
         objectName: "playerBarVizMenu"
+        // Parented to its button by popup(): pressing the button again toggles it shut.
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
         transformOrigin: Popup.Bottom
         enter: null
         exit: null
@@ -333,6 +338,10 @@ Rectangle {
                 enabled: Backend.Player.canControl
                 Accessible.description: Backend.Player.repeatMode === 0 ? qsTr("Repetición desactivada")
                                       : Backend.Player.repeatMode === 1 ? qsTr("Repitiendo la lista") : qsTr("Repitiendo la canción")
+                // Shape changes with the mode (repeat -> repeat_one); each step up pops, switching off does not.
+                property int lastMode: Backend.Player.repeatMode
+                readonly property int mode: Backend.Player.repeatMode
+                onModeChanged: { if (mode > 0 && mode !== lastMode && visible) pop(); lastMode = mode }
                 onClicked: Backend.Player.cycleRepeat()
             }
         }
@@ -373,8 +382,14 @@ Rectangle {
                 focusPolicy: Qt.StrongFocus
                 // While dragging, the handle follows the pointer, not the player position.
                 Binding { target: seek; property: "value"; value: Backend.Player.positionMs; when: !seek.pressed }
-                enabled: Backend.Player.canControl && Backend.Player.durationMs > 0
+                // DJ Livi's voice is not a track: the bar stays locked while she speaks.
+                enabled: Backend.Player.canControl && Backend.Player.durationMs > 0 && !Backend.Player.djSpeaking
+                // A-B1: the dimming follows `enabled` (which includes DJ Livi speaking) with a short
+                // fade (opacity, `fast`, easeOut) instead of jumping.
                 opacity: enabled ? 1 : Theme.library.disabledOpacity
+                Behavior on opacity {
+                    OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                }
                 Accessible.name: qsTr("Progreso de la canción")
                 Accessible.description: qsTr("%1 de %2").arg(bar.formatTime(value)).arg(bar.formatTime(Backend.Player.durationMs))
                 // Pointer gestures seek on release; keyboard steps accumulate on the visible
@@ -417,13 +432,26 @@ Rectangle {
                     Rectangle { width: parent.width * seek.visualPosition; height: parent.height; radius: height / 2; color: Theme.accent }
                 }
                 handle: Rectangle {
+                    id: handle
                     x: seek.leftPadding + seek.visualPosition * (seek.availableWidth - width)
                     y: (seek.height - height) / 2
                     width: Theme.space.sm
                     height: width
                     radius: width / 2
                     color: Theme.accent
-                    visible: seek.hovered || seek.pressed || seek.visualFocus
+                    // A-B2: the knob fades and grows in from `dotFrom` (instant in, fast out, easeOut)
+                    // with the mouse; keyboard focus shows it at once (keys are never animated).
+                    readonly property bool shown: seek.hovered || seek.pressed || seek.visualFocus
+                    readonly property bool byKeys: seek.visualFocus && !seek.hovered && !seek.pressed
+                    visible: shown || opacity > 0
+                    opacity: shown ? 1 : 0
+                    scale: shown ? 1 : Theme.feel.dotFrom
+                    Behavior on opacity {
+                        OpacityAnimator { duration: Math.max(1, handle.byKeys ? 0 : (handle.shown ? Theme.motion.instant : Theme.motion.fast)); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                    }
+                    Behavior on scale {
+                        ScaleAnimator { duration: Math.max(1, handle.byKeys ? 0 : (handle.shown ? Theme.motion.instant : Theme.motion.fast)); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                    }
                     // Keyboard focus: a ring around the knob, a gap of background between them.
                     Rectangle {
                         anchors.centerIn: parent
@@ -455,9 +483,14 @@ Rectangle {
         anchors.rightMargin: Theme.space.lg
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.space.sm
-        IconButton { text: Backend.Player.liked ? qsTr("Quitar de Tus me gusta") : qsTr("Añadir a Tus me gusta"); iconSource: Backend.Player.liked ? Qt.resolvedUrl("../../icons/favorite_fill.svg") : Qt.resolvedUrl("../../icons/favorite.svg"); ink: Backend.Player.liked ? Theme.accent : Theme.text; enabled: Backend.Player.hasSession
+        IconButton { id: likeButton; text: Backend.Player.liked ? qsTr("Quitar de Tus me gusta") : qsTr("Añadir a Tus me gusta"); iconSource: Backend.Player.liked ? Qt.resolvedUrl("../../icons/favorite_fill.svg") : Qt.resolvedUrl("../../icons/favorite.svg"); ink: Backend.Player.liked ? Theme.accent : Theme.text; enabled: Backend.Player.hasSession
             // C6: saving pops the heart (1 → likePop → 1); removing does not.
-            onClicked: { if (!Backend.Player.liked) pop(); Backend.Player.toggleLiked() } }
+            onClicked: { if (!Backend.Player.liked) pop(); else unpop(); Backend.Player.toggleLiked() } }
+        // A-S3: a like that arrives from elsewhere (menu, search, another surface) pops the heart too.
+        Connections {
+            target: Backend.Actions
+            function onSavedChanged(uri, saved) { if (saved && uri === Backend.Player.trackUri) likeButton.pop() }
+        }
         VolumeButton { objectName: "playerBarVolume" }
         AudioOutputButton { objectName: "playerBarOutput" }
         IconButton {
@@ -465,10 +498,58 @@ Rectangle {
             objectName: "playerBarVisualizerButton"
             text: qsTr("Visualizador de la barra")
             iconSource: Qt.resolvedUrl("../../icons/graphic_eq.svg")
-            onClicked: vizMenu.popup(visualizerButton, width - vizMenu.width, -vizMenu.height - Theme.space.sm)
+            onClicked: vizMenu.opened ? vizMenu.close()
+                                      : vizMenu.popup(visualizerButton, width - vizMenu.width, -vizMenu.height - Theme.space.sm)
+        }
+        IconButton {
+            objectName: "playerBarSidePanel"
+            text: bar.sidePanelActive ? qsTr("Ocultar el panel Reproduciendo") : qsTr("Mostrar el panel Reproduciendo")
+            iconSource: Qt.resolvedUrl("../../icons/right_panel_open.svg")
+            active: bar.sidePanelActive
+            toggle: true
+            activeInk: Theme.accent
+            onClicked: bar.sidePanelToggled()
+        }
+        // B-2: lyrics toggle (as in Spotify's bar). It flips Settings.showLyrics (the Now Playing
+        // lyrics column) and, when turning them on with the right panel closed, opens that panel,
+        // whose lyrics card then shows them. Active = lyrics on (shape + colour confirm the state).
+        IconButton {
+            id: lyricsButton
+            objectName: "playerBarLyrics"
+            text: qsTr("Letra")   // stable name: as a toggle the screen reader already announces on/off
+            iconSource: Qt.resolvedUrl("../../icons/lyrics.svg")
+            active: Backend.Settings.showLyrics
+            toggle: true
+            activeInk: Theme.accent
+            enabled: Backend.Player.hasSession
+            onClicked: {
+                Backend.Settings.showLyrics = !Backend.Settings.showLyrics
+                if (Backend.Settings.showLyrics && !bar.sidePanelActive)
+                    bar.sidePanelToggled()
+            }
+        }
+        // Mixear (crossfade) for what is playing: playlists and Tus me gusta only, and only when Velo's own
+        // engine can mix (gapless on, no DJ).
+        IconButton {
+            objectName: "playerBarMix"
+            visible: Backend.Player.mixAvailable && /^spotify:(playlist:|collection|user:[^:]+:collection)/.test(Backend.Player.contextUri)
+            text: qsTr("Mixear")   // stable name: as a toggle the screen reader already announces on/off
+            iconSource: Qt.resolvedUrl("../../icons/tune.svg")
+            toggle: true
+            active: Backend.Library.mixPlaying
+            activeInk: Theme.accent
+            onClicked: Backend.Library.toggleMixPlaying()
         }
         IconButton { text: qsTr("Cola de reproducción"); iconSource: Qt.resolvedUrl("../../icons/queue_music.svg"); onClicked: bar.queueRequested() }
-        IconButton { text: qsTr("Conectar a un dispositivo"); iconSource: Qt.resolvedUrl("../../icons/devices.svg"); onClicked: bar.devicesRequested() }
+        // The device picker closes on any outside press: if this very press closed it, the click
+        // must not reopen it (PopupPressGuard, as for the free taps).
+        IconButton {
+            objectName: "playerBarDevices"
+            text: qsTr("Conectar a un dispositivo"); iconSource: Qt.resolvedUrl("../../icons/devices.svg")
+            property bool armed: true
+            onPressedChanged: if (pressed) armed = !popupGuard.closing
+            onClicked: if (armed) bar.devicesRequested()
+        }
         // E5b: DJ Livi (start / «Elige tú, Livi»); absent without DJ on the account.
         DjButton {}
     }

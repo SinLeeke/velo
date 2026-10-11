@@ -1,7 +1,7 @@
 //! Event-driven saved/applied settings, transport and storage operations. No polling.
 use std::sync::{Arc, Mutex};
 use tokio::sync::watch;
-use velo_domain::{EngineOptions, EqConfig, ProxySettings, Settings};
+use velo_domain::{EngineOptions, EqConfig, MixConfig, ProxySettings, Settings};
 use velo_player::{Engine, EngineConfig, PlayerError};
 use velo_services::TomlSettingsStore;
 use velo_spotify::{KeyringTokenStore, TokenStore};
@@ -13,6 +13,9 @@ pub struct EngineHooks {
     pub configure: fn(&mut EngineConfig, &EngineOptions),
     pub equalizer: fn(&Engine, EqConfig),
     pub output_buffer: fn(&Engine, u32) -> Result<(), PlayerError>,
+    pub private_session: fn(&Engine, bool) -> Result<(), PlayerError>,
+    /// Mixear en caliente (segundos y «mezclar siempre»); sin reiniciar el motor.
+    pub mix: fn(&Engine, MixConfig),
 }
 
 impl EngineHooks {
@@ -22,6 +25,8 @@ impl EngineHooks {
             configure: |config, options| config.name = options.device_name.clone(),
             equalizer: |engine, eq| engine.set_eq(eq),
             output_buffer: |engine, ms| engine.set_output_buffer_ms(ms),
+            private_session: |engine, private| engine.set_private_session(private),
+            mix: |engine, mix| engine.set_mix(mix),
         }
     }
 }
@@ -460,6 +465,31 @@ async fn probe_live(env: Arc<Env>) {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn t6_private_session_is_hot_and_does_not_require_reconnect() {
+        let runtime = SettingsRuntime::new();
+        let mut settings = Settings::default();
+        runtime.saved(&settings);
+        runtime.applied(&settings);
+        for private_session in [true, false] {
+            settings.playback.private_session = private_session;
+            runtime.saved(&settings);
+            assert!(!runtime.view.borrow().restart_required);
+        }
+    }
+    #[test]
+    fn mix_settings_are_hot_and_do_not_require_reconnect() {
+        let runtime = SettingsRuntime::new();
+        let mut settings = Settings::default();
+        runtime.saved(&settings);
+        runtime.applied(&settings);
+        for (seconds, auto) in [(12, true), (1, false), (6, true)] {
+            settings.playback.mix_seconds = seconds;
+            settings.playback.mix_auto = auto;
+            runtime.saved(&settings);
+            assert!(!runtime.view.borrow().restart_required);
+        }
+    }
     #[test]
     fn audio_cache_is_scoped_by_account_and_device() {
         let a = audio_cache_dir("dev", Some("alice"));

@@ -28,8 +28,17 @@ QtObject {
     property bool windowFocused: true
     property bool playing: true
     readonly property bool highContrast: Qt.styleHints.accessibility.contrastPreference === Qt.HighContrast
-    readonly property bool effectsAllowed: windowVisible && playing
+    // Lavado de cara, regla 1: dos clases de movimiento.
+    //  - INTERACCION (finito, <= slow, lo dispara un gesto: presion, hover, pagina, menu, aviso,
+    //    cambio de tema): `interactionAllowed`. No depende de la musica; basta que la ventana se vea
+    //    (y tenga foco si "Pausar efectos en segundo plano" o Modo rendimiento lo exigen).
+    //    Alimenta `motion.scale` y todos los tokens de duracion.
+    //  - AMBIENTE (continuo: deriva, visualizador, respiracion, ticks, halo DJ, onda):
+    //    `effectsAllowed` = interaccion + musica sonando. Todo bucle se gatea con este o con
+    //    `driftActive`, nunca con `motion.scale`.
+    readonly property bool interactionAllowed: windowVisible
         && (windowFocused || !pauseEffectsInBackground)
+    readonly property bool effectsAllowed: interactionAllowed && playing
     // Effective switches: Modo rendimiento forces effects off / pause on, whatever the user chose.
     readonly property bool pauseEffectsInBackground: pauseInBackground || performanceMode
     readonly property bool driftActive: drift && !performanceMode && effectsAllowed
@@ -92,6 +101,14 @@ QtObject {
         // Veil alpha over the blurred art. Rust picks it per track (with the ink) so the ink keeps
         // >= 4.5:1 against the real composite; setCoverPalette() replaces this default.
         property real  veilOpacity: 1.0
+        // T1: veil alpha while the background MOVES (hypnotic drift). The local scrim is hidden then,
+        // so Rust computes this higher value to keep the ink >= 4.5:1 over the lightest and darkest
+        // dominant colours; CoverBackground fades to it only while the art moves.
+        property real  veilMovingOpacity: 1.0
+        // T10: the cover's five dominant colours ("#RRGGBB", heaviest first) for the hypnotic lights.
+        property var   colors: []
+        // T1: highest opacity of the colour lights while the background moves (Rust, per cover).
+        property real  blobMovingOpacity: 1.0
         // v0.9.2: the veil is lighter so the blurred art shows; a local scrim of the same colour
         // behind the text and controls (NowPlaying) adds this alpha, and Rust guarantees the ink
         // >= 4.5:1 against blur + veil + scrim. 0 when the backend does not send it.
@@ -122,6 +139,16 @@ QtObject {
         // Opaque when a caller does not pass it (contrast stays safe).
         const opacity = dark ? p.veilDarkOpacity : p.veilLightOpacity
         cover.veilOpacity = isFinite(opacity) ? Math.max(0, Math.min(1, opacity)) : 1
+        const moving = dark ? p.veilDarkMovingOpacity : p.veilLightMovingOpacity
+        // Absent (old backend): never lower than the static veil.
+        cover.veilMovingOpacity = isFinite(moving) ? Math.max(cover.veilOpacity, Math.min(nowPlaying.veilMovingMax, moving)) : cover.veilOpacity
+        const blobs = dark ? p.blobDarkMovingOpacity : p.blobLightMovingOpacity
+        cover.blobMovingOpacity = isFinite(blobs) ? Math.max(0, Math.min(1, blobs)) : 1
+        const list = []
+        if (p.colors)
+            for (let i = 0; i < p.colors.length; ++i)
+                list.push(String(p.colors[i]))
+        cover.colors = list
         const scrim = dark ? p.scrimDarkOpacity : p.scrimLightOpacity
         cover.scrimOpacity = isFinite(scrim) ? Math.max(0, Math.min(1, scrim)) : 0
     }
@@ -257,7 +284,7 @@ QtObject {
     // --------------------------------------------------------------- motion
     // Final values (S1, docs/S1-plan-animaciones.md). Owned by the S1 animation pass: other
     // components only read these tokens.
-    //  - `scale` multiplies every UI duration. "Reducir movimiento" and "Modo rendimiento" set it
+    //  - `scale` multiplies every UI duration (interaction class: it ignores whether music plays). "Reducir movimiento" and "Modo rendimiento" set it
     //    to 0, so every Behavior/Animator bound to these tokens becomes an instant change.
     //  - `themeFade`, `viewFade` and `coverFade` are fades, not movement: "Reducir movimiento" keeps
     //    them (a crossfade does not trigger motion sensitivity; the view zoom is dropped instead);
@@ -268,17 +295,19 @@ QtObject {
     // Easing curves are cubic beziers in QML's bezierCurve form [x1, y1, x2, y2, 1, 1]
     // (Easing.Bezier); they also work on Animators (render thread).
     readonly property QtObject motion: QtObject {
-        readonly property real scale: theme.reduceMotion || theme.performanceMode || !theme.effectsAllowed ? 0 : 1
+        readonly property int haloHalf: 1100          // ms: half period of the play disc halo breath (ambient, only while playing)
+        readonly property int connectGiveUp: 8000    // ms: how long a device transfer shows «Conectando…» before giving up
+        readonly property real scale: theme.reduceMotion || theme.performanceMode || !theme.interactionAllowed ? 0 : 1
         readonly property int instant: 90 * scale     // press feedback
         readonly property int fast: 150 * scale       // hover, toggles
         readonly property int base: 220 * scale       // view state changes
         readonly property int slow: 320 * scale       // panels, lyric line handoff
-        readonly property int themeFade: theme.performanceMode || !theme.effectsAllowed ? 0 : 280
-        readonly property int viewFade: theme.performanceMode || !theme.effectsAllowed ? 0 : 220
-        readonly property int coverFade: theme.performanceMode || !theme.effectsAllowed ? 0 : 700
+        readonly property int themeFade: theme.performanceMode || !theme.interactionAllowed ? 0 : 280
+        readonly property int viewFade: theme.performanceMode || !theme.interactionAllowed ? 0 : 220
+        readonly property int coverFade: theme.performanceMode || !theme.interactionAllowed ? 0 : 700
         // U1: interface zoom (Ctrl+Más/Menos/0, Ajustes): the window at the old size crossfades
         // into the new layout. A fade, so Reducir movimiento keeps it; Modo rendimiento drops it.
-        readonly property int zoomFade: theme.performanceMode || !theme.effectsAllowed ? 0 : 160
+        readonly property int zoomFade: theme.performanceMode || !theme.interactionAllowed ? 0 : 160
         readonly property int shakeStep: 50 * scale
         readonly property real viewZoomFrom: 0.98     // incoming view settles 0.98 → 1 over viewFade (skipped when scale is 0)
         readonly property var easeOut:   [0.16, 1, 0.3, 1, 1, 1]     // exponential out: entering, responding
@@ -331,7 +360,7 @@ QtObject {
         readonly property real tiltSpring: 5            // SpringAnimation.spring
         readonly property real tiltDamping: 0.3         // SpringAnimation.damping (< 1: a small bounce)
         // Cover change (also the DJ's portrait ↔ album art): a crossfade, plus a slight settle.
-        readonly property int artFade: theme.performanceMode || !theme.effectsAllowed ? 0 : 450
+        readonly property int artFade: theme.performanceMode || !theme.interactionAllowed ? 0 : 450
         readonly property real artFadeZoom: 0.97
     }
 
@@ -425,20 +454,51 @@ QtObject {
         // and driftScaleMax and the layer wanders by driftShift of its size (the minimum scale
         // keeps the edges out of sight); each axis has its own period so the path never visibly
         // repeats. Animators (render thread), only while playing and on screen.
-        readonly property real driftScaleMin: 1.06
-        readonly property real driftScaleMax: 1.1
-        readonly property real driftShift: 0.025
+        // User 2026-10-10: "se ve muy estático": about twice the wander, a bit faster.
+        readonly property real driftScaleMin: 1.08
+        readonly property real driftScaleMax: 1.18
+        readonly property real driftShift: 0.045
         // v0.9.2: extra image beyond each edge, > driftShift, so the shift alone (even at scale 1)
         // never uncovers the window.
-        readonly property real driftOverscan: 0.035
+        readonly property real driftOverscan: 0.06
+        readonly property int driftTurnMs: 90000   // one slow turn of the blurred cover («hipnótico»)
+        // Hypnotic mode: hypnoticMix = how much the counter-turning swirl blends in at 60 %
+        // intensity (0 = off); hypnoticSwirlMs = its turn at 50 % speed.
+        readonly property real hypnoticMix: 0.5
+        readonly property int hypnoticSwirlMs: 60000
+        // Colour blobs (palette lights over the turning art): size vs the window's long side,
+        // breathing scale, top opacity at full intensity, hue step of the neighbour colours and
+        // the minimum saturation so grey covers still glow a little.
+        readonly property real blobSize: 0.62
+        readonly property real blobBreath: 1.5
+        readonly property real blobAlpha: 0.85
+        // T1: the veil never rises above this while the background moves (the art must stay visible);
+        // to reach 4.5:1 Rust lowers the lights' top opacity instead (Theme.cover.blobMovingOpacity).
+        readonly property real veilMovingMax: 0.90   // Rust stays <= 0.80 except for nearly white art
+        readonly property real blobCore: 0.32    // share of the radius that is solid colour
+        // Beat reaction of the hypnotic background (bass of the visualizer bands, 0..1).
+        readonly property real beatRoomScale: 0.12   // the turning art swells up to +12 %
+        readonly property real beatBlobScale: 0.35   // the lights swell up to +35 %
+        readonly property real beatGlow: 0.5         // and glow this much brighter
+        // The bass rarely drops to 0: below beatFloor counts as still, the rest is stretched
+        // to 0..1 and shaped (beatCurve < 1 lifts mid hits) so every kick reads as a jump.
+        readonly property real beatFloor: 0.18
+        readonly property real beatCurve: 0.7
+        readonly property var blobLightDark: [0.22, 0.48]    // lightness band of the lights, dark theme
+        readonly property var blobLightLight: [0.68, 0.9]    // and light theme
+        // Which of the cover's five colours (heaviest first) each of the six lights takes, and where
+        // in the lightness band (0 = deepest, 1 = lightest). Heaviest colour is used twice.
+        readonly property var blobColorIndex: [0, 1, 2, 0, 3, 4]
+        readonly property var blobLightStep: [0.5, 0.4, 0.6, 1.0, 0.15, 0.85]
+        readonly property real blobSaturationLift: 1.15   // the cover's own saturation, a touch richer
         // Square cover with its reactive frame (v0.9.2): the art's side vs the slot (the slot is
         // ringSlotRatio × the cover size, as in circular mode).
         readonly property real squareArtRatio: 0.78
         // Soft edge of the local scrim behind the text and controls (v0.9.2).
         readonly property real scrimBlur: theme.px(56)
-        readonly property int driftScaleMs: 46000
-        readonly property int driftXMs: 62000
-        readonly property int driftYMs: 54000
+        readonly property int driftScaleMs: 30000
+        readonly property int driftXMs: 40000
+        readonly property int driftYMs: 36000
         // Lyrics: after the user scrolls them, following the song resumes after this pause
         // (one-shot, never while paused).
         readonly property int lyricsResumeMs: 3500
@@ -613,11 +673,27 @@ QtObject {
     readonly property QtObject queue: QtObject {
         readonly property int width: theme.panel.queueWidth
         readonly property int inset: theme.space.sm                         // gap to the window edge and to the player bar
+        readonly property real coverAlpha: 0.88                              // over Now Playing: the cover veil, nearly opaque
         readonly property int handleWidth: theme.icon.sm + theme.space.sm    // drag handle column
         readonly property real dropLine: theme.stroke.focus                 // insertion indicator thickness
         readonly property int dropLineInset: theme.space.lg                 // indicator starts/ends inside the row edges
         readonly property color dropColor: theme.accent
         readonly property color dragFill: theme.accentSoft                   // the row being moved
+    }
+
+    // --- T3 --- «Reproduciendo en <dispositivo>» strip under the library player bar.
+    readonly property QtObject remoteStrip: QtObject {
+        readonly property int height: theme.px(28)
+    }
+
+    // --- T5 --- «Reproduciendo» side panel of the library (cover, lyrics card, credits, next in
+    // queue). It takes the queue's column (same width and gap), so opening the queue replaces it.
+    readonly property QtObject sidePanel: QtObject {
+        readonly property int width: theme.queue.width
+        readonly property int lyricsHeight: theme.px(340)       // lyrics card, fixed height
+        readonly property int lyricSize: theme.type.heading     // lyric lines in the card (Now Playing uses type.lyric)
+        readonly property int creditsRows: 3                    // contributors shown before «Mostrar todo»
+        readonly property int tile: theme.panel.queueThumb      // next-in-queue thumbnail
     }
 
     // --- G4 --- Drag handles on the edges of the sidebar and the queue panel (resize).
@@ -732,6 +808,11 @@ QtObject {
         readonly property real hoverLift: 1.03         // play disc under a mouse pointer
         readonly property real knobGrow: 1.25          // slider knob while dragged
         readonly property real likePop: 1.2           // heart when a song is saved
+        readonly property real togglePop: 1.1         // regla 7: a switch/toggle glyph pops this much when turned ON (cap: likePop)
+        readonly property real unpopScale: 0.88       // regla 7: turned OFF / unsaved: the glyph shrinks and returns, no overshoot
+        readonly property real discPop: 1 + (likePop - 1) / 2   // big play disc pops half as much as the heart
+        readonly property real haloMaxScale: 1.16     // play disc halo ring grows to this (transform, no relayout)
+        readonly property real haloPeak: 0.30         // play disc halo ring opacity at the top of a breath
         readonly property real toolMarkFrom: 0.6      // v0.9.2: active tool capsule pops in from this scale
         readonly property real dotFrom: 0.5           // shuffle dot grows in from half size (never from 0)
         readonly property int lyricJumpLines: 3        // a longer lyric jump (seek) is instant
@@ -760,6 +841,8 @@ QtObject {
         readonly property int fieldWidth: theme.px(240)             // device name, proxy host…
         readonly property int portWidth: theme.px(96)
         readonly property int sectionGap: theme.space.xxl           // between sections
+        readonly property int rowGap: theme.space.lg                // between the rows of a card (a hairline sits in the middle)
+        readonly property int badge: theme.size.iconButton - theme.space.xs   // section badge behind the title glyph
         readonly property int logo: theme.px(64)                    // Acerca de
         readonly property color cardFill: theme.surface1
         readonly property color cardBorder: theme.hairline
@@ -807,6 +890,9 @@ QtObject {
         // missing a button by a little never switches the visualizer. Never under 8 px, even
         // at 75 % zoom (T4b): a near miss is about the pointer, not the zoom.
         readonly property int barMargin: Math.max(8, theme.space.sm)
+        // Now Playing free clicks (user sketch 2026-10-10): above this share of the height they
+        // toggle the background's motion («Fondo»); below it they cycle the band («Reactivo»).
+        readonly property real backdropSplit: 0.7
         // Keyboard focus ring around the clickable cover (outside the art).
         readonly property int focusGap: theme.space.xs
     }

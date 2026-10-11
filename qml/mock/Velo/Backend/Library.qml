@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 
-// MOCK of Velo.Backend.Library.
+// MOCK of Velo.Backend.Library (docs/CONTRATO.md, including the wave-2 additions).
 QtObject {
     id: library
     // Adaptado de Spotifast (https://github.com/crmne/spotifast, MIT, © 2026 Carmine Paolino)
@@ -197,6 +197,11 @@ QtObject {
     property string sortKey: "custom"
     property bool sortDescending: false
     property bool compactView: false
+    property bool mixCurrent: false
+    // Mixear: el contexto que SUENA está marcado (PREVIEW: alterna con toggleMixPlaying).
+    property bool mixPlaying: false
+    property int mixPlayingToggles: 0
+    property int lastPlayedIndex: -1        // PREVIEW: último playIndex pedido
     property bool viewBusy: false
     property var _allRows: null
     function _fold(text) { return String(text).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") }
@@ -318,9 +323,12 @@ QtObject {
         setSearchType("all")
     }
     function fetchMore() {}
-    function playIndex(i) {}
+    function playIndex(i) { lastPlayedIndex = i }
     function playCurrent() {}
-    function shuffleCurrent() {}
+    property int shuffleCurrentCount: 0     // PREVIEW
+    function shuffleCurrent() { shuffleCurrentCount += 1 }
+    function toggleMixCurrent() { mixCurrent = !mixCurrent }
+    function toggleMixPlaying() { mixPlaying = !mixPlaying; mixPlayingToggles += 1 }
     function togglePin(playlistId) {
         for (let i = 0; i < playlists.count; ++i)
             if (playlists.get(i).playlistId === playlistId)

@@ -41,6 +41,8 @@ LibraryMenu {
         function onSavedChanged(uri, saved) { if (uri === menu.uri) menu.liked = saved }
     }
 
+    // Primera entrada, como en el escritorio de Spotify (también para teclado y clic derecho).
+    Action { objectName: "trackPlayAction"; text: qsTr("Reproducir"); onTriggered: if (menu.row) menu.row.play() }
     Action { text: qsTr("Añadir a playlist…"); onTriggered: if (menu.row) menu.row.addToPlaylistRequested(menu.uri) }
     Action {
         text: qsTr("Quitar de esta playlist")

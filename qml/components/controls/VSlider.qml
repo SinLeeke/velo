@@ -19,6 +19,7 @@ T.Slider {
     Accessible.name: text
     Accessible.role: Accessible.Slider
     opacity: enabled ? 1 : Theme.library.disabledOpacity
+    Behavior on opacity { OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut } }
 
     background: Item {
         x: control.leftPadding
@@ -55,7 +56,7 @@ T.Slider {
         // The knob grows while held (transform scale: instant up, fast back).
         scale: control.pressed ? Theme.feel.knobGrow : 1
         Behavior on scale {
-            ScaleAnimator { duration: control.pressed ? Theme.motion.instant : Theme.motion.fast; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+            ScaleAnimator { duration: Math.max(1, control.pressed ? Theme.motion.instant : Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
         }
     }
 }

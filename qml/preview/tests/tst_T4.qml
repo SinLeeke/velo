@@ -105,7 +105,8 @@ TestCase {
     function backgroundPoint(np) {
         const cover = np.coverArt
         return findPoint(np, (x, y) => {
-            if (y < Theme.size.titleBar + Theme.space.lg || !np.freeAt(x, y)) return false
+            // The lower «Reactivo» zone cycles the band; above it the click moves the background.
+            if (y < np.height * Theme.nowPlayingClicks.backdropSplit || !np.freeAt(x, y)) return false
             const q = cover.mapFromItem(np, x, y)
             return q.x < -Theme.space.lg || q.y < -Theme.space.lg
                 || q.x > cover.width + Theme.space.lg || q.y > cover.height + Theme.space.lg
@@ -138,8 +139,12 @@ TestCase {
         wait(0)
         mouseClick(np.coverArt)
         compare(vizState(), "true/circular/wave/true")
+        // Upper «Fondo» zone: the background's motion flips, the band stays.
+        const drift = Settings.drift
         mouseClick(np.coverArt, 2, 2)
-        compare(vizState(), "true/circular/wave/false")
+        compare(vizState(), "true/circular/wave/true")
+        compare(Settings.drift, !drift)
+        Settings.drift = drift
     }
     function test_cover_keyboard_and_name() {
         const np = make(npComponent)
@@ -209,7 +214,7 @@ TestCase {
     function test_bar_click_that_closes_popup_does_not_cycle() {
         const bar = make(barComponent)
         const p = findPoint(bar, (x, y) => bar.freeAt(x, y))
-        bar.vizMenu.popup(bar, bar.width / 2, 0)
+        bar.vizMenu.popup(findChild(bar, "playerBarVisualizerButton"), 0, 0)   // as the app does: from its button
         tryCompare(bar.vizMenu, "opened", true)
         mouseClick(bar, p.x, p.y)
         tryCompare(bar.vizMenu, "visible", false)

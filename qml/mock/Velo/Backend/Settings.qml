@@ -1,7 +1,8 @@
 pragma Singleton
 import QtQuick
 
-// MOCK of Velo.Backend.Settings. In memory only; answers at once, never touches the network.
+// MOCK of Velo.Backend.Settings (docs/CONTRATO.md; S9/N2, N2-proxy, N2-eq in
+// docs/briefs/s9/C0-contrato.md). In memory only; answers at once, never touches the network.
 QtObject {
     id: settings
 
@@ -13,8 +14,11 @@ QtObject {
     property bool performanceKeepVisualizer: false  // ronda 2 (G5): visualizer stays on in Modo rendimiento
     property bool coverBlur: true
     property bool drift: true
+    property int hypnoticSpeed: 50       // 0..100, hypnotic background pace
+    property int hypnoticIntensity: 60   // 0..100, hypnotic background strength
     property bool tintUi: true
     property bool showLyrics: true
+    property bool privateSession: false
     property bool closeToTray: true
     property bool checkUpdates: true
     property string windowControls: "mac"   // "mac" | "windows"
@@ -40,6 +44,8 @@ QtObject {
     property bool autoplay: true
     property bool gapless: true
     property int outputBufferMs: 100             // 200 | 100 | 50
+    property int mixSeconds: 6                   // Mixear: 1..12 s of crossfade (hot)
+    property bool mixAuto: false                 // Mixear: always mix consecutive songs (hot)
     property bool audioCacheEnabled: true
     property int audioCacheLimitMb: 1024         // 512 | 1024 | 4096
     property bool sidebarCompact: false

@@ -60,7 +60,36 @@ FocusScope {
         && Window.visibility !== Window.Minimized && Window.visibility !== Window.Hidden
         && (!Theme.pauseEffectsInBackground || Window.active)
     onEffectsOnChanged: if (!effectsOn && columnSlide.running) columnSlide.complete()
-    readonly property bool lyricsShown: Settings.showLyrics && !idle
+    // T4: following the song needs a position that moves with it. While ANOTHER device plays, the
+    // backend publishes its interpolated progress; if that device reports no duration (no usable
+    // progress), the lyrics and their button stay out instead of showing a panel that cannot follow.
+    readonly property bool lyricsReliable: !Player.remote || Player.durationMs > 0
+    readonly property bool lyricsShown: Settings.showLyrics && !idle && lyricsReliable
+    // The text scrims glide to a new rect only while effects run and not during the entrance.
+    readonly property bool scrimGlide: effectsOn && !morphing && Theme.motion.slow > 0
+    // User 2026-10-10: with the background moving the text panels step aside (the moving art is
+    // the point); they come back, fading, when the motion is turned off.
+    readonly property bool backdropMoving: Settings.coverBlur && Theme.driftActive
+    property real scrimShown: backdropMoving ? 0 : 1
+    Behavior on scrimShown { NumberAnimation { duration: Math.max(1, Theme.motion.base); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut } }
+    // Opening/closing the docked queue resizes the left column: the cover and controls slide to
+    // their new centre (with their panel, which lives in the same column) like the lyrics slide.
+    property real lastQueueInset: 0
+    function leftWidthFor(inset) {
+        const w = width - inset
+        return lyricsShown ? Math.round(w * Theme.nowPlaying.leftColumnRatio) : w
+    }
+    onQueueInsetChanged: {
+        const before = leftWidthFor(lastQueueInset), after = leftWidthFor(queueInset)
+        lastQueueInset = queueInset
+        if (!built || !effectsOn || Theme.motion.slow <= 0 || before === after)
+            return
+        columnSlide.stop()
+        columnShift.x += (before - after) / 2
+        columnSlide.from = columnShift.x
+        columnSlide.easing.bezierCurve = Theme.motion.easeInOut
+        columnSlide.start()
+    }
     readonly property bool circular: Visualizer.style === "circular"
     // Modo rendimiento turns the visualizer off without touching the user's switch, unless
     // Ajustes › Modo rendimiento › «Mantener el visualizador» (G5).
@@ -87,6 +116,13 @@ FocusScope {
         } else {
             Visualizer.band = false
         }
+    }
+    // Upper free area («Fondo»): starts/stops the background's drift (Ajustes › Deriva lenta).
+    // Nothing to move without the blurred background.
+    function toggleBackdropMotion() {
+        if (idle || !Settings.coverBlur)
+            return
+        Settings.drift = !Settings.drift
     }
     // v0.9.2: a click on the cover toggles circle ↔ square (each with its reactive).
     function toggleCoverShape() { Visualizer.style = circular ? "normal" : "circular" }
@@ -194,6 +230,15 @@ FocusScope {
         // Crossfade (easeInOut) with the library photo; the scale settles with the long ease-out.
         anchors.fill: parent
         source: Player.blurUrl
+        speed: Settings.hypnoticSpeed
+        // The bass (first bands), at the volume the user hears; only while the visualizer runs.
+        pulse: {
+            const b = Visualizer.bands
+            if (!Visualizer.running || !b || b.length < 4)
+                return 0
+            return (Math.max(0, b[0]) + Math.max(0, b[1]) + Math.max(0, b[2]) + Math.max(0, b[3])) / 4 * root.vizGain
+        }
+        intensity: Settings.hypnoticIntensity
         blurOn: Settings.coverBlur
         playing: Player.isPlaying
         retainEmpty: Player.hasSession
@@ -211,14 +256,18 @@ FocusScope {
         height: root.height - y
         Accessible.role: Accessible.Pane
         Accessible.name: qsTr("Fondo de Reproduciendo ahora")
-        Accessible.description: root.vizForcedOff ? "" : qsTr("Haz clic en una zona libre para cambiar el visualizador de abajo: barras, onda o apagado")
+        Accessible.description: root.vizForcedOff ? "" : qsTr("Haz clic arriba en una zona libre para mover o detener el fondo, y abajo para cambiar el visualizador: barras, onda o apagado")
         property bool armed: false
         TapHandler {
             acceptedButtons: Qt.LeftButton
             onPressedChanged: if (pressed) backgroundTap.armed = !root.pressClosesPopup
             onTapped: point => {
                 const p = backgroundTap.mapToItem(root, point.position.x, point.position.y)
-                if (backgroundTap.armed && root.freeAt(p.x, p.y))
+                if (!backgroundTap.armed || !root.freeAt(p.x, p.y))
+                    return
+                if (p.y < root.height * Theme.nowPlayingClicks.backdropSplit)
+                    root.toggleBackdropMotion()
+                else
                     root.rotateVisualizer()
             }
         }
@@ -232,7 +281,8 @@ FocusScope {
         objectName: "vizBandSlot"
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.rightMargin: root.queueInset
+        // The docked queue ends above the band's reserve, so the band runs the full width under
+        // it (user 2026-10-10: ending it at the panel's edge looked cut off).
         anchors.bottom: parent.bottom
         height: Theme.viz.bandHeight
         visible: root.bandShown && opacity > 0
@@ -301,6 +351,7 @@ FocusScope {
 
     ToolPill {
         id: toolPill
+        pressBlocked: root.pressClosesPopup
         z: 2
         anchors.right: parent.right
         // Clear of the Windows-style caption buttons when that style is chosen.
@@ -309,6 +360,7 @@ FocusScope {
         opacity: root.topIn
         transform: Translate { y: -(1 - root.topIn) * Theme.motion.npTopDrop }
         lyricsActive: Settings.showLyrics
+        lyricsAvailable: root.lyricsReliable
         queueActive: root.queueOpen
         devicesActive: devicePicker.opened
         dark: Theme.dark
@@ -326,6 +378,7 @@ FocusScope {
     // Spotify Connect devices, under the pill's devices button (R2).
     DevicePicker {
         id: devicePicker
+        objectName: "npDevicePicker"
         originCorner: T.Popup.TopRight
         onAboutToHide: root.notePopupClose()
         x: Math.min(root.width - width - Theme.space.lg,
@@ -373,7 +426,7 @@ FocusScope {
         RectangularShadow {
             objectName: "npControlsScrim"
             readonly property real pad: Theme.nowPlaying.scrimBlur / 2 + Theme.space.md
-            visible: !root.idle && Theme.cover.scrimOpacity > 0
+            visible: !root.idle && Theme.cover.scrimOpacity > 0 && root.scrimShown > 0
             x: column.x - pad
             y: column.y + trackInfo.y - pad
             width: column.width + 2 * pad
@@ -381,7 +434,12 @@ FocusScope {
             radius: Theme.radius.xl
             blur: Theme.nowPlaying.scrimBlur
             color: Theme.cover.veil
-            opacity: Theme.cover.scrimOpacity * root.riseIn(0)
+            opacity: Theme.cover.scrimOpacity * root.riseIn(0) * root.scrimShown
+            // Opening/closing the queue or the lyrics resizes what it sits behind: the panel glides
+            // to its new rect (like the column slide) instead of jumping. A leaf quad with no
+            // children, so animating its rect relayouts nothing else.
+            Behavior on width { enabled: root.scrimGlide; NumberAnimation { duration: Theme.motion.slow; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut } }
+            Behavior on height { enabled: root.scrimGlide; NumberAnimation { duration: Theme.motion.slow; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut } }
         }
 
         Column {
@@ -541,7 +599,8 @@ FocusScope {
                 width: parent.width
                 opacity: root.riseIn(1)
                 transform: Translate { y: (1 - root.riseIn(1)) * Theme.motion.npControlsRise }
-                enabled: Player.canControl
+                // DJ Livi's voice is not a track: the bar stays locked while she speaks.
+                enabled: Player.canControl && !Player.djSpeaking
                 positionMs: Player.positionMs
                 durationMs: Player.durationMs
                 playing: Player.isPlaying
@@ -599,7 +658,7 @@ FocusScope {
     RectangularShadow {
         objectName: "npLyricsScrim"
         readonly property real pad: Theme.nowPlaying.scrimBlur / 2
-        visible: lyricsView.visible && Theme.cover.scrimOpacity > 0
+        visible: lyricsView.visible && Theme.cover.scrimOpacity > 0 && root.scrimShown > 0
         x: lyricsView.x - pad
         y: lyricsView.y - pad
         width: lyricsView.width + 2 * pad
@@ -607,7 +666,14 @@ FocusScope {
         radius: Theme.radius.xl
         blur: Theme.nowPlaying.scrimBlur
         color: Theme.cover.veil
-        opacity: Theme.cover.scrimOpacity * lyricsView.opacity
+        opacity: Theme.cover.scrimOpacity * lyricsView.opacity * root.scrimShown
+        // Opening/closing the queue or the lyrics resizes what it sits behind: the panel glides
+        // to its new rect (like the column slide) instead of jumping. A leaf quad with no
+        // children, so animating its rect relayouts nothing else.
+        Behavior on x { enabled: root.scrimGlide; NumberAnimation { duration: Theme.motion.slow; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut } }
+        Behavior on y { enabled: root.scrimGlide; NumberAnimation { duration: Theme.motion.slow; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut } }
+        Behavior on width { enabled: root.scrimGlide; NumberAnimation { duration: Theme.motion.slow; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut } }
+        Behavior on height { enabled: root.scrimGlide; NumberAnimation { duration: Theme.motion.slow; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut } }
     }
     LyricsView {
         id: lyricsView

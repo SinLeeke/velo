@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls.Basic
 import Velo.Backend as Backend
 import "../../theme"
+import ".."
 
 // U4: user profile like the official app ("me" = the signed-in account). Header: round avatar,
 // "Perfil", the name, "N playlists públicas • N seguidores" (each only when Spotify says it).
@@ -16,6 +17,7 @@ Item {
     signal navigate(string kind, string itemId, string owner)
     signal addToPlaylistRequested(string uri)
     TrackMenu { id: songMenu }
+    ShareMenu { id: profileMenu; uri: Backend.Library.profileUserId !== "" ? "spotify:user:" + Backend.Library.profileUserId : "" }
     readonly property string status: Backend.Library.profileStatus
     readonly property bool isMe: Backend.Library.profileIsMe
     readonly property bool ready: status === "ready"
@@ -170,6 +172,19 @@ Item {
                         wrapMode: Text.Wrap
                     }
                 ]
+            }
+            // «…» con Copiar enlace (Velo no sigue perfiles: Spotify no da esa API de seguir usuarios).
+            IconButton {
+                id: profileMore
+                objectName: "profileMoreButton"
+                visible: page.ready && Backend.Library.profileUserId !== ""
+                width: Theme.size.titleBar
+                height: Theme.size.titleBar
+                text: qsTr("Más opciones de %1").arg(Backend.Library.profileName)
+                iconSource: Qt.resolvedUrl("../../icons/more_horiz.svg")
+                iconSize: Theme.icon.lg
+                ink: Theme.textSecondary
+                onClicked: profileMenu.popup(profileMore, 0, profileMore.height)
             }
             LibraryLabel { width: parent.width; visible: page.failure !== "" && page.status !== "loading"; text: page.failure; color: Theme.textSecondary; wrapMode: Text.Wrap }
             LibraryButton { visible: page.failure !== "" && page.status !== "loading"; text: qsTr("Reintentar"); onClicked: Backend.Library.openProfile(page.userId) }

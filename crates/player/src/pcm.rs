@@ -1,4 +1,6 @@
 use crate::eq::{EqControl, Equalizer};
+use crate::mix::{self, MixControl, MixStatus};
+use librespot_metadata::audio::item::AudioItem;
 use librespot_playback::{
     NUM_CHANNELS, SAMPLE_RATE,
     audio_backend::{Sink, SinkError, SinkResult},
@@ -28,6 +30,12 @@ const MICRO_FRAMES: usize = SAMPLE_RATE as usize * 8 / 1000;
 /// E5b: cortar la voz (siguiente, otra carga) con un fundido de ~30 ms, sin clic.
 const VOICE_STOP_FRAMES: usize = SAMPLE_RATE as usize * 30 / 1000;
 const WAIT_STEP: Duration = Duration::from_millis(5);
+/// Mixear: margen para que el decoder termine A y empiece B antes de que empiece el solape.
+const MIX_MARGIN_MS: u64 = 1000;
+/// Holgura de la cola sobre la ventana (paquetes en vuelo del decoder).
+const MIX_SLACK_MS: u64 = 500;
+/// Con menos de esto de A en cola al llegar B no hubo ventana: se concatena como siempre.
+const MIX_MIN_TAIL_FRAMES: usize = SAMPLE_RATE as usize / 2;
 const STALL_LIMIT: Duration = Duration::from_secs(1);
 
 /// PCM normalizado, anterior al volumen y a todos los fades; solo en memoria.
@@ -57,6 +65,39 @@ struct ProgressEntry {
 struct PcmSpan {
     request_id: u64,
     samples: usize,
+    /// Primer tramo de una pista que siguió a un fin natural: al oírse, su posición empieza.
+    natural: bool,
+}
+
+/// Fundido cruzado en curso: `frames` es lo que quedaba de A al empezar.
+#[derive(Clone, Copy)]
+struct Fade {
+    elapsed: usize,
+    frames: usize,
+    /// Progreso (0..1) con el que arranca este tramo: 0 al empezar; si B se atrasó, el punto
+    /// congelado desde el que el fundido continúa sin salto de ganancia.
+    t0: f32,
+}
+impl Fade {
+    fn gains_at(&self, frame: usize) -> (f32, f32) {
+        let u = (frame as f32 + 0.5) / self.frames.max(1) as f32;
+        mix::gains(self.t0 + (1.0 - self.t0) * u)
+    }
+    /// Ganancias retenidas mientras B no tiene muestras: el progreso actual, sin avanzar.
+    fn held_gains(&self) -> (f32, f32) {
+        let u = self.elapsed as f32 / self.frames.max(1) as f32;
+        mix::gains(self.t0 + (1.0 - self.t0) * u)
+    }
+    /// B se atrasó: congela el progreso y reparte lo que queda de él en lo que queda de A.
+    fn rebase(&mut self, remaining: usize) {
+        let u = self.elapsed as f32 / self.frames.max(1) as f32;
+        self.t0 += (1.0 - self.t0) * u;
+        self.frames = remaining;
+        self.elapsed = 0;
+    }
+    fn remaining_ms(&self) -> u64 {
+        self.frames.saturating_sub(self.elapsed) as u64 * 1000 / u64::from(SAMPLE_RATE)
+    }
 }
 
 /// Local request wins over stale Spirc commands until its matching acknowledgement.
@@ -349,6 +390,8 @@ struct Playback {
     captured_at: Instant,
     events: Option<PlayerEventChannel>,
     natural_end: bool,
+    /// Spirc terminó el contexto, pero todavía queda la cola final por oír.
+    final_tail: bool,
     pause_request: mpsc::UnboundedSender<Option<std_mpsc::Sender<()>>>,
     timer_uri: Option<String>,
     timer_dj: bool,
@@ -360,6 +403,33 @@ struct Playback {
     worker: Option<std_mpsc::Sender<OutputCommand>>,
     /// La voz se cortó desde fuera: al terminar, soltar la salida si la canción no suena.
     release_after_voice: bool,
+    /// Mixear: ajuste en caliente (atómico) y estado del fundido.
+    mix: MixControl,
+    /// «Deck B»: PCM de la pista siguiente mientras A todavía suena (solo en memoria).
+    deck_b: VecDeque<f32>,
+    spans_b: VecDeque<PcmSpan>,
+    ledger_active_b: Option<usize>,
+    /// El decoder escribe en `deck_b` (decidido en TrackChanged(B), antes de sus muestras).
+    route_b: bool,
+    /// Solape planificado en frames.
+    mix_window: usize,
+    fade: Option<Fade>,
+    /// Peso 0..1 del limitador de la mezcla (rampa de entrada/salida del solape).
+    limiter_weight: f32,
+    /// Metadatos de la pista que se decodifica (A; luego B al llegar su TrackChanged).
+    item: Option<Box<AudioItem>>,
+    /// Hubo un fin natural y aún no llegó el TrackChanged de la siguiente.
+    after_natural: bool,
+    natural_request: Option<u64>,
+    /// Posición de decodificación de la pista actual: ancla + muestras escritas.
+    decode_anchor_ms: u64,
+    decoded_samples: u64,
+    decode_duration_ms: u64,
+    /// La cola de esta pista ya puede crecer hasta la ventana (fijo hasta la próxima pista).
+    lookahead: bool,
+    ahead_ms: u64,
+    started: Option<(u64, Instant)>,
+    mix_status: watch::Sender<MixStatus>,
 }
 impl Playback {
     fn new(
@@ -396,6 +466,7 @@ impl Playback {
             captured_at: Instant::now(),
             events: None,
             natural_end: false,
+            final_tail: false,
             pause_request,
             timer_uri: None,
             timer_dj: false,
@@ -404,6 +475,24 @@ impl Playback {
             voice: None,
             worker: None,
             release_after_voice: false,
+            mix: MixControl::default(),
+            deck_b: VecDeque::new(),
+            spans_b: VecDeque::with_capacity(32),
+            ledger_active_b: None,
+            route_b: false,
+            mix_window: 0,
+            fade: None,
+            limiter_weight: 0.0,
+            item: None,
+            after_natural: false,
+            natural_request: None,
+            decode_anchor_ms: 0,
+            decoded_samples: 0,
+            decode_duration_ms: 0,
+            lookahead: false,
+            ahead_ms: 0,
+            started: None,
+            mix_status: watch::channel(MixStatus::default()).0,
         }
     }
     fn transport(&mut self, playing: bool) {
@@ -422,7 +511,24 @@ impl Playback {
         }
     }
     fn discontinuity(&mut self) {
+        self.final_tail = false;
         self.spans.clear(); // Discarded seek/manual-load PCM cannot count as listening.
+        self.natural_request = None;
+        self.after_natural = false;
+        self.lookahead = false;
+        if let Some(fade) = self.fade {
+            // El micro-fade de salida debe sonar a la mezcla, no solo a A: premezclar ese tramo.
+            let frames = (self.queue.len() / 2).min(MICRO_FRAMES);
+            for frame in 0..frames {
+                let (ga, gb) = fade.gains_at(fade.elapsed + frame);
+                for channel in 0..2 {
+                    let at = frame * 2 + channel;
+                    let b = self.deck_b.get(at).copied().unwrap_or(0.0);
+                    self.queue[at] = mix::limit(self.queue[at] * ga + b * gb);
+                }
+            }
+        }
+        self.end_mix();
         // Solo el corto resto anterior se usa para llegar a cero; lo demás se invalida.
         if !self.playing && self.transport.value == 0.0 {
             self.queue.clear();
@@ -457,23 +563,66 @@ impl Playback {
                     }
                 }
                 PlayerEvent::PlayRequestIdChanged { play_request_id } => {
-                    if !self.natural_end {
+                    self.final_tail = false;
+                    // Si la siguiente falló antes de su TrackChanged, la otra sigue siendo natural.
+                    let natural = self.natural_end || self.after_natural;
+                    if !natural {
                         self.cancel_timer();
                         self.discontinuity();
                     }
                     self.natural_end = false;
+                    self.after_natural = natural;
+                    // Solo si el decoder iba por delante (ventana de mezcla) la posición de la
+                    // siguiente se reancla al oírse; sin ventana, librespot ya va a tiempo.
+                    self.natural_request =
+                        (natural && self.ahead_ms > 0).then_some(play_request_id);
                     self.decoding_request = Some(play_request_id);
+                    self.anchor_decode(0);
+                    self.decode_duration_ms = 0;
+                    self.lookahead = false;
                 }
-                PlayerEvent::Seeked { .. } => {
+                PlayerEvent::TrackChanged { audio_item } => {
+                    self.decode_duration_ms = u64::from(audio_item.duration_ms);
+                    // Mover la caja, sin copiar: este código también corre en el callback.
+                    let previous = self.item.replace(audio_item);
+                    if std::mem::take(&mut self.after_natural) {
+                        self.plan_mix(previous.as_deref());
+                    }
+                }
+                PlayerEvent::Playing {
+                    play_request_id,
+                    position_ms,
+                    ..
+                }
+                | PlayerEvent::Loading {
+                    play_request_id,
+                    position_ms,
+                    ..
+                } if Some(play_request_id) == self.decoding_request => {
+                    self.anchor_decode(position_ms);
+                }
+                PlayerEvent::Seeked {
+                    play_request_id,
+                    position_ms,
+                    ..
+                } => {
                     if self.end_remaining.is_some() {
                         self.cancel_timer();
                         self.transport(true);
                     }
                     self.discontinuity();
+                    if Some(play_request_id) == self.decoding_request {
+                        self.anchor_decode(position_ms);
+                    }
                 }
                 PlayerEvent::Stopped { .. } if self.natural_end => {
                     // Fin del contexto: Spirc para el decoder, pero la cola final sigue sonando.
                     self.natural_end = false;
+                    self.final_tail = true;
+                    // librespot ya llamó sink.stop(): deshacer esa pausa para drenar A completa.
+                    if self.voice.is_none() {
+                        self.transport(true);
+                    }
                 }
                 PlayerEvent::SessionDisconnected { .. } | PlayerEvent::Stopped { .. } => {
                     self.cancel_timer();
@@ -551,6 +700,273 @@ impl Playback {
         self.end_remaining = None;
         self.timer_state.send_replace(TrackEndTimerState::Cancelled);
     }
+    fn anchor_decode(&mut self, position_ms: u32) {
+        self.decode_anchor_ms = u64::from(position_ms);
+        self.decoded_samples = 0;
+    }
+    /// Segundos de mezcla si ahora se puede: activada, sin DJ, sin «al terminar la canción»
+    /// y sin voz (la voz de Livi nunca se mezcla con la música).
+    fn mix_seconds(&self) -> Option<u32> {
+        self.mix
+            .allowed()
+            .filter(|_| self.timer_uri.is_none() && self.voice.is_none())
+    }
+    /// TrackChanged(B) tras el fin natural de A, antes de cualquier muestra de B: mezclar en
+    /// el deck B o concatenar (gapless de álbum, sin ventana, mezcla apagada).
+    fn plan_mix(&mut self, previous: Option<&AudioItem>) {
+        let (Some(a), Some(b)) = (previous, self.item.as_deref()) else {
+            return;
+        };
+        let Some(seconds) = self.mix_seconds() else {
+            return;
+        };
+        if mix::same_album_gapless(a, b) || self.queue.len() / 2 < MIX_MIN_TAIL_FRAMES {
+            return;
+        }
+        let shortest = a.duration_ms.min(b.duration_ms);
+        let window = mix::window_frames(seconds, u64::from(shortest));
+        if window > 0 {
+            self.route_b = true;
+            self.mix_window = window;
+        }
+    }
+    /// Cierra cualquier mezcla (seek, otra carga, parada): ambos decks quedan vacíos.
+    fn end_mix(&mut self) {
+        self.fade = None;
+        self.limiter_weight = 0.0;
+        self.route_b = false;
+        self.mix_window = 0;
+        self.ahead_ms = 0;
+        self.deck_b.clear();
+        self.spans_b.clear();
+        self.ledger_active_b = None;
+        self.publish_mix();
+    }
+    /// A se vació: B pasa a ser la cola principal (intercambio O(1), sin reservar).
+    fn promote(&mut self) {
+        std::mem::swap(&mut self.queue, &mut self.deck_b);
+        std::mem::swap(&mut self.spans, &mut self.spans_b);
+        self.ledger_active = self.ledger_active_b.take();
+        self.deck_b.clear();
+        self.spans_b.clear();
+        self.fade = None;
+        self.route_b = false;
+        self.mix_window = 0;
+        self.ahead_ms = 0;
+        self.publish_mix();
+    }
+    fn song_available(&self) -> bool {
+        self.queue.len() >= 2 || (self.route_b && self.deck_b.len() >= 2)
+    }
+    /// Un frame de canción: A sola, o A·gA + B·gB con limitador durante el solape. O(1).
+    fn deck_frame(&mut self) -> Option<[f32; 2]> {
+        if self.route_b {
+            let a_frames = self.queue.len() / 2;
+            if self.fade.is_none()
+                && a_frames > 0
+                && a_frames <= self.mix_window
+                && self.deck_b.len() / 2 >= mix::MIX_B_CUSHION_FRAMES
+            {
+                // Sin B a tiempo (con colchón), el solape es lo que quede de A cuando B llegue.
+                self.fade = Some(Fade {
+                    elapsed: 0,
+                    frames: a_frames,
+                    t0: 0.0,
+                });
+                self.publish_mix();
+            }
+            if a_frames == 0 {
+                self.promote();
+            }
+        } else if self.queue.len() < 2 {
+            // A terminó sin pista siguiente: nada corre por delante.
+            self.after_natural = false;
+            if self.ahead_ms != 0 {
+                self.ahead_ms = 0;
+                self.publish_mix();
+            }
+        }
+        let a = pop_frame(&mut self.queue)?;
+        self.end_remaining = self.end_remaining.map(|n| n.saturating_sub(2));
+        if let Some(request) = count_frame(
+            &mut self.spans,
+            &mut self.ledger,
+            &mut self.ledger_next,
+            &mut self.ledger_active,
+        ) {
+            self.audible(request);
+        }
+        let Some(mut fade) = self.fade else {
+            return Some(self.soften(a, false));
+        };
+        let mut stalled = false;
+        let (ga, gb);
+        let b = match pop_frame(&mut self.deck_b) {
+            Some(b) => {
+                (ga, gb) = fade.gains_at(fade.elapsed);
+                fade.elapsed += 1;
+                if let Some(request) = count_frame(
+                    &mut self.spans_b,
+                    &mut self.ledger,
+                    &mut self.ledger_next,
+                    &mut self.ledger_active_b,
+                ) {
+                    self.audible(request);
+                }
+                b
+            }
+            None => {
+                // B se atrasó (red): el fundido se congela y A conserva la ganancia que tenía
+                // (nunca silencio por falta de B); al volver B continúa sin salto.
+                stalled = true;
+                (ga, gb) = fade.held_gains();
+                fade.rebase(self.queue.len() / 2);
+                [0.0; 2]
+            }
+        };
+        self.fade = Some(fade);
+        let tick = if stalled {
+            self.queue.len() / 2
+        } else {
+            fade.elapsed
+        };
+        if tick % SAMPLE_RATE as usize == 0 {
+            self.publish_mix(); // ~1 Hz, solo durante el solape.
+        }
+        Some(self.soften([a[0] * ga + b[0] * gb, a[1] * ga + b[1] * gb], true))
+    }
+    /// Limitador continuo: su peso sube/baja con una rampa de pocos ms al entrar y salir del
+    /// solape (incluida la cola de B ya sola), y con peso 0 la señal pasa idéntica.
+    fn soften(&mut self, frame: [f32; 2], fading: bool) -> [f32; 2] {
+        let step = 1.0 / mix::LIMITER_RAMP_FRAMES as f32;
+        self.limiter_weight = if fading {
+            (self.limiter_weight + step).min(1.0)
+        } else {
+            (self.limiter_weight - step).max(0.0)
+        };
+        let w = self.limiter_weight;
+        [mix::limit_blend(frame[0], w), mix::limit_blend(frame[1], w)]
+    }
+    /// La pista siguiente a un fin natural empieza a oírse: su posición empieza aquí.
+    fn audible(&mut self, request: u64) {
+        self.started = Some((request, Instant::now()));
+        self.ahead_ms = 0;
+        self.publish_mix();
+    }
+    /// Sin reservar memoria: `watch` solo notifica si algo visible cambió.
+    fn publish_mix(&mut self) {
+        let next = MixStatus {
+            active: self.fade.is_some(),
+            remaining_ms: self.fade.map_or(0, |f| f.remaining_ms()),
+            ahead_ms: self.ahead_ms,
+            started: self.started,
+        };
+        self.mix_status.send_if_modified(|status| {
+            let changed = status.active != next.active
+                || status.ahead_ms != next.ahead_ms
+                || status.started != next.started
+                || status.remaining_ms.abs_diff(next.remaining_ms) >= 1000;
+            if changed {
+                *status = next;
+            }
+            changed
+        });
+    }
+    /// Muestras extra que la cola principal admite: abre la ventana cuando al decoder le
+    /// quedan ≤ N + margen de A, para retener los últimos N s y oír B encima.
+    fn queue_extra(&mut self) -> usize {
+        if self.route_b {
+            // Mientras B espera su turno, su deck admite el colchón mínimo para iniciar el
+            // fundido (si no, un buffer base corto lo dejaría sin empezar nunca).
+            return if self.fade.is_none() {
+                mix::MIX_B_CUSHION_FRAMES * NUM_CHANNELS as usize
+            } else {
+                0
+            };
+        }
+        if !self.lookahead {
+            let Some(seconds) = self.mix_seconds() else {
+                return 0;
+            };
+            let window_ms = mix::window_frames(seconds, self.decode_duration_ms) as u64 * 1000
+                / u64::from(SAMPLE_RATE);
+            let decoded_ms = self.decode_anchor_ms
+                + self.decoded_samples / NUM_CHANNELS as u64 * 1000 / u64::from(SAMPLE_RATE);
+            if window_ms == 0
+                || self.decode_duration_ms.saturating_sub(decoded_ms) > window_ms + MIX_MARGIN_MS
+            {
+                return 0;
+            }
+            self.lookahead = true;
+            self.ahead_ms = window_ms + MIX_MARGIN_MS;
+            self.publish_mix();
+        }
+        ((self.ahead_ms + MIX_SLACK_MS) * u64::from(SAMPLE_RATE) * NUM_CHANNELS as u64 / 1000)
+            as usize
+    }
+    /// Capacidad para la ventana; `Some(n)` pide reservar fuera del lock (hilo del decoder).
+    fn reserve_window(&mut self, slack: usize) -> Option<usize> {
+        let extra = self.queue_extra();
+        if extra == 0 {
+            return None;
+        }
+        let needed = extra + slack;
+        if self.queue.capacity() >= needed {
+            return None;
+        }
+        if !self.route_b && self.deck_b.is_empty() && self.deck_b.capacity() >= needed {
+            // Reutiliza el búfer grande que dejó la mezcla anterior (copia ~100 ms).
+            self.deck_b.extend(self.queue.drain(..));
+            std::mem::swap(&mut self.queue, &mut self.deck_b);
+            return None;
+        }
+        Some(needed)
+    }
+    /// Adopta un búfer ya reservado; devuelve el viejo para soltarlo fuera del lock.
+    fn adopt(&mut self, mut spare: VecDeque<f32>) -> VecDeque<f32> {
+        if !self.route_b && spare.capacity() > self.queue.capacity() {
+            spare.extend(self.queue.drain(..));
+            std::mem::swap(&mut self.queue, &mut spare);
+        }
+        spare
+    }
+    /// Con la mezcla apagada no se retiene el búfer del deck B (~4 MB con 12 s).
+    fn take_spare(&mut self) -> Option<VecDeque<f32>> {
+        (self.mix.allowed().is_none()
+            && !self.route_b
+            && self.deck_b.is_empty()
+            && self.deck_b.capacity() > 0)
+            .then(|| std::mem::take(&mut self.deck_b))
+    }
+    /// PCM del decoder a su deck, con el tramo por request id (progreso de escucha).
+    fn push_decoded(&mut self, samples: &[f32]) {
+        let (deck, spans) = if self.route_b {
+            (&mut self.deck_b, &mut self.spans_b)
+        } else {
+            (&mut self.queue, &mut self.spans)
+        };
+        deck.extend(samples);
+        self.decoded_samples += samples.len() as u64;
+        let Some(request_id) = self.decoding_request else {
+            return;
+        };
+        if let Some(span) = spans
+            .back_mut()
+            .filter(|span| span.request_id == request_id)
+        {
+            span.samples += samples.len();
+        } else {
+            let natural = self.natural_request == Some(request_id);
+            if natural {
+                self.natural_request = None;
+            }
+            spans.push_back(PcmSpan {
+                request_id,
+                samples: samples.len(),
+                natural,
+            });
+        }
+    }
     fn next(&mut self, output: &std_mpsc::Sender<OutputCommand>) -> f32 {
         if self.channel == 0 {
             self.events();
@@ -577,6 +993,10 @@ impl Playback {
     /// El frame de la canción; false en pausa total (sin consumir PCM).
     fn song_frame(&mut self, volume: f32, output: &std_mpsc::Sender<OutputCommand>) -> bool {
         {
+            if self.final_tail && !self.song_available() {
+                self.final_tail = false;
+                self.transport(false);
+            }
             if let Some(remaining) = self.end_remaining {
                 if remaining <= PAUSE_FRAMES * 2 && self.playing {
                     self.transport(false);
@@ -587,7 +1007,7 @@ impl Playback {
             let available = if self.micro.target == 0.0 {
                 self.old.len() >= 2
             } else {
-                self.queue.len() >= 2
+                self.song_available()
             };
             let transport = if self.transport.target > self.transport.value && !available {
                 self.transport.value
@@ -615,26 +1035,20 @@ impl Playback {
                 self.old.clear();
                 self.micro.to(1.0, MICRO_FRAMES);
             }
-            let micro = if self.micro.target == 1.0 && self.queue.len() < 2 {
+            let micro = if self.micro.target == 1.0 && !self.song_available() {
                 self.micro.value
             } else {
                 self.micro.step()
             };
-            let queue = if self.micro.target == 0.0 {
-                &mut self.old
+            let frame = if self.micro.target == 0.0 {
+                pop_frame(&mut self.old)
             } else {
-                &mut self.queue
+                self.deck_frame()
             };
-            if queue.len() >= 2 {
-                self.raw_frame = [
-                    queue.pop_front().unwrap_or(0.0),
-                    queue.pop_front().unwrap_or(0.0),
-                ];
+            if let Some(frame) = frame {
+                // El visualizador recibe la mezcla tal cual suena, antes del volumen.
+                self.raw_frame = frame;
                 self.consumed = self.consumed.wrapping_add(2);
-                if self.micro.target != 0.0 {
-                    self.end_remaining = self.end_remaining.map(|n| n.saturating_sub(2));
-                    self.count_frame();
-                }
             } else {
                 self.raw_frame = [0.0; 2];
             }
@@ -644,41 +1058,6 @@ impl Playback {
                 .map(|sample| sample * volume * transport * micro);
         }
         true
-    }
-    fn count_frame(&mut self) {
-        let Some(span) = self.spans.front_mut() else {
-            return;
-        };
-        let request_id = span.request_id;
-        span.samples = span.samples.saturating_sub(2);
-        if span.samples == 0 {
-            self.spans.pop_front();
-        }
-        let index = self
-            .ledger_active
-            .filter(|i| self.ledger[*i].progress.play_request_id == request_id)
-            .or_else(|| {
-                self.ledger
-                    .iter()
-                    .position(|e| e.valid && e.progress.play_request_id == request_id)
-            })
-            .unwrap_or_else(|| {
-                let index = self.ledger_next;
-                self.ledger_next = (index + 1) % self.ledger.len();
-                self.ledger[index] = ProgressEntry {
-                    valid: true,
-                    progress: PlaybackProgress {
-                        play_request_id: request_id,
-                        ..Default::default()
-                    },
-                    published_frames: 0,
-                };
-                index
-            });
-        self.ledger_active = Some(index);
-        let progress = &mut self.ledger[index].progress;
-        progress.consumed_frames += 1;
-        progress.played_ms = progress.consumed_frames * 1000 / u64::from(SAMPLE_RATE);
     }
     fn discard_spans(&mut self, mut count: usize) {
         while count > 0 {
@@ -703,7 +1082,7 @@ impl Playback {
             if entry.valid
                 && entry.progress.consumed_frames != entry.published_frames
                 && (force
-                    || Some(index) != self.ledger_active
+                    || (Some(index) != self.ledger_active && Some(index) != self.ledger_active_b)
                     || entry.progress.consumed_frames - entry.published_frames
                         >= u64::from(SAMPLE_RATE) / 4)
             {
@@ -741,6 +1120,55 @@ impl Playback {
         sample
     }
 }
+fn pop_frame(deck: &mut VecDeque<f32>) -> Option<[f32; 2]> {
+    (deck.len() >= 2).then(|| {
+        [
+            deck.pop_front().unwrap_or(0.0),
+            deck.pop_front().unwrap_or(0.0),
+        ]
+    })
+}
+/// Cuenta un frame oído para el request id de su tramo. Devuelve ese id si es el primer frame
+/// de una pista que siguió a un fin natural (empieza a oírse).
+fn count_frame(
+    spans: &mut VecDeque<PcmSpan>,
+    ledger: &mut [ProgressEntry; 32],
+    ledger_next: &mut usize,
+    active: &mut Option<usize>,
+) -> Option<u64> {
+    let span = spans.front_mut()?;
+    let request_id = span.request_id;
+    let started = std::mem::take(&mut span.natural).then_some(request_id);
+    span.samples = span.samples.saturating_sub(2);
+    if span.samples == 0 {
+        spans.pop_front();
+    }
+    let index = active
+        .filter(|i| ledger[*i].progress.play_request_id == request_id)
+        .or_else(|| {
+            ledger
+                .iter()
+                .position(|e| e.valid && e.progress.play_request_id == request_id)
+        })
+        .unwrap_or_else(|| {
+            let index = *ledger_next;
+            *ledger_next = (index + 1) % ledger.len();
+            ledger[index] = ProgressEntry {
+                valid: true,
+                progress: PlaybackProgress {
+                    play_request_id: request_id,
+                    ..Default::default()
+                },
+                published_frames: 0,
+            };
+            index
+        });
+    *active = Some(index);
+    let progress = &mut ledger[index].progress;
+    progress.consumed_frames += 1;
+    progress.played_ms = progress.consumed_frames * 1000 / u64::from(SAMPLE_RATE);
+    started
+}
 /// Estado del temporizador local, impulsado por EOF/PCM; no usa reloj de pared.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TrackEndTimerState {
@@ -770,11 +1198,21 @@ impl OutputControl {
         eq: EqControl,
         volume: VolumeOverride,
         progress: broadcast::Sender<PlaybackProgress>,
+        mix: MixControl,
     ) {
         let mut state = self.0.lock().unwrap_or_else(|e| e.into_inner());
         state.eq = Equalizer::new(eq, SAMPLE_RATE);
         state.volume_override = volume;
         state.progress_tx = Some(progress);
+        state.mix = mix;
+    }
+    /// Estado del fundido, publicado sin sondeo.
+    pub fn mix_status(&self) -> watch::Receiver<MixStatus> {
+        self.0
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .mix_status
+            .subscribe()
     }
     pub fn arm(&self, uri: String) -> watch::Receiver<TrackEndTimerState> {
         self.arm_for(uri, false)
@@ -1114,32 +1552,40 @@ impl Sink for TappedSink {
         let AudioPacket::Samples(samples) = packet else {
             return Ok(());
         };
-        {
+        let decoded = converter.f64_to_f32(&samples);
+        let base_limit =
+            SAMPLE_RATE as usize * NUM_CHANNELS as usize * self.switch.buffer_ms() as usize / 1000;
+        // Mixear: la ampliación de la ventana se reserva aquí, en el hilo del decoder y
+        // fuera del lock; mezclar/promover los decks no requiere ampliar sus búferes.
+        let reserve = {
+            let mut state = self.shared.lock().unwrap_or_else(|e| e.into_inner());
+            state.events();
+            state.reserve_window(base_limit + decoded.len())
+        };
+        let spare = reserve.map(VecDeque::with_capacity);
+        let released = {
             let mut state = self.shared.lock().unwrap_or_else(|e| e.into_inner());
             state.events();
             state.publish_progress(false);
-            state.queue.extend(converter.f64_to_f32(&samples));
-            if let Some(request_id) = state.decoding_request {
-                if let Some(span) = state
-                    .spans
-                    .back_mut()
-                    .filter(|span| span.request_id == request_id)
-                {
-                    span.samples += samples.len();
-                } else {
-                    state.spans.push_back(PcmSpan {
-                        request_id,
-                        samples: samples.len(),
-                    });
-                }
-            }
-        }
+            let old = spare.map(|spare| state.adopt(spare));
+            state.push_decoded(&decoded);
+            state.publish_mix();
+            (old, state.take_spare())
+        };
+        drop(released);
         let mut progress = Progress::new(Instant::now());
         loop {
-            let (len, consumed) = {
+            let (len, consumed, limit) = {
                 let mut state = self.shared.lock().unwrap_or_else(|e| e.into_inner());
                 state.publish_progress(false);
-                (state.queue.len(), state.consumed)
+                state.publish_mix();
+                let extra = state.queue_extra();
+                let len = if state.route_b {
+                    state.deck_b.len()
+                } else {
+                    state.queue.len()
+                };
+                (len, state.consumed, base_limit + extra)
             };
             let pause_request = {
                 let state = self.shared.lock().unwrap_or_else(|e| e.into_inner());
@@ -1158,10 +1604,7 @@ impl Sink for TappedSink {
                 }
                 return Ok(());
             }
-            let queue_limit =
-                SAMPLE_RATE as usize * NUM_CHANNELS as usize * self.switch.buffer_ms() as usize
-                    / 1000;
-            if len <= queue_limit {
+            if len <= limit {
                 return Ok(());
             }
             if progress.stalled(consumed, Instant::now()) {
@@ -1266,6 +1709,7 @@ mod tests {
         state.spans.push_back(PcmSpan {
             request_id,
             samples: frame_count * 2,
+            natural: false,
         });
     }
     fn heard(state: &Playback, request_id: u64) -> u64 {
@@ -1807,6 +2251,744 @@ mod tests {
         frames(&mut state, &output, MICRO_FRAMES - 1);
         assert_eq!(state.micro.value, 1.0);
     }
+    // ---- Mixear ----
+
+    fn mix_sine(frame: usize, hz: f64) -> f32 {
+        (0.3 * (std::f64::consts::TAU * hz * frame as f64 / f64::from(SAMPLE_RATE)).sin()) as f32
+    }
+
+    /// Reproduce el tope y el backpressure de write(), con paquetes de 20 ms y sin dispositivo.
+    fn mix_synthetic_stream(a_seconds: u32, b_seconds: u32, seconds: u32) -> Vec<f32> {
+        let (mut state, tx, output, _) = mixing(false);
+        state.mix.set(crate::MixConfig {
+            enabled: true,
+            seconds,
+        });
+        begin(
+            &mut state,
+            &tx,
+            crate::mix::tests::item(MIX_A, "Atlas", &["Lumen"], 1, 1, a_seconds * 1000),
+        );
+        let mut out = Vec::new();
+        let base_limit = SECOND * 2 / 10;
+        let chunk_frames = SECOND / 50;
+        for (track, duration, hz) in [(0, a_seconds, 220.0), (1, b_seconds, 330.0)] {
+            if track == 1 {
+                natural_next(
+                    &mut state,
+                    &tx,
+                    crate::mix::tests::item(MIX_B, "Mapa", &["Lumen"], 1, 1, duration * 1000),
+                );
+            }
+            for start in (0..duration as usize * SECOND).step_by(chunk_frames) {
+                let end = (start + chunk_frames).min(duration as usize * SECOND);
+                let samples: Vec<f32> = (start..end)
+                    .flat_map(|frame| [mix_sine(frame, hz); 2])
+                    .collect();
+                if let Some(needed) = state.reserve_window(base_limit + samples.len()) {
+                    drop(state.adopt(VecDeque::with_capacity(needed)));
+                }
+                state.push_decoded(&samples);
+                loop {
+                    let limit = base_limit + state.queue_extra();
+                    let len = if state.route_b {
+                        state.deck_b.len()
+                    } else {
+                        state.queue.len()
+                    };
+                    if len <= limit {
+                        break;
+                    }
+                    out.extend([state.next(&output), state.next(&output)]);
+                }
+            }
+        }
+        while state.song_available() {
+            out.extend([state.next(&output), state.next(&output)]);
+        }
+        assert_eq!(
+            heard(&state, 1),
+            u64::from(a_seconds) * u64::from(SAMPLE_RATE)
+        );
+        assert_eq!(
+            heard(&state, 2),
+            u64::from(b_seconds) * u64::from(SAMPLE_RATE)
+        );
+        out
+    }
+
+    #[test]
+    fn mix_synthetic_stream_has_final_window_stable_rms_and_smooth_edges() {
+        for (a, b, seconds, expected_ms) in [
+            (40, 40, 6, 6000),
+            (20, 20, 6, 6000),
+            (20, 20, 12, 6666),
+            (10, 9, 12, 3000),
+            (20, 6, 12, 2000),
+        ] {
+            let out = mix_synthetic_stream(a, b, seconds);
+            let window = expected_ms * SECOND / 1000;
+            let start = a as usize * SECOND - window;
+            assert_eq!(out.len() / 2, (a + b) as usize * SECOND - window);
+            for (frame, pair) in out.chunks_exact(2).enumerate() {
+                let expected = if frame < start {
+                    mix_sine(frame, 220.0)
+                } else if frame < a as usize * SECOND {
+                    let k = frame - start;
+                    let (ga, gb) = crate::mix::gains((k as f32 + 0.5) / window as f32);
+                    ga * mix_sine(frame, 220.0) + gb * mix_sine(k, 330.0)
+                } else {
+                    mix_sine(frame - start, 330.0)
+                };
+                assert!(
+                    (pair[0] - expected).abs() < 2e-6,
+                    "{a}/{b}/{seconds}: {frame}"
+                );
+                assert_eq!(pair[0], pair[1]);
+            }
+            let left: Vec<f32> = out.chunks_exact(2).map(|f| f[0]).collect();
+            let max_step = left
+                .windows(2)
+                .map(|f| (f[1] - f[0]).abs())
+                .fold(0.0, f32::max);
+            assert!(max_step < 0.021, "{a}/{b}/{seconds}: {max_step}");
+            let target_rms = 0.3 / 2_f32.sqrt();
+            for block in left[start..start + window].chunks_exact(SECOND / 10) {
+                let rms = (block.iter().map(|v| v * v).sum::<f32>() / block.len() as f32).sqrt();
+                assert!(
+                    (rms / target_rms - 1.0).abs() < 0.03,
+                    "{a}/{b}/{seconds}: {rms}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn mix_output_recreation_mid_stereo_preserves_the_fade_and_pcm_exactly() {
+        let (mut reference, _, output, _) = ready_to_mix(false, [0.5; 2], [0.25; 2]);
+        let (mut changed, _, _, _) = ready_to_mix(false, [0.5; 2], [0.25; 2]);
+        frames(&mut reference, &output, SECOND / 2 + 1000);
+        frames(&mut changed, &output, SECOND / 2 + 1000);
+        let expected: Vec<f32> = (0..2001).map(|_| reference.next(&output)).collect();
+        let shared = Arc::new(Mutex::new(changed));
+        let mut source = PlayedSource {
+            shared: shared.clone(),
+            output: output.clone(),
+        };
+        let mut actual = vec![source.next().unwrap()];
+        drop(source); // Cierre/reapertura del worker: la cola y el canal pendiente sobreviven.
+        let mut source = PlayedSource {
+            shared: shared.clone(),
+            output,
+        };
+        actual.extend(source.by_ref().take(2000));
+        assert_eq!(actual, expected);
+        assert_eq!(
+            shared.lock().unwrap().fade.unwrap().elapsed,
+            reference.fade.unwrap().elapsed
+        );
+    }
+
+    #[test]
+    fn mix_next_previous_and_seek_microfade_the_current_sum_without_clicks() {
+        for action in 0..3 {
+            let (mut state, tx, output, _) = ready_to_mix(false, [0.5; 2], [0.25; 2]);
+            let mut out = frames(&mut state, &output, SECOND);
+            assert!(state.fade.is_some());
+            if action == 2 {
+                tx.send(PlayerEvent::Seeked {
+                    play_request_id: 2,
+                    track_id: crate::parse_track_uri(MIX_B).unwrap(),
+                    position_ms: 2000,
+                })
+                .unwrap();
+            } else {
+                // Siguiente/anterior generan la misma invalidación por una ocurrencia nueva.
+                tx.send(PlayerEvent::PlayRequestIdChanged { play_request_id: 3 })
+                    .unwrap();
+            }
+            state.events();
+            assert!(state.deck_b.is_empty() && state.fade.is_none());
+            decode(&mut state, MICRO_FRAMES * 3, [-0.3; 2]);
+            out.extend(frames(&mut state, &output, MICRO_FRAMES * 3));
+            let left: Vec<f32> = out.chunks_exact(2).map(|f| f[0]).collect();
+            let max_step = left
+                .windows(2)
+                .map(|f| (f[1] - f[0]).abs())
+                .fold(0.0, f32::max);
+            assert!(max_step < 0.004, "{action}: {max_step}");
+        }
+    }
+
+    #[test]
+    fn mix_status_counts_down_freezes_in_pause_and_finishes_at_promotion() {
+        let (mut state, _, output, _) = mixing(false);
+        state.mix.set(crate::MixConfig {
+            enabled: true,
+            seconds: 3,
+        });
+        // Construir una ventana de tres segundos para observar varias publicaciones.
+        state.queue.extend(std::iter::repeat_n(0.3, SECOND * 6));
+        state.deck_b.extend(std::iter::repeat_n(0.2, SECOND * 8));
+        state.route_b = true;
+        state.mix_window = SECOND * 3;
+        let status = state.mix_status.subscribe();
+        frames(&mut state, &output, 1);
+        assert!(status.borrow().active);
+        assert_eq!(status.borrow().remaining_ms, 3000);
+        frames(&mut state, &output, SECOND - 1);
+        assert_eq!(status.borrow().remaining_ms, 2000);
+        state.transport(false);
+        frames(&mut state, &output, PAUSE_FRAMES + 1);
+        let elapsed = state.fade.unwrap().elapsed;
+        let paused_status = *status.borrow();
+        frames(&mut state, &output, SECOND);
+        assert_eq!(state.fade.unwrap().elapsed, elapsed);
+        assert_eq!(*status.borrow(), paused_status);
+        state.transport(true);
+        frames(&mut state, &output, SECOND * 3 - elapsed + 1);
+        assert!(!status.borrow().active);
+        assert_eq!(status.borrow().remaining_ms, 0);
+    }
+
+    #[test]
+    fn mix_volume_and_active_eq_process_one_sum_while_tap_stays_raw() {
+        let (mut state, _, output, mut pcm) = ready_to_mix(true, [0.3; 2], [0.2; 2]);
+        let eq = EqControl::default();
+        eq.set(crate::EqConfig {
+            enabled: true,
+            preamp_db: -6.0,
+            ..Default::default()
+        });
+        state.eq = Equalizer::new(eq, SAMPLE_RATE);
+        state.volume_override.request(1, 0.5);
+        frames(&mut state, &output, SECOND / 2);
+        while pcm.try_recv().is_ok() {}
+        state.pending.clear();
+        let out = frames(&mut state, &output, TAP_SAMPLES / 2);
+        let raw = pcm.try_recv().unwrap();
+        for (k, pair) in raw.samples.chunks_exact(2).enumerate() {
+            let (ga, gb) = crate::mix::gains((k as f32 + 0.5) / SECOND as f32);
+            let mixed = 0.3 * ga + 0.2 * gb;
+            assert!((pair[0] as f32 - mixed).abs() < 1e-6);
+            assert!((out[k * 2] - mixed * 0.5 * 10_f32.powf(-6.0 / 20.0)).abs() < 1e-6);
+        }
+    }
+
+    #[test]
+    fn mix_limiter_enters_and_leaves_continuously_and_is_transparent_outside() {
+        let (mut state, _, output, _) = ready_to_mix(false, [1.0; 2], [1.0; 2]);
+        let out = frames(&mut state, &output, SECOND * 2);
+        let max_step = out
+            .chunks_exact(2)
+            .map(|f| f[0])
+            .collect::<Vec<_>>()
+            .windows(2)
+            .map(|f| (f[1] - f[0]).abs())
+            .fold(0.0, f32::max);
+        assert!(max_step < 0.005, "{max_step}");
+        // Fuera del solape (y fuera de las rampas) la señal es idéntica bit a bit.
+        let start = SECOND / 2;
+        let ramp = crate::mix::LIMITER_RAMP_FRAMES;
+        assert!(out[..start * 2].iter().all(|v| *v == 1.0));
+        assert!(out[(start + SECOND + ramp) * 2..].iter().all(|v| *v == 1.0));
+        assert!(out.iter().all(|v| v.abs() <= 1.0));
+    }
+
+    #[test]
+    fn mix_below_the_knee_passes_identically() {
+        let knee = crate::mix::LIMITER_KNEE;
+        for k in 0..=1000 {
+            let x = knee * (k as f32 / 500.0 - 1.0);
+            for w in [0.0, 0.3, 1.0] {
+                assert_eq!(crate::mix::limit_blend(x, w), x);
+            }
+        }
+    }
+
+    /// B con `b_frames` de colchón al llegar y A de 1,5 s (ventana 1 s): suena A sola.
+    #[test]
+    fn mix_b_with_one_frame_never_starts_the_fade_and_a_stays_whole() {
+        let (mut state, tx, output, _) = mixing(false);
+        begin(&mut state, &tx, album_item(MIX_A, "Atlas", 1));
+        decode(&mut state, SECOND, [0.5; 2]);
+        natural_next(&mut state, &tx, album_item(MIX_B, "Mapa", 1));
+        decode(&mut state, 1, [0.25; 2]);
+        let out = frames(&mut state, &output, SECOND);
+        assert!(out.iter().all(|v| *v == 0.5));
+        assert!(state.fade.is_none());
+        assert_eq!(heard(&state, 1), SECOND as u64);
+        assert_eq!(heard(&state, 2), 0);
+        // B llega sin colchón suficiente: tras A suena a ganancia plena.
+        let out = frames(&mut state, &output, 1);
+        assert_eq!(out[0], 0.25);
+        assert!(!state.route_b);
+    }
+
+    #[test]
+    fn mix_b_that_never_arrives_leaves_a_untouched_and_b_starts_at_full_gain() {
+        let (mut state, tx, output, _) = mixing(false);
+        begin(&mut state, &tx, album_item(MIX_A, "Atlas", 1));
+        decode(&mut state, SECOND, [0.5; 2]);
+        natural_next(&mut state, &tx, album_item(MIX_B, "Mapa", 1));
+        let out = frames(&mut state, &output, SECOND);
+        assert!(out.iter().all(|v| *v == 0.5));
+        assert!(state.fade.is_none());
+        decode(&mut state, SECOND, [0.25; 2]);
+        let out = frames(&mut state, &output, 10);
+        assert!(out.iter().all(|v| *v == 0.25));
+    }
+
+    #[test]
+    fn mix_b_that_empties_midway_freezes_the_fade_and_resumes_without_a_jump() {
+        let (mut state, _tx, output, _) = ready_to_mix(false, [0.5; 2], [0.25; 2]);
+        // Solo el colchón mínimo de B (menos que la ventana entera).
+        state.deck_b.truncate(crate::mix::MIX_B_CUSHION_FRAMES * 2);
+        let mut out = frames(
+            &mut state,
+            &output,
+            SECOND / 2 + crate::mix::MIX_B_CUSHION_FRAMES - 1,
+        );
+        assert!(state.fade.is_some() && !state.deck_b.is_empty());
+        out.extend(frames(&mut state, &output, 1));
+        // B se vació: A conserva la ganancia retenida, sin silencio ni cambio.
+        let before = state.fade.unwrap();
+        let held = frames(&mut state, &output, SECOND / 4);
+        let after = state.fade.unwrap();
+        assert_eq!(after.elapsed, 0);
+        let (ga, gb) = after.held_gains();
+        assert_eq!(held[0], 0.5 * ga);
+        assert!(held.iter().all(|v| *v == held[0]));
+        assert!(held[0] > 0.1 && held[0] < 0.5, "{}", held[0]);
+        assert!(after.t0 > before.t0 && gb > 0.0);
+        assert_eq!(state.deck_b.len(), 0);
+        let remaining = state.queue.len() / 2;
+        assert!(state.mix_status.borrow().active);
+        // B vuelve: el fundido continúa con ganancias continuas y termina justo con A.
+        decode(&mut state, SECOND, [0.25; 2]);
+        let mut rest = frames(&mut state, &output, remaining + 1);
+        assert!(!state.route_b && state.fade.is_none());
+        let after_end = frames(&mut state, &output, SECOND / 10 - 1);
+        rest.extend(&after_end);
+        // Las ganancias no saltan en la reanudación (lo que cambia es la señal de B misma).
+        assert!(
+            (rest[0] - (0.5 * ga + 0.25 * gb)).abs() < 0.005,
+            "{}",
+            rest[0]
+        );
+        for segment in [&out, &held, &rest] {
+            let left: Vec<f32> = segment.chunks_exact(2).map(|f| f[0]).collect();
+            let max_step = left
+                .windows(2)
+                .map(|f| (f[1] - f[0]).abs())
+                .fold(0.0, f32::max);
+            assert!(max_step < 0.005, "{max_step}");
+        }
+        assert!(after_end.iter().all(|v| (*v - 0.25).abs() < 1e-6));
+        assert_eq!(heard(&state, 1), SECOND as u64 * 3 / 2);
+    }
+
+    #[test]
+    fn mix_repeat_and_shuffle_use_the_actual_natural_successor() {
+        for (uri, album, number, skip_mix) in [
+            (MIX_A, "Atlas", 4, false), // Repetir pista no es la pista siguiente del álbum.
+            (MIX_B, "Atlas", 5, true),  // Shuffle también respeta adyacencia si la elige.
+            (MIX_B, "Atlas", 8, false),
+        ] {
+            let (mut state, tx, output, _) = mixing(false);
+            begin(&mut state, &tx, album_item(MIX_A, "Atlas", 4));
+            decode(&mut state, SECOND, [0.3; 2]);
+            natural_next(&mut state, &tx, album_item(uri, album, number));
+            assert_eq!(state.route_b, !skip_mix);
+            decode(&mut state, SECOND * 2, [0.2; 2]);
+            frames(&mut state, &output, SECOND + 1);
+            assert_eq!(heard(&state, 1), SECOND as u64);
+            assert_eq!(
+                heard(&state, 2),
+                if skip_mix { 1 } else { SECOND as u64 + 1 }
+            );
+        }
+    }
+
+    #[test]
+    fn mix_empty_queue_drains_the_entire_final_tail_after_the_real_sink_stop() {
+        let (mut state, tx, output, _) = mixing(false);
+        begin(&mut state, &tx, album_item(MIX_A, "Atlas", 1));
+        state.anchor_decode(8_500);
+        decode(&mut state, SECOND * 3 / 2, [0.3; 2]);
+        assert!(state.queue_extra() > 0);
+        tx.send(PlayerEvent::EndOfTrack {
+            play_request_id: 1,
+            track_id: crate::parse_track_uri(MIX_A).unwrap(),
+        })
+        .unwrap();
+        let shared = Arc::new(Mutex::new(state));
+        // librespot llama stop() ANTES de enviar Stopped al terminar un contexto.
+        let mut sink = TappedSink {
+            shared: shared.clone(),
+            output: output.clone(),
+            worker: None,
+            started: true,
+            switch: crate::output::OutputSwitch::default(),
+            applied: 0,
+            faults: mpsc::unbounded_channel().0,
+        };
+        sink.stop().unwrap();
+        tx.send(PlayerEvent::Stopped {
+            play_request_id: 1,
+            track_id: crate::parse_track_uri(MIX_A).unwrap(),
+        })
+        .unwrap();
+        let mut state = shared.lock().unwrap();
+        let out = frames(&mut state, &output, SECOND * 3 / 2);
+        assert!(
+            out.iter().all(|v| *v == 0.3),
+            "no cortar A al acabar el contexto"
+        );
+        assert_eq!(heard(&state, 1), SECOND as u64 * 3 / 2);
+        assert!(state.queue.is_empty());
+        frames(&mut state, &output, PAUSE_FRAMES + 1);
+        assert!(!state.playing && state.notified);
+    }
+    const MIX_A: &str = "spotify:track:4uLU6hMCjMI75M1A2tKUQC";
+    const MIX_B: &str = "spotify:track:0000000000000000000001";
+    const SECOND: usize = SAMPLE_RATE as usize;
+    fn mixing(
+        tap: bool,
+    ) -> (
+        Playback,
+        mpsc::UnboundedSender<PlayerEvent>,
+        std_mpsc::Sender<OutputCommand>,
+        mpsc::Receiver<PcmPacket>,
+    ) {
+        let (mut state, pcm, output) = playback(tap);
+        settled(&mut state);
+        let (tx, rx) = mpsc::unbounded_channel();
+        state.events = Some(rx);
+        state.mix.set(crate::MixConfig {
+            enabled: true,
+            seconds: 1,
+        });
+        (state, tx, output, pcm)
+    }
+    fn album_item(uri: &str, album: &str, number: u32) -> Box<AudioItem> {
+        crate::mix::tests::item(uri, album, &["Lumen"], 1, number, 10_000)
+    }
+    fn begin(state: &mut Playback, tx: &mpsc::UnboundedSender<PlayerEvent>, item: Box<AudioItem>) {
+        let track_id = item.track_id.clone();
+        tx.send(PlayerEvent::PlayRequestIdChanged { play_request_id: 1 })
+            .unwrap();
+        tx.send(PlayerEvent::TrackChanged { audio_item: item })
+            .unwrap();
+        tx.send(PlayerEvent::Playing {
+            play_request_id: 1,
+            track_id,
+            position_ms: 0,
+        })
+        .unwrap();
+        state.events();
+        // La carga manual inicial no tenía nada sonando: sin micro-fade pendiente.
+        state.micro = Ramp::new(1.0);
+        state.old.clear();
+    }
+    fn natural_next(
+        state: &mut Playback,
+        tx: &mpsc::UnboundedSender<PlayerEvent>,
+        item: Box<AudioItem>,
+    ) {
+        tx.send(PlayerEvent::EndOfTrack {
+            play_request_id: 1,
+            track_id: crate::parse_track_uri(MIX_A).unwrap(),
+        })
+        .unwrap();
+        tx.send(PlayerEvent::PlayRequestIdChanged { play_request_id: 2 })
+            .unwrap();
+        tx.send(PlayerEvent::TrackChanged { audio_item: item })
+            .unwrap();
+        state.events();
+    }
+    fn decode(state: &mut Playback, frames: usize, frame: [f32; 2]) {
+        let samples: Vec<f32> = std::iter::repeat_n(frame, frames).flatten().collect();
+        state.push_decoded(&samples);
+    }
+    /// A (1,5 s en cola) y B (2 s en el deck B) listos para un solape de 1 s.
+    fn ready_to_mix(
+        tap: bool,
+        a: [f32; 2],
+        b: [f32; 2],
+    ) -> (
+        Playback,
+        mpsc::UnboundedSender<PlayerEvent>,
+        std_mpsc::Sender<OutputCommand>,
+        mpsc::Receiver<PcmPacket>,
+    ) {
+        let (mut state, tx, output, pcm) = mixing(tap);
+        begin(&mut state, &tx, album_item(MIX_A, "Atlas", 1));
+        state.anchor_decode(8_500);
+        decode(&mut state, SECOND * 3 / 2, a);
+        assert!(state.queue_extra() > 0, "la ventana se abrió para A");
+        natural_next(&mut state, &tx, album_item(MIX_B, "Mapa", 1));
+        assert!(state.route_b);
+        assert_eq!(state.mix_window, SECOND);
+        decode(&mut state, SECOND * 2, b);
+        (state, tx, output, pcm)
+    }
+
+    #[test]
+    fn mix_queue_limit_only_grows_inside_the_window() {
+        let (mut state, tx, _, _) = mixing(false);
+        let status = state.mix_status.subscribe();
+        begin(&mut state, &tx, album_item(MIX_A, "Atlas", 1));
+        assert_eq!(state.queue_extra(), 0);
+        decode(&mut state, SECOND * 6, [0.1; 2]);
+        // 10 s de pista, 6 s decodificados: faltan 4 s > 1 s de ventana + 1 s de margen.
+        assert_eq!(state.queue_extra(), 0);
+        assert_eq!(status.borrow().ahead_ms, 0);
+        decode(&mut state, SECOND * 21 / 10, [0.1; 2]);
+        let extra = state.queue_extra();
+        assert_eq!(
+            extra,
+            ((1000 + MIX_MARGIN_MS + MIX_SLACK_MS) * u64::from(SAMPLE_RATE) * 2 / 1000) as usize
+        );
+        assert_eq!(status.borrow().ahead_ms, 1000 + MIX_MARGIN_MS);
+        // Reservado fuera del callback: la ventana entera cabe sin crecer en el decoder.
+        state.queue = (0..1000).map(|v| v as f32).collect();
+        let needed = state.reserve_window(1000).unwrap();
+        assert_eq!(needed, extra + 1000);
+        let old = state.adopt(VecDeque::with_capacity(needed));
+        assert!(state.queue.capacity() >= needed && state.queue.len() == 1000);
+        assert_eq!(state.queue[999], 999.0);
+        drop(old);
+        assert!(state.reserve_window(1000).is_none());
+        // Pista nueva: el tope vuelve a la base hasta su propia ventana.
+        natural_next(&mut state, &tx, album_item(MIX_B, "Atlas", 2));
+        assert_eq!(state.queue_extra(), 0);
+        // Mezcla apagada: nunca sube.
+        let (mut off, tx, _, _) = mixing(false);
+        off.mix.set(crate::MixConfig::default());
+        begin(&mut off, &tx, album_item(MIX_A, "Atlas", 1));
+        decode(&mut off, SECOND * 10, [0.1; 2]);
+        assert_eq!(off.queue_extra(), 0);
+        assert!(off.reserve_window(1000).is_none());
+    }
+
+    #[test]
+    fn mix_is_a_cos_plus_b_sin_with_unit_power_then_b_takes_over() {
+        let (mut state, _tx, output, _) = ready_to_mix(false, [0.6, 0.0], [0.0, 0.6]);
+        let status = state.mix_status.subscribe();
+        let before = frames(&mut state, &output, SECOND / 2);
+        assert!(before.chunks_exact(2).all(|f| f == [0.6, 0.0]));
+        assert!(!status.borrow().active);
+        let out = frames(&mut state, &output, SECOND);
+        for (k, f) in out.chunks_exact(2).enumerate() {
+            let (ga, gb) = crate::mix::gains((k as f32 + 0.5) / SECOND as f32);
+            assert!((f[0] - 0.6 * ga).abs() < 1e-5, "{k}");
+            assert!((f[1] - 0.6 * gb).abs() < 1e-5, "{k}");
+            let power = (f[0] * f[0] + f[1] * f[1]) / 0.36;
+            assert!((power - 1.0).abs() < 1e-4, "{k}");
+        }
+        let after = frames(&mut state, &output, 10);
+        assert!(after.chunks_exact(2).all(|f| f == [0.0, 0.6]));
+        assert!(!state.route_b && state.fade.is_none() && state.deck_b.is_empty());
+        assert_eq!(state.queue.len(), (SECOND - 10) * 2);
+        assert!(!status.borrow().active);
+    }
+
+    #[test]
+    fn same_album_next_track_concatenates_sample_exact() {
+        let (mut state, tx, output, _) = mixing(false);
+        begin(&mut state, &tx, album_item(MIX_A, "Atlas", 4));
+        state.anchor_decode(8_000);
+        let a: Vec<f32> = (0..SECOND * 2).map(|v| (v % 997) as f32 / 2000.0).collect();
+        state.push_decoded(&a);
+        assert!(state.queue_extra() > 0);
+        natural_next(&mut state, &tx, album_item(MIX_B, "Atlas", 5));
+        assert!(!state.route_b && state.mix_window == 0);
+        let b: Vec<f32> = (0..SECOND).map(|v| -((v % 991) as f32) / 2000.0).collect();
+        state.push_decoded(&b);
+        let out = frames(&mut state, &output, (a.len() + b.len()) / 2);
+        assert_eq!(out, [a, b].concat());
+        // El decoder iba por delante: la posición de B empieza cuando se oye.
+        assert_eq!(state.mix_status.borrow().started.map(|s| s.0), Some(2));
+        assert_eq!(state.mix_status.borrow().ahead_ms, 0);
+    }
+
+    #[test]
+    fn without_next_track_a_plays_at_full_gain_to_the_end() {
+        let (mut state, tx, output, _) = mixing(false);
+        begin(&mut state, &tx, album_item(MIX_A, "Atlas", 1));
+        decode(&mut state, SECOND * 3 / 2, [0.5; 2]);
+        tx.send(PlayerEvent::EndOfTrack {
+            play_request_id: 1,
+            track_id: crate::parse_track_uri(MIX_A).unwrap(),
+        })
+        .unwrap();
+        tx.send(PlayerEvent::Stopped {
+            play_request_id: 1,
+            track_id: crate::parse_track_uri(MIX_A).unwrap(),
+        })
+        .unwrap();
+        let out = frames(&mut state, &output, SECOND * 3 / 2);
+        assert!(out.iter().all(|v| *v == 0.5));
+        assert!(!state.route_b && state.fade.is_none());
+    }
+
+    #[test]
+    fn pause_keeps_both_decks_and_seek_or_next_empties_them() {
+        let (mut state, tx, output, _) = ready_to_mix(false, [0.5; 2], [0.25; 2]);
+        frames(&mut state, &output, SECOND / 2 + 1000);
+        assert!(state.fade.is_some());
+        state.transport(false);
+        frames(&mut state, &output, PAUSE_FRAMES + 1);
+        let (a, b, fade) = (
+            state.queue.len(),
+            state.deck_b.len(),
+            state.fade.unwrap().elapsed,
+        );
+        frames(&mut state, &output, 2000);
+        assert_eq!(
+            (state.queue.len(), state.deck_b.len()),
+            (a, b),
+            "en pausa nada se consume"
+        );
+        assert_eq!(state.fade.unwrap().elapsed, fade);
+        state.transport(true);
+        frames(&mut state, &output, 100);
+        assert!(state.fade.unwrap().elapsed > fade && state.route_b);
+        // Siguiente durante el fundido: carga manual, ambos decks vacíos.
+        tx.send(PlayerEvent::PlayRequestIdChanged { play_request_id: 3 })
+            .unwrap();
+        state.events();
+        assert!(state.deck_b.is_empty() && state.spans_b.is_empty() && state.queue.is_empty());
+        assert!(state.fade.is_none() && !state.route_b);
+        assert!(state.old.len() <= MICRO_FRAMES * 2);
+        assert!(!state.mix_status.borrow().active);
+        // Seek durante el fundido, en pausa total: nada viejo vuelve al reanudar.
+        let (mut state, tx, output, _) = ready_to_mix(false, [0.5; 2], [0.25; 2]);
+        frames(&mut state, &output, SECOND / 2 + 1000);
+        state.transport(false);
+        frames(&mut state, &output, PAUSE_FRAMES + 1);
+        tx.send(PlayerEvent::Seeked {
+            play_request_id: 2,
+            track_id: crate::parse_track_uri(MIX_B).unwrap(),
+            position_ms: 30_000,
+        })
+        .unwrap();
+        state.events();
+        assert!(state.deck_b.is_empty() && state.queue.is_empty() && state.old.is_empty());
+        assert!(state.fade.is_none() && !state.route_b);
+        assert_eq!(state.decode_anchor_ms, 30_000);
+    }
+
+    #[test]
+    fn visualizer_gets_the_mix_before_volume_and_the_limiter_holds_full_scale() {
+        let (mut state, _tx, output, mut pcm) = ready_to_mix(true, [1.0; 2], [1.0; 2]);
+        state.volume_override.request(1, 0.5);
+        state.volume = Ramp::new(0.5);
+        frames(&mut state, &output, SECOND / 2);
+        while pcm.try_recv().is_ok() {}
+        state.pending.clear();
+        let out = frames(&mut state, &output, TAP_SAMPLES / 2);
+        let packet = pcm.try_recv().unwrap();
+        for (k, pair) in packet.samples.chunks_exact(2).enumerate() {
+            let (ga, gb) = crate::mix::gains((k as f32 + 0.5) / SECOND as f32);
+            let weight = ((k + 1) as f32 / crate::mix::LIMITER_RAMP_FRAMES as f32).min(1.0);
+            let mixed = crate::mix::limit_blend(ga + gb, weight);
+            assert!((pair[0] as f32 - mixed).abs() < 1e-6, "{k}");
+            assert!((out[k * 2] - mixed * 0.5).abs() < 1e-6, "{k}");
+        }
+        let all = frames(&mut state, &output, SECOND);
+        assert!(all.iter().all(|v| v.abs() <= 0.5 + 1e-6));
+        assert!(
+            packet
+                .samples
+                .iter()
+                .all(|v| v.abs() <= 1.0 && *v > f64::from(crate::mix::LIMITER_KNEE) * 0.99)
+        );
+    }
+
+    #[test]
+    fn listening_progress_is_counted_per_request_during_the_overlap() {
+        let (mut state, _tx, output, _) = ready_to_mix(false, [0.5; 2], [0.25; 2]);
+        let status = state.mix_status.subscribe();
+        frames(&mut state, &output, SECOND / 2);
+        assert_eq!((heard(&state, 1), heard(&state, 2)), (SECOND as u64 / 2, 0));
+        assert!(status.borrow().started.is_none());
+        frames(&mut state, &output, 300);
+        assert_eq!(heard(&state, 1), SECOND as u64 / 2 + 300);
+        assert_eq!(heard(&state, 2), 300);
+        // B empezó a oírse con el fundido: su posición se ancla a ese instante.
+        assert_eq!(status.borrow().started.map(|s| s.0), Some(2));
+        frames(&mut state, &output, SECOND);
+        assert_eq!(heard(&state, 1), SECOND as u64 * 3 / 2);
+        assert_eq!(heard(&state, 2), SECOND as u64 + 300);
+    }
+
+    #[test]
+    fn late_next_track_shortens_the_overlap_or_follows_without_a_gap() {
+        for late in [true, false] {
+            let (mut state, tx, output, _) = mixing(false);
+            begin(&mut state, &tx, album_item(MIX_A, "Atlas", 1));
+            decode(&mut state, SECOND * 3 / 2, [0.5; 2]);
+            natural_next(&mut state, &tx, album_item(MIX_B, "Mapa", 1));
+            assert!(state.route_b);
+            if late {
+                // B no llega a tiempo: A suena sola y entera, y B sigue sin hueco.
+                let out = frames(&mut state, &output, SECOND * 3 / 2);
+                assert!(out.iter().all(|v| *v == 0.5));
+                decode(&mut state, 100, [0.25; 2]);
+                let out = frames(&mut state, &output, 100);
+                assert!(out.iter().all(|v| *v == 0.25));
+                assert!(!state.route_b && state.fade.is_none());
+            } else {
+                // B llega con 0,3 s de A: el solape dura lo que queda de A.
+                frames(&mut state, &output, SECOND * 12 / 10);
+                decode(&mut state, SECOND, [0.25; 2]);
+                frames(&mut state, &output, 1);
+                assert_eq!(state.fade.unwrap().frames, SECOND * 3 / 10);
+                frames(&mut state, &output, SECOND * 3 / 10);
+                assert!(!state.route_b && state.fade.is_none());
+                // B sonó en todo el solape y en el frame siguiente, ya sola.
+                assert_eq!(state.queue.len(), (SECOND - SECOND * 3 / 10 - 1) * 2);
+            }
+            assert_eq!(heard(&state, 1), SECOND as u64 * 3 / 2);
+        }
+    }
+
+    #[test]
+    fn sleep_timer_dj_or_voice_never_mix() {
+        for blocker in 0..3 {
+            let (mut state, tx, _, _) = mixing(false);
+            begin(&mut state, &tx, album_item(MIX_A, "Atlas", 1));
+            match blocker {
+                0 => state.timer_uri = Some(MIX_A.into()),
+                1 => state.mix.set_blocked(true),
+                _ => {
+                    state.voice = Some(Voice {
+                        clip: Arc::new(VoiceClip::new(vec![0.0; 2], 2).unwrap()),
+                        frame: 0,
+                        paused: true,
+                        stopping: false,
+                        idle: true,
+                        ramp: Ramp::new(0.0),
+                        progress: watch::channel(VoiceProgress {
+                            position_ms: 0,
+                            at: Instant::now(),
+                            playing: false,
+                            finished: false,
+                        })
+                        .0,
+                    })
+                }
+            }
+            decode(&mut state, SECOND * 9, [0.5; 2]);
+            assert_eq!(state.queue_extra(), 0, "{blocker}");
+            decode(&mut state, SECOND, [0.5; 2]);
+            natural_next(&mut state, &tx, album_item(MIX_B, "Mapa", 1));
+            assert!(!state.route_b && state.mix_window == 0, "{blocker}");
+        }
+    }
+
     #[test]
     fn m1_natural_end_of_last_track_keeps_tail_even_if_spirc_stops_before_output() {
         let (mut state, _, output) = playback(false);

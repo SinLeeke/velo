@@ -1,4 +1,4 @@
-//! `Actions` singleton: context-menu actions shared by every list.
+//! `Actions` singleton (docs/CONTRATO.md, M1): context-menu actions shared by every list.
 //! A thin view of `engine::actions`; every invokable returns at once (work runs on tokio).
 
 #[cxx_qt::bridge]

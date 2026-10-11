@@ -20,6 +20,28 @@ Item {
     property bool mica: false
     // Q1: width taken by the docked queue panel at the right (set by Main.qml); pages narrow.
     property real queueInset: 0
+    // T5: «Reproduciendo» side panel, in the queue's column. Opening the queue REPLACES it (as in
+    // Spotify): while queueInset > 0 the panel is hidden and reserves nothing. Wanted by default,
+    // remembered between runs (QtCore.Settings, a local convenience, like the sidebar width).
+    // With a narrow window it hides itself (it never squeezes the page under Theme.resize.minPage).
+    // Depends only on the window width and the queue, never on the sidebar's own width (no loop).
+    property alias sidePanelWanted: panelStore.nowPlayingPanel
+    QtCore.Settings {
+        id: panelStore
+        category: "layout"
+        property bool nowPlayingPanel: true
+    }
+    readonly property bool sidePanelFits: width - queueInset - Theme.size.sidebarMin - Theme.resize.minPage
+                                          >= Theme.sidePanel.width + Theme.space.gutter
+    readonly property bool sidePanelShown: sidePanelWanted && Backend.Player.hasSession && sidePanelFits
+                                           && queueInset === 0 && !nowPlayingVisible
+    readonly property real sidePanelInset: sidePanelShown ? Theme.sidePanel.width : 0
+    // Total width taken at the right: the docked queue or the panel (never both).
+    readonly property real rightInset: queueInset + sidePanelInset
+    readonly property alias sidePanel: sidePanel
+    // Height of everything stuck to the bottom (player bar + «Reproduciendo en…» strip); Main docks the queue and the device picker above it.
+    readonly property real bottomReserve: Theme.size.playerBar + remoteStrip.reserve
+    readonly property alias remoteStrip: remoteStrip
     // G4: the sidebar is resizable by dragging its right edge (sidebarMin..sidebarMax, and never
     // so wide that the page drops under Theme.resize.minPage beside the docked queue). The width
     // is remembered at zoom 100 % (QtCore.Settings, a local convenience) and follows the pointer
@@ -36,7 +58,7 @@ Item {
     readonly property real sidebarStripCap: settingsButton.x - 2 * Theme.searchBox.gap - Theme.searchBox.minWidth
                                             - navigation.width - Theme.space.gutter
     readonly property real sidebarCeiling: Math.max(Theme.size.sidebarMin,
-        Math.min(Theme.size.sidebarMax, width - queueInset - Theme.resize.minPage, sidebarStripCap))
+        Math.min(Theme.size.sidebarMax, width - rightInset - Theme.resize.minPage, sidebarStripCap))
     readonly property real sidebarWidth: Math.round(Math.max(Theme.size.sidebarMin, Math.min(sidebarCeiling,
         sidebarDragWidth > 0 ? sidebarDragWidth
         : layoutStore.sidebarWidth > 0 ? Theme.px(layoutStore.sidebarWidth) : Theme.size.sidebar)))
@@ -124,6 +146,7 @@ Item {
         else if (family === "profile") page.userId = itemId
         else if (family === "search") page.query = searchQuery
         else if (family === "artist") page.artistId = itemId
+        else if (family === "show") page.showId = itemId
         else if (family === "settings") page.focusSection = itemId
         if (reused && family === "settings") Backend.Settings.refreshCacheSize()
         if (entry.localState) {
@@ -358,14 +381,46 @@ Item {
     Loader {
         id: audioNotice
         objectName: "audioSetupNotice"
-        active: Backend.Account.signedIn && !Backend.Account.audioReady
+        active: root.noticeOn
         visible: active
         x: root.sidebarWidth + Theme.space.gutter
         y: root.titleInset + Theme.space.sm
-        width: Math.max(0, root.width - x - Theme.space.gutter - root.queueInset)
+        width: Math.max(0, root.width - x - Theme.space.gutter - root.rightInset)
         height: item ? item.implicitHeight : 0
         sourceComponent: AudioSetupNotice { width: audioNotice.width }
     }
+    // Motion (G2, A-LB1): when audio gets activated the notice fades out (`fast`, ease-in) while
+    // its space is still reserved; then the space goes at once (one relayout) and the page,
+    // pushed back down by a transform, glides up (`base`, ease-out). Only opacity and a
+    // Translate; instant when the motion tokens are 0. Coming back mid-way restores everything.
+    readonly property bool noticeWanted: Backend.Account.signedIn && !Backend.Account.audioReady
+    property bool noticeOn: false
+    onNoticeWantedChanged: {
+        if (noticeWanted) {
+            noticeExit.stop(); noticeRise.stop()
+            noticeShift.y = 0
+            audioNotice.opacity = 1
+            noticeOn = true
+        } else if (noticeOn && audioNotice.item && Theme.motion.fast > 0) {
+            noticeGap = audioNotice.height + Theme.space.xl
+            noticeExit.restart()
+        } else {
+            noticeOn = false
+        }
+    }
+    property real noticeGap: 0
+    SequentialAnimation {
+        id: noticeExit
+        OpacityAnimator { target: audioNotice; from: 1; to: 0; duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeIn }
+        ScriptAction {
+            script: {
+                root.noticeOn = false
+                audioNotice.opacity = 1
+                if (Theme.motion.base > 0) { noticeShift.y = root.noticeGap; noticeRise.restart() }
+            }
+        }
+    }
+    NumberAnimation { id: noticeRise; target: noticeShift; property: "y"; to: 0; duration: Theme.motion.base; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
     // The page area. The Loader sits inside unanchored so its y can rise on entry (YAnimator)
     // without fighting anchors. The page edge follows the docked queue at once: easing it would
     // animate a width (relayout), so the queue panel moves instead.
@@ -374,14 +429,15 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: root.sidebarWidth + Theme.space.gutter
         anchors.right: parent.right
-        anchors.rightMargin: Theme.space.gutter + root.queueInset
+        anchors.rightMargin: Theme.space.gutter + root.rightInset
         anchors.top: parent.top
-        anchors.topMargin: root.titleInset + Theme.space.sm + (audioNotice.active ? audioNotice.height + Theme.space.xl : 0)
+        anchors.topMargin: root.titleInset + Theme.space.sm + (root.noticeOn ? audioNotice.height + Theme.space.xl : 0)
         anchors.bottom: player.top
         anchors.bottomMargin: Theme.space.xl
         Item {
             id: pageLoader
             property Item item: null
+            transform: Translate { id: noticeShift }
             width: parent.width
             height: parent.height
         }
@@ -397,9 +453,28 @@ Item {
     // S9/N2: Ajustes as a library page; the route's id names the section to bring into view.
     Component { id: showPage; PodcastPage {} }
     Component { id: settingsPage; SettingsPage {} }
+    NowPlayingSidePanel {
+        id: sidePanel
+        shown: root.sidePanelShown
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: player.top
+        anchors.topMargin: Theme.size.titleBar + Theme.queue.inset
+        anchors.bottomMargin: Theme.queue.inset
+        width: Theme.sidePanel.width
+        onQueueRequested: root.queueRequested()
+    }
+    // T3: while another device plays, an accent strip sits under the bar (the bar rises by its height).
+    RemoteDeviceStrip {
+        id: remoteStrip
+        anchors.bottom: parent.bottom
+        width: parent.width
+    }
     LibraryPlayerBar {
         id: player
-        anchors.bottom: parent.bottom
+        sidePanelActive: root.sidePanelWanted
+        onSidePanelToggled: root.sidePanelWanted = !root.sidePanelWanted
+        anchors.bottom: remoteStrip.top
         width: parent.width
         height: Theme.size.playerBar
         onNowPlayingRequested: root.nowPlayingRequested()
@@ -411,5 +486,5 @@ Item {
     readonly property alias creditsDialog: creditsDialog
     Shortcut { sequence: "Alt+Left"; enabled: root.visible; onActivated: root.goBack() }
     Shortcut { sequence: "Alt+Right"; enabled: root.visible; onActivated: root.goForward() }
-    Component.onCompleted: navigate("home", "", "")
+    Component.onCompleted: { noticeOn = noticeWanted; navigate("home", "", "") }
 }

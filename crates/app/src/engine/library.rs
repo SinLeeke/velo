@@ -131,6 +131,11 @@ pub struct LibMeta {
     pub view_busy: bool,
     /// U4: Spotify id of the open playlist's owner (its header links to the profile), else "".
     pub owner_id: String,
+    /// Mixear: la playlist abierta está marcada para mezclarse.
+    pub mix_current: bool,
+    /// Mixear: el contexto que SUENA (playlist o «Tus me gusta») está marcado. Sobrevive a la
+    /// navegación: pertenece al reproductor, no a la página abierta.
+    pub mix_playing: bool,
     pub track_tags: Vec<String>,
     pub active_tag: String,
 }
@@ -220,7 +225,12 @@ pub struct LibraryCtl {
     pub searches: Arc<super::search::SearchCtl>,
     pub profiles: Arc<super::profile::ProfileCtl>,
     player: Arc<PlayerCtl>,
+    // Observe the request without starting a real audio session in regression tests.
+    #[cfg(test)]
+    playback_target: watch::Sender<Option<LoadTarget>>,
     pub meta: watch::Sender<LibMeta>,
+    /// Contexto que suena según Velo (uri, título); `Player.contextUri/contextTitle` lo reflejan.
+    playing_context: Mutex<(String, String)>,
     pub ui: Bus<LibEvent>,
     nav: Mutex<Nav>,
     // Serializes publication with navigation; never held over an await.
@@ -379,7 +389,7 @@ fn context_plan(uri: &str) -> Option<PlayPlan> {
     }
 }
 
-/// What Velo's engine should load for a plan (same rows as the Web API path).
+/// Keep the displayed list and its starting row so shuffle can include earlier rows too.
 fn velo_target(plan: &PlayPlan, shuffle: bool) -> Option<LoadTarget> {
     match plan {
         PlayPlan::Context { uri, index } => Some(LoadTarget::Context {
@@ -388,10 +398,10 @@ fn velo_target(plan: &PlayPlan, shuffle: bool) -> Option<LoadTarget> {
             shuffle,
         }),
         PlayPlan::List { uris, index } => {
-            let list = uris_from(uris, *index);
-            (!list.is_empty()).then_some(LoadTarget::Tracks {
-                uris: list,
-                index: 0,
+            let index = u32::try_from(*index).ok()?;
+            ((index as usize) < uris.len()).then(|| LoadTarget::Tracks {
+                uris: uris.clone(),
+                index,
                 shuffle,
             })
         }
@@ -452,7 +462,10 @@ impl LibraryCtl {
             searches: super::search::SearchCtl::new(env, player),
             profiles: super::profile::ProfileCtl::new(env),
             player: player.clone(),
+            #[cfg(test)]
+            playback_target: watch::channel(None).0,
             meta: watch::channel(blank_meta()).0,
+            playing_context: Mutex::new((String::new(), String::new())),
             ui: Bus::new(),
             nav: Mutex::new(Nav {
                 gen_id: 0,
@@ -698,7 +711,11 @@ impl LibraryCtl {
             n.foreign = None;
             n.list_key.clear();
         }
-        self.meta.send_replace(blank_meta());
+        let mix_playing = self.meta.borrow().mix_playing;
+        self.meta.send_replace(LibMeta {
+            mix_playing,
+            ..blank_meta()
+        });
     }
 
     fn liked_flag(&self, uri: &str) -> bool {
@@ -837,6 +854,7 @@ impl LibraryCtl {
             image_url: String::new(),
             kind: kind.into(),
             listable,
+            mix_playing: self.meta.borrow().mix_playing,
             ..LibMeta::default()
         };
         meta.show_spec(&spec);
@@ -1474,9 +1492,11 @@ impl LibraryCtl {
                 Some(&playlist.images),
             );
             this.sidebar.request_image(playlist.uri.clone());
+            let mixed = this.env.prefs.extras().mixed_playlists;
             this.set_meta(|m| {
                 m.track_count = playlist.track_count;
                 m.owner_id.clone_from(&playlist.owner_id);
+                m.mix_current = mixed.contains(&playlist.id);
             });
             if listable {
                 this.load_page();
@@ -1493,6 +1513,8 @@ impl LibraryCtl {
             true,
             None,
         );
+        let mixed = self.env.prefs.extras().mixed_playlists;
+        self.set_meta(|m| m.mix_current = mixed.iter().any(|k| k == super::prefs::LIKED_MIX_KEY));
         self.load_page();
     }
 
@@ -1940,6 +1962,19 @@ impl LibraryCtl {
     fn play_target(self: &Arc<Self>, row: Option<usize>, shuffle: bool) {
         self.play_plan_with(shuffle, move |this| {
             let source = this.nav().source.clone();
+            // Mixear: la playlist abierta decide si el fundido cruzado queda activo.
+            let (uri, title) = match &source {
+                Source::Playlist { uri, .. } | Source::Album { uri, .. } => {
+                    (uri.as_str(), this.meta.borrow().title.clone())
+                }
+                Source::Liked => (
+                    super::prefs::LIKED_CONTEXT,
+                    this.meta.borrow().title.clone(),
+                ),
+                _ => ("", String::new()),
+            };
+            this.set_playing_context(uri, &title);
+            this.apply_mix_context(uri);
             play_plan(&source, &this.store(), row)
         });
     }
@@ -1947,7 +1982,12 @@ impl LibraryCtl {
     /// `Library.playContext(uri)`: same path as a page's play button, in the active device.
     pub fn play_context(self: &Arc<Self>, uri: &str) {
         if let Some(plan) = context_plan(uri) {
-            self.play_plan_with(false, move |_| Some(plan));
+            let uri = uri.to_string();
+            self.play_plan_with(self.player.view.borrow().shuffle, move |this| {
+                this.set_playing_context(&uri, "");
+                this.apply_mix_context(&uri);
+                Some(plan)
+            });
         }
     }
 
@@ -1973,9 +2013,11 @@ impl LibraryCtl {
             };
             // Velo is the default device: with its engine running and nothing else in charge,
             // the list plays here through Spirc (no Web API round trip, no device to wake).
-            if velo_target(&plan, shuffle).is_none() {
+            let Some(target) = velo_target(&plan, shuffle) else {
                 return;
-            }
+            };
+            #[cfg(test)]
+            this.playback_target.send_replace(Some(target.clone()));
             let route = match this.player.prepare_playback().await {
                 Ok(Some(route)) if this.player.playback_current(generation) => route,
                 Ok(_) => return,
@@ -1985,9 +2027,7 @@ impl LibraryCtl {
                 }
             };
             if route == PlayRoute::Velo {
-                if let (Some(engine), Some(target)) =
-                    (this.env.audio.engine(), velo_target(&plan, shuffle))
-                {
+                if let Some(engine) = this.env.audio.engine() {
                     match engine.load(target) {
                         Ok(()) => return,
                         Err(e) => {
@@ -2006,9 +2046,7 @@ impl LibraryCtl {
                             env,
                             &api,
                             async {
-                                if shuffle {
-                                    api.set_shuffle(true).await?;
-                                }
+                                api.set_shuffle(shuffle).await?;
                                 api.play_context(uri, offset).await
                             }
                             .await
@@ -2024,7 +2062,7 @@ impl LibraryCtl {
                             &api,
                             async {
                                 api.set_shuffle(shuffle).await?;
-                                api.play_uris(&list, None).await
+                                api.play_uris(&list, Some(0)).await
                             }
                             .await
                         )
@@ -2040,11 +2078,129 @@ impl LibraryCtl {
     }
 
     pub fn play_index(self: &Arc<Self>, index: usize) {
-        self.play_target(Some(index), false);
+        self.play_target(Some(index), self.player.view.borrow().shuffle);
+    }
+
+    /// Mixear: reevalúa el fundido cruzado para el contexto que va a sonar.
+    fn apply_mix_context(&self, uri: &str) {
+        let extras = self.env.prefs.extras();
+        // Guardar solo la marca por playlist: el ajuste automático se lee en caliente en AudioCtl.
+        self.env.audio.set_mix_context(super::prefs::mix_wanted(
+            uri,
+            &extras.mixed_playlists,
+            false,
+        ));
+    }
+
+    /// Contexto que suena: lo publica en `Player.contextUri/contextTitle` y recalcula
+    /// `mix_playing`. Título vacío = se desconoce.
+    fn set_playing_context(&self, uri: &str, title: &str) {
+        *self
+            .playing_context
+            .lock()
+            .unwrap_or_else(|e| e.into_inner()) = (uri.to_string(), title.to_string());
+        self.player.view.send_if_modified(|v| {
+            if v.context_uri == uri && v.context_title == title {
+                return false;
+            }
+            v.context_uri = uri.to_string();
+            v.context_title = title.to_string();
+            true
+        });
+        let marked = self.is_mix_marked(uri);
+        self.set_meta(|m| m.mix_playing = marked);
+    }
+
+    fn is_mix_marked(&self, context_uri: &str) -> bool {
+        super::prefs::mix_key(context_uri).is_some_and(|key| {
+            self.env
+                .prefs
+                .extras()
+                .mixed_playlists
+                .iter()
+                .any(|m| m == key)
+        })
+    }
+
+    /// Marca o desmarca una clave de Mixear; devuelve el estado nuevo.
+    fn flip_mix_key(&self, key: &str) -> bool {
+        let mut now = false;
+        self.env.prefs.update_extras(|e| {
+            if let Some(pos) = e.mixed_playlists.iter().position(|m| m == key) {
+                e.mixed_playlists.remove(pos);
+            } else {
+                e.mixed_playlists.push(key.to_string());
+                now = true;
+            }
+        });
+        now
+    }
+
+    /// Contexto que suena ahora: el que Velo lanzó o, si no, el de la sesión.
+    fn playing_context_uri(&self) -> String {
+        let own = self
+            .playing_context
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .0
+            .clone();
+        if !own.is_empty() {
+            return own;
+        }
+        self.env
+            .account
+            .session_queue_snapshot()
+            .map(|s| s.context_uri)
+            .unwrap_or_default()
+    }
+
+    /// Marca o desmarca la playlist abierta (o «Tus me gusta») para Mixear; si es la que suena,
+    /// aplica al instante.
+    pub fn toggle_mix_current(self: &Arc<Self>) {
+        let this = self.clone();
+        self.env.rt.spawn(async move {
+            let key = match this.nav().source.clone() {
+                Source::Playlist { id, .. } => id,
+                Source::Liked => super::prefs::LIKED_MIX_KEY.to_string(),
+                _ => return,
+            };
+            let now = this.flip_mix_key(&key);
+            this.set_meta(|m| m.mix_current = now);
+            let playing = this.playing_context_uri();
+            if super::prefs::mix_key(&playing) == Some(key.as_str()) {
+                this.set_meta(|m| m.mix_playing = now);
+                this.apply_mix_context(&playing);
+            }
+        });
+    }
+
+    /// Marca o desmarca el contexto que SUENA (playlist o «Tus me gusta») para Mixear.
+    pub fn toggle_mix_playing(self: &Arc<Self>) {
+        let this = self.clone();
+        self.env.rt.spawn(async move {
+            this.toggle_mix_playing_now();
+        });
+    }
+
+    fn toggle_mix_playing_now(&self) -> Option<bool> {
+        let uri = self.playing_context_uri();
+        let key = super::prefs::mix_key(&uri)?.to_string();
+        let now = self.flip_mix_key(&key);
+        self.set_meta(|m| m.mix_playing = now);
+        let open_key = match &self.nav().source {
+            Source::Playlist { id, .. } => Some(id.clone()),
+            Source::Liked => Some(super::prefs::LIKED_MIX_KEY.to_string()),
+            _ => None,
+        };
+        if open_key.as_deref() == Some(key.as_str()) {
+            self.set_meta(|m| m.mix_current = now);
+        }
+        self.apply_mix_context(&uri);
+        Some(now)
     }
 
     pub fn play_current(self: &Arc<Self>) {
-        self.play_target(None, false);
+        self.play_target(None, self.player.view.borrow().shuffle);
     }
 
     pub fn shuffle_current(self: &Arc<Self>) {
@@ -2365,6 +2521,32 @@ impl LibraryCtl {
 #[cfg(test)]
 mod tests {
     #[test]
+    fn mix_auto_can_be_disabled_after_loading_an_unmarked_context() {
+        let rt = super::super::r4b_test_support::runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        let player = PlayerCtl::for_test(&env);
+        let ctl = LibraryCtl::start(&env, &player);
+        env.prefs
+            .update_extras(|e| e.mixed_playlists.push("marked".into()));
+        env.prefs.update_settings(|s| s.playback.mix_auto = true);
+        for uri in ["spotify:playlist:unmarked", "spotify:album:a", ""] {
+            ctl.apply_mix_context(uri);
+            assert!(env.audio.mix_config(&env.prefs.settings()).enabled);
+            env.prefs.update_settings(|s| s.playback.mix_auto = false);
+            assert!(
+                !env.audio.mix_config(&env.prefs.settings()).enabled,
+                "{uri}"
+            );
+            env.prefs.update_settings(|s| s.playback.mix_auto = true);
+        }
+        ctl.apply_mix_context("spotify:playlist:marked");
+        env.prefs.update_settings(|s| s.playback.mix_auto = false);
+        assert!(env.audio.mix_config(&env.prefs.settings()).enabled);
+        ctl.apply_mix_context("spotify:playlist:unmarked");
+        assert!(!env.audio.mix_config(&env.prefs.settings()).enabled);
+    }
+
+    #[test]
     fn local_history_notifications_update_recent_and_context_dates_then_clear() {
         struct Reader(Mutex<Vec<Track>>);
         impl super::super::sidebar::HistoryReader for Reader {
@@ -2613,6 +2795,43 @@ mod tests {
         assert!(ctl.meta.borrow().active_tag.is_empty());
         ctl.reset_all();
         assert!(ctl.tag_cache.lock().unwrap().is_empty());
+    }
+
+    #[test]
+    fn toggle_mix_playing_marks_playlist_and_liked_contexts() {
+        let rt = runtime();
+        let (_dir, env) = super::super::test_env(&rt);
+        rt.block_on(async {
+            let ctl = LibraryCtl::start(&env, &PlayerCtl::for_test(&env));
+            // Sin contexto que suene no hay nada que marcar.
+            assert_eq!(ctl.toggle_mix_playing_now(), None);
+            // Álbum: Mixear no aplica.
+            ctl.set_playing_context("spotify:album:a", "Álbum");
+            assert_eq!(ctl.toggle_mix_playing_now(), None);
+            assert!(env.prefs.extras().mixed_playlists.is_empty());
+            // Playlist que suena.
+            ctl.set_playing_context("spotify:playlist:p", "Mi lista");
+            assert!(!ctl.meta.borrow().mix_playing);
+            assert_eq!(ctl.toggle_mix_playing_now(), Some(true));
+            assert!(ctl.meta.borrow().mix_playing);
+            assert_eq!(env.prefs.extras().mixed_playlists, vec!["p"]);
+            // Volver a darle play la reconoce como marcada.
+            ctl.set_playing_context("spotify:playlist:p", "Mi lista");
+            assert!(ctl.meta.borrow().mix_playing);
+            // «Tus me gusta».
+            ctl.set_playing_context(super::super::prefs::LIKED_CONTEXT, "Tus me gusta");
+            assert!(!ctl.meta.borrow().mix_playing);
+            assert_eq!(ctl.toggle_mix_playing_now(), Some(true));
+            assert!(
+                env.prefs
+                    .extras()
+                    .mixed_playlists
+                    .contains(&"liked".to_string())
+            );
+            assert_eq!(ctl.toggle_mix_playing_now(), Some(false));
+            assert_eq!(env.prefs.extras().mixed_playlists, vec!["p"]);
+            assert_eq!(ctl.player.view.borrow().context_title, "Tus me gusta");
+        });
     }
 
     async fn details_finished(ctl: &LibraryCtl, id: &str) {
@@ -2911,7 +3130,110 @@ mod tests {
     }
 
     #[test]
-    fn velo_engine_loads_the_same_rows_as_the_web_api() {
+    fn play_index_preserves_player_shuffle_and_clicked_row() {
+        for shuffle in [true, false] {
+            let rt = runtime();
+            let (_dir, env) = super::super::test_env(&rt);
+            rt.block_on(async {
+                let _time = ManualTime::new();
+                let mut server = Server::new().await;
+                env.account.set_test_provider(server.provider());
+                let player = PlayerCtl::for_test(&env);
+                let ctl = LibraryCtl::start(&env, &player);
+                ctl.nav().source = Source::Search("recommended".into());
+                let uris: Vec<String> = (0..5).map(|i| format!("spotify:track:{i}")).collect();
+                *ctl.store() = store_of(&uris);
+                player.view.send_modify(|v| v.shuffle = shuffle);
+                let mut targets = ctl.playback_target.subscribe();
+
+                ctl.play_index(2);
+                targets.changed().await.unwrap();
+                assert_eq!(
+                    *targets.borrow(),
+                    Some(LoadTarget::Tracks {
+                        uris: uris.clone(),
+                        index: 2,
+                        shuffle
+                    })
+                );
+                let devices = server.next().await;
+                assert_eq!(devices.path, "/me/player/devices");
+                devices.respond(
+                    200,
+                    json!({"devices": [{"id": "phone", "name": "Phone",
+                    "type": "Smartphone", "is_active": true}]}),
+                );
+                let request = server.next().await;
+                assert_eq!(request.method, "PUT");
+                assert_eq!(request.path, format!("/me/player/shuffle?state={shuffle}"));
+                request.respond(204, Value::Null);
+                let request = server.next().await;
+                assert_eq!(request.path, "/me/player/play");
+                assert_eq!(
+                    request.body,
+                    json!({"uris": uris_from(&uris, 2),
+                    "offset": {"position": 0}})
+                );
+                request.respond(204, Value::Null);
+                settle().await;
+            });
+        }
+    }
+
+    #[test]
+    fn context_and_current_playback_set_player_shuffle_in_both_directions() {
+        for shuffle in [true, false] {
+            for current in [false, true] {
+                let rt = runtime();
+                let (_dir, env) = super::super::test_env(&rt);
+                rt.block_on(async {
+                    let _time = ManualTime::new();
+                    let mut server = Server::new().await;
+                    env.account.set_test_provider(server.provider());
+                    let player = PlayerCtl::for_test(&env);
+                    let ctl = LibraryCtl::start(&env, &player);
+                    ctl.nav().source = Source::Album {
+                        id: "a".into(),
+                        uri: "spotify:album:a".into(),
+                    };
+                    player.view.send_modify(|v| v.shuffle = shuffle);
+                    let mut targets = ctl.playback_target.subscribe();
+                    if current {
+                        ctl.play_current();
+                    } else {
+                        ctl.play_context("spotify:album:a");
+                    }
+                    targets.changed().await.unwrap();
+                    assert_eq!(
+                        *targets.borrow(),
+                        Some(LoadTarget::Context {
+                            uri: "spotify:album:a".into(),
+                            index: None,
+                            shuffle
+                        })
+                    );
+                    let devices = server.next().await;
+                    assert_eq!(devices.path, "/me/player/devices");
+                    devices.respond(
+                        200,
+                        json!({"devices": [{"id": "phone", "name": "Phone",
+                        "type": "Smartphone", "is_active": true}]}),
+                    );
+                    let request = server.next().await;
+                    assert_eq!(request.path, format!("/me/player/shuffle?state={shuffle}"));
+                    request.respond(204, Value::Null);
+                    let request = server.next().await;
+                    assert_eq!(request.path, "/me/player/play");
+                    assert_eq!(request.body, json!({"context_uri": "spotify:album:a"}));
+                    request.respond(204, Value::Null);
+                    settle().await;
+                });
+            }
+        }
+    }
+
+    #[test]
+    fn velo_engine_keeps_the_displayed_rows_and_starting_index() {
         let playlist = Source::Playlist {
             id: "p".into(),
             uri: "spotify:playlist:p".into(),
@@ -2923,8 +3245,8 @@ mod tests {
         assert_eq!(
             velo_target(&plan, false),
             Some(LoadTarget::Tracks {
-                uris: vec!["u4".into()],
-                index: 0,
+                uris: five,
+                index: 4,
                 shuffle: false
             })
         );
@@ -2945,8 +3267,8 @@ mod tests {
             Some(LoadTarget::Tracks {
                 uris: list, index, ..
             }) => {
-                assert_eq!(list, uris_from(&uris, 10));
-                assert_eq!(index, 0);
+                assert_eq!(list, uris);
+                assert_eq!(index, 10);
             }
             other => panic!("{other:?}"),
         }
@@ -2995,8 +3317,8 @@ mod tests {
         assert_eq!(
             velo_target(&play_plan(&playlist, &store, Some(1)).unwrap(), false),
             Some(LoadTarget::Tracks {
-                uris: vec!["xb".into(), "xc".into()],
-                index: 0,
+                uris: vec!["xa".into(), "xb".into(), "xc".into()],
+                index: 1,
                 shuffle: false
             })
         );

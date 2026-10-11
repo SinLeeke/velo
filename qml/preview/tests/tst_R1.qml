@@ -112,7 +112,7 @@ TestCase {
         button.forceActiveFocus(Qt.TabFocusReason); verify(button.visualFocus)
         compare(button.primary, true)
         verify(contrast(Theme.library.focusOnAccent, Theme.accent) >= 3)
-        button.enabled = false; compare(button.opacity, Theme.library.disabledOpacity); button.enabled = true
+        button.enabled = false; tryCompare(button, "opacity", Theme.library.disabledOpacity, 2000); button.enabled = true
         compare(button.implicitHeight, libraryButton.implicitHeight)
         compare(field.implicitHeight, Theme.size.titleBar)
     }
@@ -286,7 +286,7 @@ TestCase {
     }
     function test_effects_stop_on_pause_minimize_and_background_preference() {
         Theme.performanceMode = false; verify(Theme.motion.fast > 0)
-        Theme.playing = false; compare(Theme.motion.fast, 0); compare(Theme.motion.coverFade, 0)
+        Theme.playing = false; verify(Theme.motion.fast > 0); verify(Theme.motion.coverFade > 0); verify(!Theme.effectsAllowed)
         Theme.playing = true; Theme.windowVisible = false; compare(Theme.motion.fast, 0)
         Theme.windowVisible = true; Theme.windowFocused = false; verify(Theme.motion.fast > 0)
         Theme.pauseInBackground = true; compare(Theme.motion.fast, 0)

@@ -30,6 +30,8 @@ Window {
     // differ for one frame while SnapshotFade photographs the outgoing view (B1).
     readonly property string wantedView: !signedIn ? "login" : currentView
     property string shownView: ""
+    // T3: bottom space of the library (player bar + «Reproduciendo en…» strip); the queue and the device picker end above it.
+    readonly property real libraryBottomReserve: viewLoader.item && "bottomReserve" in viewLoader.item ? viewLoader.item.bottomReserve : Theme.size.playerBar
     property bool loginHasAppeared: false
     onWantedViewChanged: syncView()
     onSignedInChanged: if (!signedIn) {
@@ -176,7 +178,10 @@ Window {
             veilDark: Backend.Player.paletteVeilDark, veilLight: Backend.Player.paletteVeilLight,
             inkDark: Backend.Player.paletteInkDark, inkLight: Backend.Player.paletteInkLight,
             veilDarkOpacity: Backend.Player.paletteVeilDarkOpacity, veilLightOpacity: Backend.Player.paletteVeilLightOpacity,
-            scrimDarkOpacity: Backend.Player.paletteScrimDarkOpacity, scrimLightOpacity: Backend.Player.paletteScrimLightOpacity
+            scrimDarkOpacity: Backend.Player.paletteScrimDarkOpacity, scrimLightOpacity: Backend.Player.paletteScrimLightOpacity,
+            veilDarkMovingOpacity: Backend.Player.paletteVeilDarkMovingOpacity, veilLightMovingOpacity: Backend.Player.paletteVeilLightMovingOpacity,
+            blobDarkMovingOpacity: Backend.Player.paletteBlobDarkMovingOpacity, blobLightMovingOpacity: Backend.Player.paletteBlobLightMovingOpacity,
+            colors: Backend.Player.paletteColors
         })
     }
     Connections {
@@ -312,9 +317,10 @@ Window {
         QueuePanel {
             id: queuePanel
             z: 2
+            onCover: root.shownView === "nowplaying"
             // G4: it always ends above the bottom controls: the player bar in the library, the
             // visualizer band's reserve in Now Playing.
-            bottomInset: root.shownView === "library" ? Theme.size.playerBar
+            bottomInset: root.shownView === "library" ? libraryBottomReserve
                        : root.shownView === "nowplaying" && npLoader.item && "queueBottomReserve" in npLoader.item
                          ? npLoader.item.queueBottomReserve : 0
             // G4: its width (resizable by its left edge) always leaves the narrowest sidebar and a
@@ -349,7 +355,7 @@ Window {
         DevicePicker {
             id: devicePicker
             x: root.width - width - Theme.space.lg
-            y: root.height - height - Theme.size.playerBar - Theme.space.sm
+            y: root.height - height - root.libraryBottomReserve - Theme.space.sm
         }
 
         PlaylistPicker {
@@ -374,6 +380,8 @@ Window {
             anchors.horizontalCenter: parent.horizontalCenter
             y: appToast.shown ? appToast.y + appToast.height + Theme.space.sm : Theme.size.titleBar + Theme.space.md
             z: appToast.z
+            // The notice glides to/from the slot under the Toast instead of jumping (position only).
+            Behavior on y { YAnimator { duration: Theme.motion.base; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut } }
         }
         Connections {
             target: Backend.Account

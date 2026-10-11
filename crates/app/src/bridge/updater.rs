@@ -235,7 +235,8 @@ impl ffi::Updater {
                     let launched = tokio::task::spawn_blocking(move || {
                         std::process::Command::new(path)
                             .args([
-                                "/SILENT",
+                                // No installer window at all; it reopens Velo when done.
+                                "/VERYSILENT",
                                 "/SUPPRESSMSGBOXES",
                                 "/NORESTART",
                                 "/CLOSEAPPLICATIONS",
@@ -245,6 +246,10 @@ impl ffi::Updater {
                     })
                     .await
                     .unwrap_or(false);
+                    if launched {
+                        // Let the card read «Instalando…» before Velo closes for the installer.
+                        tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
+                    }
                     let _ = thread.queue(move |mut q| {
                         q.as_mut().rust_mut().cancel = None;
                         if launched {

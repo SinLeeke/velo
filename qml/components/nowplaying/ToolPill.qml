@@ -13,9 +13,14 @@ Rectangle {
     id: root
 
     property bool lyricsActive: true
+    // T4: false hides the lyrics button (no reliable playback progress to follow the song).
+    property bool lyricsAvailable: true
     property bool queueActive: false
     property bool devicesActive: false
     property bool dark: true
+    // True while the press being delivered only closes a popup (the host knows): the devices
+    // click that starts that way must not reopen the picker it just closed.
+    property bool pressBlocked: false
     readonly property alias devicesButton: devices
 
     signal devicesClicked()
@@ -44,7 +49,9 @@ Rectangle {
         activeInk: Theme.cover.toolActiveInk
     }
 
-    readonly property var actives: [devicesActive, lyricsActive, queueActive, false, false]
+    readonly property var actives: [devicesActive, lyricsActive && lyricsAvailable, queueActive, false, false]
+    // The capsules follow the visible buttons (the lyrics one can be hidden).
+    readonly property var slots: [devices, lyrics, queue, themeTool, settingsTool]
     Item {
         id: marks
         anchors.fill: row
@@ -56,12 +63,12 @@ Rectangle {
                 required property int index
                 readonly property bool on: root.actives[index]
                 objectName: "toolMark" + index
-                x: index * marks.slot
+                x: root.slots[index].visible ? root.slots[index].x : 0
                 width: marks.slot
                 height: marks.height
                 radius: height / 2
                 color: Theme.cover.toolActive
-                opacity: on ? 1 : 0
+                opacity: on && root.slots[index].visible ? 1 : 0
                 scale: on ? 1 : Theme.feel.toolMarkFrom
                 Behavior on opacity { OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut } }
                 Behavior on scale { ScaleAnimator { duration: Math.max(1, Theme.motion.base); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut } }
@@ -74,7 +81,7 @@ Rectangle {
                 required property int index
                 readonly property bool on: root.actives[index] && root.actives[index + 1]
                 objectName: "toolBridge" + index
-                x: (index + 0.5) * marks.slot
+                x: root.slots[index].x + 0.5 * marks.slot
                 width: marks.slot
                 height: marks.height
                 color: Theme.cover.toolActive
@@ -102,9 +109,13 @@ Rectangle {
             iconSource: Qt.resolvedUrl("../../icons/devices.svg")
             active: root.devicesActive
             Accessible.checkable: true
-            onClicked: root.devicesClicked()
+            property bool armed: true
+            onPressedChanged: if (pressed) armed = !root.pressBlocked
+            onClicked: if (armed) root.devicesClicked()
         }
         ToolButton {
+            id: lyrics
+            visible: root.lyricsAvailable
             objectName: "npLyricsButton"
             text: qsTr("Letra")
             iconSource: Qt.resolvedUrl("../../icons/lyrics.svg")
@@ -113,6 +124,7 @@ Rectangle {
             onClicked: root.lyricsClicked()
         }
         ToolButton {
+            id: queue
             objectName: "npQueueButton"
             text: qsTr("Cola")
             iconSource: Qt.resolvedUrl("../../icons/queue_music.svg")
@@ -121,11 +133,13 @@ Rectangle {
             onClicked: root.queueClicked()
         }
         ToolButton {
+            id: themeTool
             text: root.dark ? qsTr("Cambiar a modo claro") : qsTr("Cambiar a modo oscuro")
             iconSource: root.dark ? Qt.resolvedUrl("../../icons/light_mode.svg") : Qt.resolvedUrl("../../icons/dark_mode.svg")
             onClicked: root.themeClicked()
         }
         ToolButton {
+            id: settingsTool
             text: qsTr("Ajustes")
             // No hay settings.svg; tune.svg es el icono de ajustes disponible.
             iconSource: Qt.resolvedUrl("../../icons/tune.svg")

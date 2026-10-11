@@ -1,4 +1,4 @@
-//! QML ↔ Rust bridge, registered in the QML module `Velo.Backend`.
+//! QML ↔ Rust bridge, registered in the QML module `Velo.Backend` (see `docs/CONTRATO.md`).
 //!
 //! One file per singleton (`Player`, `Lyrics`, `Visualizer`, `Library`, `Account`, `Settings`)
 //! plus `AppInfo` here. They are thin views of the Qt-free `crate::engine`; the playback sources

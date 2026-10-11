@@ -142,6 +142,7 @@ impl RemoteListeningClock {
 pub struct ListeningClock {
     current: String,
     recorded: bool,
+    private_session: bool,
     maximum: u64,
     seen: std::collections::HashSet<String>,
     order: std::collections::VecDeque<String>,
@@ -152,6 +153,11 @@ impl ListeningClock {
             self.current = sample.occurrence.clone();
             self.recorded = false;
             self.maximum = 0;
+        }
+        if self.private_session {
+            // Remember this occurrence so toggling privacy off cannot record it later.
+            self.suppress_current();
+            return None;
         }
         if self.seen.contains(&sample.occurrence) {
             return None;
@@ -224,6 +230,7 @@ pub struct HistoryCtl {
     /// Bumped after every publication (append, account switch, clear): event-driven readers.
     pub changes: watch::Sender<u64>,
     commands: mpsc::UnboundedSender<Command>,
+    settings: watch::Receiver<velo_domain::Settings>,
     clock: Mutex<ListeningClock>,
     epoch: AtomicU64,
     paging: AtomicBool,
@@ -238,6 +245,7 @@ impl HistoryCtl {
             context_times: watch::channel(std::collections::HashMap::new()).0,
             changes: watch::channel(0).0,
             commands: tx,
+            settings: env.prefs.watch_settings(),
             clock: Mutex::new(ListeningClock::default()),
             epoch: AtomicU64::new(0),
             paging: AtomicBool::new(false),
@@ -301,7 +309,9 @@ impl HistoryCtl {
                         }
                     }
                     Command::Append(entry, epoch) => {
-                        if epoch != me.epoch.load(Ordering::SeqCst) {
+                        if epoch != me.epoch.load(Ordering::SeqCst)
+                            || me.settings.borrow().playback.private_session
+                        {
                             continue;
                         }
                         let Some(s) = &store else { continue };
@@ -478,6 +488,7 @@ impl HistoryCtl {
     }
     pub fn progress(&self, sample: ProgressSample) {
         let mut clock = self.clock.lock().unwrap_or_else(|e| e.into_inner());
+        clock.private_session = self.settings.borrow().playback.private_session;
         let epoch = self.epoch.load(Ordering::SeqCst);
         if let Some(entry) = clock.observe(&sample) {
             let _ = self.commands.send(Command::Append(Box::new(entry), epoch));
@@ -731,6 +742,56 @@ mod tests {
         }
     }
     #[test]
+    fn t6_private_session_never_queues_history_and_does_not_backfill() {
+        let mut settings = velo_domain::Settings::default();
+        settings.playback.private_session = true;
+        let (settings, preferences) = watch::channel(settings);
+        let (commands, mut rx) = mpsc::unbounded_channel();
+        let ctl = HistoryCtl {
+            view: watch::channel(HistoryView::default()).0,
+            ui: Bus::new(),
+            context_times: watch::channel(std::collections::HashMap::new()).0,
+            changes: watch::channel(0).0,
+            commands,
+            settings: preferences,
+            clock: Mutex::new(ListeningClock::default()),
+            epoch: AtomicU64::new(0),
+            paging: AtomicBool::new(false),
+            entries: Mutex::new(Vec::new()),
+        };
+        for id in ["local:1", "connect:1"] {
+            ctl.progress(sample(id, 0));
+            ctl.progress(sample(id, RECORD_AFTER_MS));
+            ctl.progress(sample(id, 30_000));
+        }
+        assert!(matches!(
+            rx.try_recv(),
+            Err(mpsc::error::TryRecvError::Empty)
+        ));
+        settings.send_modify(|s| s.playback.private_session = false);
+        // Seek/resume or late source events cannot backfill private occurrences.
+        ctl.progress(sample("local:1", 40_000));
+        ctl.progress(sample("connect:1", 40_000));
+        assert!(matches!(
+            rx.try_recv(),
+            Err(mpsc::error::TryRecvError::Empty)
+        ));
+        ctl.progress(sample("local:2", RECORD_AFTER_MS));
+        assert!(matches!(rx.try_recv(), Ok(Command::Append(e, 0)) if e.entry_id == "local:2"));
+        // Activating while a track is loaded also suppresses that occurrence.
+        ctl.progress(sample("local:3", 0));
+        settings.send_modify(|s| s.playback.private_session = true);
+        ctl.progress(sample("local:3", RECORD_AFTER_MS));
+        settings.send_modify(|s| s.playback.private_session = false);
+        ctl.progress(sample("local:3", 30_000));
+        assert!(matches!(
+            rx.try_recv(),
+            Err(mpsc::error::TryRecvError::Empty)
+        ));
+        ctl.progress(sample("connect:2", RECORD_AFTER_MS));
+        assert!(matches!(rx.try_recv(), Ok(Command::Append(e, 0)) if e.entry_id == "connect:2"));
+    }
+    #[test]
     fn fake_consumed_clock_pause_buffer_seek_dedupe_repeat_clear() {
         let mut clock = ListeningClock::default();
         // No audio yet (loaded, buffering): not listened.
@@ -757,6 +818,7 @@ mod tests {
             context_times: watch::channel(std::collections::HashMap::new()).0,
             changes: watch::channel(0).0,
             commands,
+            settings: watch::channel(velo_domain::Settings::default()).1,
             clock: Mutex::new(ListeningClock::default()),
             epoch: AtomicU64::new(0),
             paging: AtomicBool::new(false),

@@ -1,10 +1,5 @@
-//! Source (b): another Spotify Connect device (phone, speaker) controlled with the Web API only.
-//! Used when there is no Spotify media session on this PC.
-//!
-//! State is read with `GET /me/player` at startup, after signing in, when the window becomes
-//! visible again, after every action and when the track should end. While the music plays on
-//! a remote device and the window is visible it is also refreshed every 5 s (the only polling
-//! in the app). Paused or minimized: no timer, no requests.
+//! Remote Connect state arrives from the existing dealer observer. Web polling is a fallback
+//! only without usable cluster playback; paused/minimized sources have no polling deadline.
 
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -22,7 +17,7 @@ use crate::engine::{
 };
 
 /// Longest wait between refreshes while playing with the window visible.
-const REFRESH_EVERY: Duration = Duration::from_secs(5);
+const REFRESH_EVERY: Duration = Duration::from_secs(30);
 /// A little after the computed end of the track, once Spotify has moved on.
 const END_GRACE: Duration = Duration::from_millis(400);
 const MIN_DELAY: Duration = Duration::from_millis(500);
@@ -39,7 +34,7 @@ impl Backoff {
         let exponential =
             Duration::from_secs((1_u64 << self.failures.min(4)).saturating_mul(2).min(30));
         let delay = match error {
-            VeloError::RateLimited(retry_after) => exponential.max(*retry_after),
+            VeloError::RateLimited(retry_after) => Duration::from_secs(60).max(*retry_after),
             _ => exponential,
         };
         self.failures = self.failures.saturating_add(1);
@@ -66,6 +61,8 @@ pub struct RemoteSource {
     // Avoids two overlapping reads.
     reading: tokio::sync::Mutex<()>,
     backoff: Mutex<Backoff>,
+    metadata: Mutex<Option<(String, Option<velo_domain::Track>)>>,
+    metadata_task: Mutex<Option<tokio::task::AbortHandle>>,
 }
 
 /// When to refresh next while playing on a remote device: at most `REFRESH_EVERY`, sooner when
@@ -77,6 +74,9 @@ pub fn next_delay(state: &SourceState, now: Instant) -> Duration {
     }
     let position =
         state.position_ms + now.saturating_duration_since(state.position_at).as_millis() as u64;
+    if position >= duration {
+        return REFRESH_EVERY;
+    }
     let remaining = Duration::from_millis(duration.saturating_sub(position));
     (remaining + END_GRACE).clamp(MIN_DELAY, REFRESH_EVERY)
 }
@@ -94,10 +94,14 @@ impl RemoteSource {
             trigger,
             reading: tokio::sync::Mutex::new(()),
             backoff: Mutex::new(Backoff::default()),
+            metadata: Mutex::new(None),
+            metadata_task: Mutex::new(None),
         });
         let me = this.clone();
         env.rt
             .spawn(async move { me.run(requests, outranked).await });
+        let observer = this.clone();
+        env.rt.spawn(async move { observer.follow_cluster().await });
         this.refresh(Refresh::Startup);
         this
     }
@@ -117,14 +121,17 @@ impl RemoteSource {
         loop {
             let current_flags = *flags.borrow_and_update();
             let state = self.tx.borrow().clone();
-            let delay = refresh_delay(outranked_now, &current_flags, &state).map(|d| {
-                d.max(
-                    self.backoff
-                        .lock()
-                        .unwrap_or_else(|e| e.into_inner())
-                        .remaining(Instant::now()),
-                )
-            });
+            let delay = (!self.has_cluster_playback())
+                .then(|| refresh_delay(outranked_now, &current_flags, &state))
+                .flatten()
+                .map(|d| {
+                    d.max(
+                        self.backoff
+                            .lock()
+                            .unwrap_or_else(|e| e.into_inner())
+                            .remaining(Instant::now()),
+                    )
+                });
             tokio::select! {
                 request = requests.recv() => {
                     if request.is_none() {
@@ -132,7 +139,7 @@ impl RemoteSource {
                     }
                     tokio::time::sleep(SYNC_DEBOUNCE).await;
                     while requests.try_recv().is_ok() {}
-                    if !outranked_now {
+                    if !outranked_now || self.has_cluster_playback() {
                         self.sync().await;
                     }
                 }
@@ -143,7 +150,7 @@ impl RemoteSource {
                     let active = *outranked.borrow_and_update();
                     if active != outranked_now {
                         outranked_now = active;
-                        if active {
+                        if active && !self.has_cluster_playback() {
                             self.clear();
                         } else {
                             self.sync().await;
@@ -160,8 +167,9 @@ impl RemoteSource {
                     };
                     if now != identity {
                         identity = now;
+                        self.reset_metadata();
                         self.listening_clock.lock().unwrap_or_else(|e| e.into_inner()).reset();
-                        if identity.0 && !outranked_now {
+                        if identity.0 && (!outranked_now || self.has_cluster_playback()) {
                             self.sync().await;
                         } else if !identity.0 {
                             *self.backoff.lock().unwrap_or_else(|e| e.into_inner()) = Backoff::default();
@@ -183,6 +191,135 @@ impl RemoteSource {
         }
     }
 
+    fn reset_metadata(&self) {
+        if let Some(task) = self
+            .metadata_task
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .take()
+        {
+            task.abort();
+        }
+        *self.metadata.lock().unwrap_or_else(|e| e.into_inner()) = None;
+    }
+
+    fn has_cluster_playback(&self) -> bool {
+        self.env
+            .audio
+            .engine()
+            .and_then(|e| velo_player::queue::connect_snapshot::cluster_state(e.session()))
+            .is_some_and(|c| c.playback.is_some())
+    }
+
+    async fn follow_cluster(self: Arc<Self>) {
+        let mut audio = self.env.audio.view.subscribe();
+        loop {
+            let Some(engine) = self.env.audio.engine() else {
+                if audio.changed().await.is_err() {
+                    return;
+                }
+                continue;
+            };
+            let Some(mut cluster) =
+                velo_player::queue::connect_snapshot::cluster_updates(engine.session())
+            else {
+                if audio.changed().await.is_err() {
+                    return;
+                }
+                continue;
+            };
+            self.reset_metadata();
+            self.refresh(Refresh::TrackChanged);
+            loop {
+                tokio::select! {
+                    changed = cluster.changed() => {
+                        if changed.is_err() { break; }
+                        cluster.borrow_and_update();
+                        self.refresh(Refresh::TrackChanged);
+                    }
+                    changed = audio.changed() => {
+                        if changed.is_err() { return; }
+                        if !self.env.audio.engine().is_some_and(|e| Arc::ptr_eq(&e, &engine)) { break; }
+                    }
+                }
+            }
+            self.refresh(Refresh::TrackChanged);
+        }
+    }
+
+    fn cluster_playback(self: &Arc<Self>, ticket: u64) -> Option<Option<PlaybackState>> {
+        let engine = self.env.audio.engine()?;
+        let cluster = velo_player::queue::connect_snapshot::cluster_state(engine.session())?;
+        let mut playback = cluster.playback?;
+        if playback.device.as_ref().and_then(|d| d.id.as_deref()) == Some(engine.device_id()) {
+            return Some(None);
+        }
+        if let Some(track) = playback.track.as_ref() {
+            let uri = track.uri.clone();
+            let cached = self
+                .metadata
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .clone();
+            if let Some((_, metadata)) = cached.filter(|(key, _)| key == &uri) {
+                if let Some(metadata) = metadata {
+                    playback.track = Some(metadata);
+                }
+            } else {
+                *self.metadata.lock().unwrap_or_else(|e| e.into_inner()) =
+                    Some((uri.clone(), None));
+                if let Some(task) = self
+                    .metadata_task
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .take()
+                {
+                    task.abort();
+                }
+                let this = self.clone();
+                let task = self.env.rt.spawn(async move {
+                    let item = velo_player::playlist::PlaylistItem {
+                        uri: uri.clone(),
+                        added_at: None,
+                    };
+                    let metadata = tokio::time::timeout(
+                        Duration::from_secs(5),
+                        velo_player::playlist::tracks_in(engine.session(), &[item]),
+                    )
+                    .await
+                    .ok()
+                    .and_then(|mut rows| rows.pop());
+                    if !this
+                        .env
+                        .audio
+                        .engine()
+                        .is_some_and(|current| Arc::ptr_eq(&current, &engine))
+                    {
+                        return;
+                    }
+                    let still_current =
+                        velo_player::queue::connect_snapshot::cluster_state(engine.session())
+                            .and_then(|c| c.playback)
+                            .and_then(|p| p.track)
+                            .is_some_and(|t| t.uri == uri);
+                    if !still_current {
+                        return;
+                    }
+                    this.env.account.commit_if_current(ticket, || {
+                        let mut cached = this.metadata.lock().unwrap_or_else(|e| e.into_inner());
+                        if cached.as_ref().is_some_and(|(key, _)| key == &uri) {
+                            *cached = Some((uri, metadata));
+                            this.refresh(Refresh::TrackChanged);
+                        }
+                    });
+                });
+                *self.metadata_task.lock().unwrap_or_else(|e| e.into_inner()) =
+                    Some(task.abort_handle());
+            }
+        }
+        Some(Some(playback))
+    }
+
     fn clear(&self) {
         self.listening_clock
             .lock()
@@ -191,27 +328,32 @@ impl RemoteSource {
         self.tx.send_replace(SourceState::default());
     }
 
-    async fn sync(&self) {
+    async fn sync(self: &Arc<Self>) {
         let Some((api, ticket)) = self.env.account.api_ticket() else {
             self.clear();
             return;
         };
         let _one_at_a_time = self.reading.lock().await;
-        if !self
-            .backoff
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .remaining(Instant::now())
-            .is_zero()
+        let cluster = self.cluster_playback(ticket);
+        if cluster.is_none()
+            && !self
+                .backoff
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .remaining(Instant::now())
+                .is_zero()
         {
             return;
         }
         let result = async {
-            let playback = api.playback().await?;
+            let playback = match cluster {
+                Some(playback) => playback,
+                None => api.playback().await?,
+            };
             let mut state = playback
                 .as_ref()
                 .map_or_else(SourceState::default, state_of);
-            if !state.active {
+            if !state.active && !self.has_cluster_playback() {
                 state.device_available = api.devices().await?.iter().any(|d| d.id.is_some());
             }
             Ok::<_, VeloError>((state, playback))
@@ -292,6 +434,7 @@ fn state_of(p: &PlaybackState) -> SourceState {
         remote: true,
         own_engine: false,
         dj: velo_player::DjState::default(),
+        mixing: false,
     }
 }
 
@@ -350,6 +493,14 @@ mod tests {
             backoff.remaining(now + Duration::from_secs(30)),
             Duration::from_secs(60)
         );
+    }
+
+    #[test]
+    fn short_rate_limit_also_waits_a_full_minute() {
+        let now = Instant::now();
+        let mut backoff = Backoff::default();
+        backoff.failed(&VeloError::RateLimited(Duration::from_secs(1)), now);
+        assert_eq!(backoff.remaining(now), Duration::from_secs(60));
     }
 
     #[test]
@@ -443,7 +594,7 @@ mod tests {
     }
 
     #[test]
-    fn refresh_is_every_five_seconds_at_most() {
+    fn fallback_refresh_is_every_thirty_seconds_at_most() {
         let s = state(240_000, 10_000);
         assert_eq!(next_delay(&s, s.position_at), REFRESH_EVERY);
         assert_eq!(next_delay(&state(0, 0), Instant::now()), REFRESH_EVERY);
@@ -456,6 +607,6 @@ mod tests {
         assert_eq!(next_delay(&s, s.position_at), Duration::from_millis(2_400));
         // Already past the end: do not spin.
         let late = state(240_000, 240_000);
-        assert_eq!(next_delay(&late, late.position_at), MIN_DELAY);
+        assert_eq!(next_delay(&late, late.position_at), REFRESH_EVERY);
     }
 }

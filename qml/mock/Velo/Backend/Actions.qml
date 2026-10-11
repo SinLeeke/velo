@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 
-// MOCK of Velo.Backend.Actions. Answers at once, never touches the network.
+// MOCK of Velo.Backend.Actions (docs/CONTRATO.md, M1). Answers at once, never touches the network.
 QtObject {
     property string inspectedUri: ""
     property int inspectedSaved: -1          // -1 unknown, 0 no, 1 yes

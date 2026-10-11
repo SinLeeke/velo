@@ -105,6 +105,117 @@ fn scrim(veil: [u8; 3], bounds: [[u8; 3]; 2], global: u8, ink: [u8; 3], dark: bo
         .expect("opaque veils admit accessible black/white ink at the QML alphas")
 }
 
+// While the background MOVES there is no local scrim, and the hypnotic colour lights
+// float over the veil. Worst case for the text, per theme:
+//   art (every dominant colour with weight >= MOVING_MIN_WEIGHT; slivers below that are
+//   averaged away by the baked blur and the mirrored swirl; blends of two colours lie
+//   between them) -> veil (alpha `a`, at most MOVING_VEIL_CAP) -> a colour light (alpha `b`).
+// The lights are the cover's five colours with only their lightness moved into the theme's
+// band, so the extremes are each colour at the band's lowest and highest lightness (keep the
+// constants in sync with Theme.nowPlaying: blobLightDark/Light, blobSaturationLift,
+// blobAlpha). Luminance is monotone in lightness and a blend of two colours lies between its
+// ends, so checking those ends (and the light-free case b = 0) bounds every pixel.
+// Search: the lowest `a` (from the static veil up to the cap) that keeps the lights at
+// >= BLOB_KEEP of their full alpha; if none does, the cap with the strongest light alpha
+// that still passes. QML clamps the lights to `b` only while moving. Returns (a, b), 0..=255.
+const MOVING_MIN_WEIGHT: f32 = 0.05;
+const MOVING_VEIL_CAP: u8 = 204; // 0.80: the veil stops here unless the art leaves no other way
+const MOVING_VEIL_HARD_CAP: u8 = 230; // 0.90, Theme.nowPlaying.veilMovingMax
+const BLOB_ALPHA_FULL: u8 = 217; // 0.85, Theme.nowPlaying.blobAlpha
+const BLOB_KEEP: u8 = 130;
+const BLOB_LIGHT_DARK: [f32; 2] = [0.22, 0.48];
+const BLOB_LIGHT_LIGHT: [f32; 2] = [0.68, 0.9];
+const BLOB_SATURATION_LIFT: f32 = 1.15;
+
+fn rgb_to_hsl(c: [u8; 3]) -> (f32, f32, f32) {
+    let [r, g, b] = c.map(|v| f32::from(v) / 255.0);
+    let max = r.max(g).max(b);
+    let min = r.min(g).min(b);
+    let l = (max + min) / 2.0;
+    let d = max - min;
+    if d == 0.0 {
+        return (0.0, 0.0, l);
+    }
+    let s = d / (1.0 - (2.0 * l - 1.0).abs());
+    let h = if max == r {
+        ((g - b) / d).rem_euclid(6.0)
+    } else if max == g {
+        (b - r) / d + 2.0
+    } else {
+        (r - g) / d + 4.0
+    };
+    (h / 6.0, s, l)
+}
+fn hsl_to_rgb(h: f32, s: f32, l: f32) -> [f32; 3] {
+    let c = (1.0 - (2.0 * l - 1.0).abs()) * s;
+    let f = |n: f32| {
+        let k = (n + h * 12.0).rem_euclid(12.0);
+        (l - c / 2.0 + c * ((k - 3.0).min(9.0 - k).clamp(-1.0, 1.0) * 0.5 + 0.5)) * 255.0
+    };
+    [f(0.0), f(8.0), f(4.0)]
+}
+// Lightest and darkest light of each cover colour in the theme's band (hue untouched).
+fn blob_lights(colors: &[[u8; 3]], dark: bool) -> Vec<[f32; 3]> {
+    let band = if dark {
+        BLOB_LIGHT_DARK
+    } else {
+        BLOB_LIGHT_LIGHT
+    };
+    colors
+        .iter()
+        .flat_map(|&c| {
+            let (h, s, _) = rgb_to_hsl(c);
+            band.map(|l| hsl_to_rgb(h, (s * BLOB_SATURATION_LIFT).min(1.0), l))
+        })
+        .collect()
+}
+fn moving_passes(ink: [f32; 3], bg: [f32; 3], dark: bool) -> bool {
+    text_contrasts(ink, bg, dark).into_iter().all(|r| r >= 4.5)
+}
+fn moving_limits(
+    veil: [u8; 3],
+    colors: &[([u8; 3], f32)],
+    start: u8,
+    ink: [u8; 3],
+    dark: bool,
+) -> (u8, u8) {
+    let veil = veil.map(f32::from);
+    let ink = ink.map(f32::from);
+    let art: Vec<[f32; 3]> = colors
+        .iter()
+        .filter(|(_, weight)| *weight >= MOVING_MIN_WEIGHT)
+        .map(|(color, _)| color.map(f32::from))
+        .collect();
+    let lights = blob_lights(&colors.iter().map(|(c, _)| *c).collect::<Vec<_>>(), dark);
+    let passes = |a: u8, b: u8| {
+        let (a, b) = (f32::from(a) / 255.0, f32::from(b) / 255.0);
+        art.iter().all(|&art| {
+            let under = composite(veil, art, a);
+            moving_passes(ink, under, dark)
+                && lights
+                    .iter()
+                    .all(|&light| moving_passes(ink, composite(light, under, b), dark))
+        })
+    };
+    let strongest = |a: u8| (0..=BLOB_ALPHA_FULL).rev().find(|&b| passes(a, b));
+    for a in start.min(MOVING_VEIL_CAP)..=MOVING_VEIL_CAP {
+        match strongest(a) {
+            Some(b) if b >= BLOB_KEEP => return (a, b),
+            Some(b) if a == MOVING_VEIL_CAP => return (a, b),
+            _ => {}
+        }
+    }
+    // Nearly white/black art: no white-or-black ink passes at the cap even with no lights (the
+    // veil colour is fixed, so swapping the ink cannot help either). Go past the cap, only as
+    // far as needed, to the hard ceiling; the lights are hidden while moving if needed.
+    for a in MOVING_VEIL_CAP + 1..=MOVING_VEIL_HARD_CAP {
+        if let Some(b) = strongest(a) {
+            return (a, b);
+        }
+    }
+    (MOVING_VEIL_HARD_CAP, 0)
+}
+
 pub(crate) fn extract(image: &DynamicImage) -> Palette {
     let sample = image.resize_exact(48, 48, FilterType::Triangle).to_rgb8();
     let points: Vec<Lab> = sample.pixels().map(|p| lab(p.0)).collect();
@@ -147,6 +258,17 @@ pub(crate) fn extract(image: &DynamicImage) -> Palette {
             break;
         }
     }
+    let mut populated: Vec<_> = (0..5).filter(|&i| counts[i] > 0).collect();
+    populated.sort_by_key(|&i| std::cmp::Reverse(counts[i]));
+    let mut colors: Vec<_> = populated
+        .into_iter()
+        .map(|i| (hex(rgb(centers[i])), counts[i] as f32 / points.len() as f32))
+        .collect();
+    // Monochrome artwork can leave empty clusters with unused seed colors.
+    // Repeat the last populated color with zero weight, never invent a tone or
+    // redistribute population: the five published weights still sum to one.
+    let last_color = colors.last().unwrap().0.clone();
+    colors.resize(5, (last_color, 0.0));
     let base_index = (0..5)
         .filter(|&i| counts[i] > 0 && chroma(centers[i]) >= 0.025)
         .max_by_key(|&i| counts[i])
@@ -187,6 +309,19 @@ pub(crate) fn extract(image: &DynamicImage) -> Palette {
     let light_ink = [0; 3];
     let scrim_dark_alpha = scrim(vd, bounds, veil_dark_alpha, dark_ink, true);
     let scrim_light_alpha = scrim(vl, bounds, veil_light_alpha, light_ink, false);
+    let parsed: Vec<([u8; 3], f32)> = colors
+        .iter()
+        .map(|(color, weight)| {
+            (
+                [1, 3, 5].map(|i| u8::from_str_radix(&color[i..i + 2], 16).unwrap_or(0)),
+                *weight,
+            )
+        })
+        .collect();
+    let (veil_dark_moving_alpha, blob_dark_moving_alpha) =
+        moving_limits(vd, &parsed, veil_dark_alpha, dark_ink, true);
+    let (veil_light_moving_alpha, blob_light_moving_alpha) =
+        moving_limits(vl, &parsed, veil_light_alpha, light_ink, false);
     Palette {
         base: hex(rgb(if c < 0.025 { [base[0], 0.0, 0.0] } else { base })),
         glow: hex(rgb(if c < 0.025 { [0.7, 0.0, 0.0] } else { glow })),
@@ -194,8 +329,13 @@ pub(crate) fn extract(image: &DynamicImage) -> Palette {
         veil_light: hex(vl),
         ink_dark: hex(dark_ink),
         ink_light: hex(light_ink),
+        colors,
         veil_dark_alpha,
         veil_light_alpha,
+        veil_dark_moving_alpha,
+        veil_light_moving_alpha,
+        blob_dark_moving_alpha: Some(blob_dark_moving_alpha),
+        blob_light_moving_alpha: Some(blob_light_moving_alpha),
         scrim_dark_alpha,
         scrim_light_alpha,
     }
@@ -206,6 +346,203 @@ mod tests {
     use super::*;
     fn parse(s: &str) -> [u8; 3] {
         [1, 3, 5].map(|i| u8::from_str_radix(&s[i..i + 2], 16).unwrap())
+    }
+    fn assert_clusters(palette: &Palette) {
+        assert_eq!(palette.colors.len(), 5);
+        for (color, weight) in &palette.colors {
+            assert_eq!(color.len(), 7);
+            assert!(color.starts_with('#'));
+            parse(color);
+            assert!(weight.is_finite() && (0.0..=1.0).contains(weight));
+        }
+        assert!(palette.colors.windows(2).all(|pair| pair[0].1 >= pair[1].1));
+        let total: f32 = palette.colors.iter().map(|(_, weight)| weight).sum();
+        assert!((total - 1.0).abs() < 0.00001, "population sum: {total}");
+    }
+
+    #[test]
+    fn five_clusters_preserve_colors_and_population_order() {
+        let colors = [
+            [128; 3],
+            [205, 165, 55],
+            [180, 25, 40],
+            [20, 60, 190],
+            [25, 160, 60],
+        ];
+        let image = DynamicImage::ImageRgb8(image::RgbImage::from_fn(48, 48, |x, _| {
+            let i = match x {
+                0..24 => 0,
+                24..36 => 1,
+                36..42 => 2,
+                42..46 => 3,
+                _ => 4,
+            };
+            image::Rgb(colors[i])
+        }));
+        let palette = extract(&image);
+        assert_clusters(&palette);
+        for ((color, weight), (expected, width)) in palette
+            .colors
+            .iter()
+            .zip(colors.into_iter().zip([24, 12, 6, 4, 2]))
+        {
+            assert_eq!(parse(color), expected);
+            assert!((weight - width as f32 / 48.0).abs() < 0.00001);
+        }
+        assert_eq!(palette, extract(&image));
+    }
+
+    #[test]
+    fn monochrome_clusters_repeat_last_color_with_zero_population() {
+        for color in [[128; 3], [0; 3], [255; 3], [205, 165, 55]] {
+            let image =
+                DynamicImage::ImageRgb8(image::RgbImage::from_pixel(64, 64, image::Rgb(color)));
+            let palette = extract(&image);
+            assert_clusters(&palette);
+            assert_eq!(palette.colors[0], (hex(color), 1.0));
+            assert!(
+                palette.colors[1..]
+                    .iter()
+                    .all(|entry| entry == &(hex(color), 0.0))
+            );
+        }
+        let almost = DynamicImage::ImageRgb8(image::RgbImage::from_fn(48, 48, |x, y| {
+            image::Rgb(if x == 0 && y == 0 { [129; 3] } else { [128; 3] })
+        }));
+        let palette = extract(&almost);
+        assert_clusters(&palette);
+        let last = palette
+            .colors
+            .iter()
+            .rposition(|(_, weight)| *weight > 0.0)
+            .unwrap();
+        assert!(last < 4);
+        assert!(
+            palette.colors[last + 1..]
+                .iter()
+                .all(|(color, weight)| color == &palette.colors[last].0 && *weight == 0.0)
+        );
+    }
+
+    // HSV hue uses a circular distance; achromatic colors have no meaningful hue.
+    fn hue_saturation(color: [u8; 3]) -> (f32, f32) {
+        let [r, g, b] = color.map(|v| f32::from(v) / 255.0);
+        let max = r.max(g).max(b);
+        let min = r.min(g).min(b);
+        let delta = max - min;
+        if delta == 0.0 {
+            return (0.0, 0.0);
+        }
+        let hue = if max == r {
+            ((g - b) / delta).rem_euclid(6.0)
+        } else if max == g {
+            (b - r) / delta + 2.0
+        } else {
+            (r - g) / delta + 4.0
+        };
+        (hue * 60.0, delta / max)
+    }
+
+    #[test]
+    fn gray_and_gold_clusters_never_introduce_an_absent_hue() {
+        let gray = [128; 3];
+        let gold = [205, 165, 55];
+        // The reduction interpolates the boundary, exercising minor hue drift too.
+        let image = DynamicImage::ImageRgb8(image::RgbImage::from_fn(96, 96, |x, _| {
+            image::Rgb(if x < 64 { gray } else { gold })
+        }));
+        let present: Vec<_> = [gray, gold]
+            .into_iter()
+            .map(hue_saturation)
+            .filter(|(_, saturation)| *saturation >= 0.05)
+            .map(|(hue, _)| hue)
+            .collect();
+        let palette = extract(&image);
+        assert_clusters(&palette);
+        assert!(
+            palette
+                .colors
+                .iter()
+                .any(|(color, _)| hue_saturation(parse(color)).1 < 0.05)
+        );
+        assert!(
+            palette
+                .colors
+                .iter()
+                .any(|(color, _)| hue_saturation(parse(color)).1 > 0.5)
+        );
+        for (color, _) in &palette.colors {
+            let (hue, saturation) = hue_saturation(parse(color));
+            if saturation < 0.05 {
+                continue;
+            }
+            assert!(
+                present.iter().any(|present| {
+                    let delta = (hue - present).abs();
+                    delta.min(360.0 - delta) <= 8.0
+                }),
+                "absent hue in {color}: {hue}"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn legacy_palette_without_clusters_deserializes_and_rebuilds_offline() {
+        use velo_domain::CoverArtService;
+        use wiremock::{Mock, MockServer, ResponseTemplate, matchers::path};
+
+        let server = MockServer::start().await;
+        Mock::given(path("/legacy-cover"))
+            .respond_with(ResponseTemplate::new(500))
+            .expect(0)
+            .mount(&server)
+            .await;
+        let key = format!("{}/legacy-cover", server.uri());
+        let image = DynamicImage::ImageRgb8(image::RgbImage::from_pixel(
+            64,
+            64,
+            image::Rgb([205, 165, 55]),
+        ));
+        let mut bytes = std::io::Cursor::new(Vec::new());
+        image.write_to(&mut bytes, image::ImageFormat::Png).unwrap();
+        for blur in [false, true] {
+            let dir = tempfile::tempdir().unwrap();
+            let cache = crate::covers::CoverArtCache::with_cache_dir(dir.path()).unwrap();
+            let first = cache
+                .process_bytes_with_blur(&key, bytes.get_ref().clone(), blur)
+                .await
+                .unwrap();
+            let palette_path = first.cover.with_extension("json");
+            let mut old = serde_json::to_value(&first.palette).unwrap();
+            old.as_object_mut().unwrap().remove("colors");
+            for key in [
+                "veil_dark_moving_alpha",
+                "veil_light_moving_alpha",
+                "blob_dark_moving_alpha",
+                "blob_light_moving_alpha",
+            ] {
+                old.as_object_mut().unwrap().remove(key);
+            }
+            old["base"] = "#012345".into();
+            let old = serde_json::to_vec(&old).unwrap();
+            let legacy: Palette = serde_json::from_slice(&old).unwrap();
+            assert!(legacy.colors.is_empty());
+            crate::atomic_write(&palette_path, &old).unwrap();
+
+            let rebuilt = cache.process_with_blur(&key, blur).await.unwrap();
+            assert_eq!(rebuilt.cover, first.cover);
+            assert_ne!(rebuilt.palette.base, legacy.base);
+            assert_clusters(&rebuilt.palette);
+            assert!(rebuilt.palette.veil_dark_moving_alpha >= rebuilt.palette.veil_dark_alpha);
+            assert!(rebuilt.palette.veil_light_moving_alpha > 0);
+            let saved: Palette =
+                serde_json::from_slice(&std::fs::read(palette_path).unwrap()).unwrap();
+            assert_eq!(saved, rebuilt.palette);
+            // Subsequent requests reuse the migrated palette without an upgrade.
+            assert_eq!(rebuilt, cache.process_with_blur(&key, blur).await.unwrap());
+            assert_eq!(rebuilt.palette, cache.process(&key).await.unwrap().palette);
+        }
+        server.verify().await;
     }
     // Keep the QML alphas explicit in tests so a production change cannot silently
     // weaken the four checks. The pill is another layer beneath opaque active text.
@@ -406,6 +743,81 @@ mod tests {
             };
             assert!(worst(local) >= 4.5);
             assert!(worst(local - 1) < 4.5);
+        }
+    }
+
+    // While the background moves there is no scrim and the colour lights float over the
+    // veil: ink >= 4.5:1 over art -> capped veil -> (alpha-limited) light, for every
+    // dominant colour and every light colour of the cover, and the veil never passes the cap.
+    #[test]
+    fn moving_veil_keeps_ink_accessible_over_the_worst_cluster() {
+        let halves = |l: [u8; 3], r: [u8; 3]| {
+            image::RgbImage::from_fn(96, 96, |x, _| image::Rgb(if x < 48 { l } else { r }))
+        };
+        let images = vec![
+            image::RgbImage::from_pixel(96, 96, image::Rgb([250, 250, 250])),
+            image::RgbImage::from_pixel(96, 96, image::Rgb([4, 4, 6])),
+            image::RgbImage::from_pixel(96, 96, image::Rgb([128; 3])),
+            halves([255; 3], [0; 3]),
+            halves([240, 200, 40], [20, 40, 160]),
+            dark_blue_brown_cover().to_rgb8(),
+            image::RgbImage::from_fn(96, 96, |x, y| {
+                image::Rgb([
+                    (x * 255 / 95) as u8,
+                    (y * 255 / 95) as u8,
+                    (x * y % 256) as u8,
+                ])
+            }),
+        ];
+        for (index, image) in images.into_iter().enumerate() {
+            let palette = extract(&DynamicImage::ImageRgb8(image));
+            let cover: Vec<[u8; 3]> = palette.colors.iter().map(|(c, _)| parse(c)).collect();
+            for (veil, ink, alpha, blob, start, dark) in [
+                (
+                    &palette.veil_dark,
+                    &palette.ink_dark,
+                    palette.veil_dark_moving_alpha,
+                    palette.blob_dark_moving_alpha.unwrap(),
+                    palette.veil_dark_alpha,
+                    true,
+                ),
+                (
+                    &palette.veil_light,
+                    &palette.ink_light,
+                    palette.veil_light_moving_alpha,
+                    palette.blob_light_moving_alpha.unwrap(),
+                    palette.veil_light_alpha,
+                    false,
+                ),
+            ] {
+                assert!(alpha >= start.min(MOVING_VEIL_CAP), "cover {index}");
+                assert!(alpha <= MOVING_VEIL_HARD_CAP, "cover {index}: veil {alpha}");
+                assert!(blob <= BLOB_ALPHA_FULL);
+                let veil = parse(veil).map(f32::from);
+                let ink = parse(ink).map(f32::from);
+                let (a, b) = (f32::from(alpha) / 255.0, f32::from(blob) / 255.0);
+                let lights = blob_lights(&cover, dark);
+                assert_eq!(lights.len(), 10);
+                println!("cover {index} dark={dark}: veil {alpha}/255, lights {blob}/255");
+                for (color, weight) in &palette.colors {
+                    if *weight < MOVING_MIN_WEIGHT {
+                        continue;
+                    }
+                    let under = composite(veil, parse(color).map(f32::from), a);
+                    let mut backgrounds = vec![under];
+                    backgrounds.extend(lights.iter().map(|&light| composite(light, under, b)));
+                    for background in backgrounds {
+                        for (role, ratio) in
+                            qml_contrasts(ink, background, dark).into_iter().enumerate()
+                        {
+                            assert!(
+                                ratio >= 4.5,
+                                "cover {index}, dark={dark}, role {role}: {ratio}"
+                            );
+                        }
+                    }
+                }
+            }
         }
     }
 }

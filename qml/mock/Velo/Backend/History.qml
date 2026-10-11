@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 
-// MOCK of Velo.Backend.History. Preview only: 120 sample entries,
+// MOCK of Velo.Backend.History (docs/CONTRATO.md, S9/N4). Preview only: 120 sample entries,
 // the first batch is 50 and loadMore() appends 50 more after a simulated 300 ms. The
 // single-shot Timer exists only in this mock and only while a batch is "loading".
 QtObject {

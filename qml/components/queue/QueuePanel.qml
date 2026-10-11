@@ -25,6 +25,7 @@ import "../nowplaying"
 // the page narrows at once (only the panel's transform and opacity animate, never a width).
 FocusScope {
     id: root
+    property bool onCover: false     // shown over Now Playing: tinted like the room
 
     property bool opened: false
     property real bottomInset: 0
@@ -383,6 +384,22 @@ FocusScope {
             list.positionViewAtIndex(index, ListView.Contain)
         }
 
+        // C-1: on a song change the "Sonando ahora" row (the only `current` one) fades its cover
+        // and text back in over `fast` (opacity only, nothing moves), in step with the list row,
+        // the side panel and the bar. Rows of the queue below are never touched.
+        function swapIn() {
+            if (!current || !visible || root.fastDuration <= 0)
+                return
+            swapAnim.restart()
+        }
+        onTitleChanged: swapIn()
+        onImageUrlChanged: swapIn()
+        ParallelAnimation {
+            id: swapAnim
+            OpacityAnimator { target: thumb; from: 0; to: 1; duration: Math.max(1, root.fastDuration); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+            OpacityAnimator { target: rowText; from: 0; to: 1; duration: Math.max(1, root.fastDuration); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        }
+
         Accessible.role: Accessible.ListItem
         Accessible.name: qsTr("%1, %2").arg(title).arg(artist)
         Accessible.onPressAction: activate()
@@ -524,6 +541,7 @@ FocusScope {
             }
         }
         Column {
+            id: rowText
             anchors.left: thumb.right
             anchors.leftMargin: Theme.space.md
             anchors.right: trailing.left
@@ -858,9 +876,12 @@ FocusScope {
         anchors.fill: parent
         anchors.rightMargin: Theme.queue.inset
         radius: Theme.radius.lg
-        color: Theme.surface1
+        // User 2026-10-10: over Now Playing it takes the room's colour (the cover's veil, almost
+        // opaque: the text keeps the contrast Rust picked for that veil) instead of a grey card.
+        color: root.onCover ? Qt.rgba(Theme.cover.veil.r, Theme.cover.veil.g, Theme.cover.veil.b, Theme.queue.coverAlpha)
+                            : Theme.surface1
         border.width: Theme.stroke.hairline
-        border.color: Theme.hairline
+        border.color: root.onCover ? Theme.cover.pill : Theme.hairline
 
         // Swallows clicks so they do not reach the view underneath.
         MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }

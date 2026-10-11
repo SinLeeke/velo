@@ -168,7 +168,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         sent += packet.len() / usize::from(channels);
         let deadline = start + Duration::from_secs_f64(sent as f64 / f64::from(rate));
         std::thread::sleep(deadline.saturating_duration_since(Instant::now()));
-        // This frame can be used to inspect the visualizer with real analyzed bands.
+        // Feed this real analyzed frame to VisualizerRingProbe.qml -- --bands <csv>.
         if generated && index == 230 {
             let csv = bands
                 .borrow()

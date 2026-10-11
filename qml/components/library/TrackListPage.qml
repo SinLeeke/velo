@@ -21,6 +21,8 @@ Item {
     // root.pageKind). Until it does, the kind Rust reports stands in for it.
     property string routeKind: ""
     readonly property string listKind: routeKind !== "" ? routeKind : kind
+    // Mixear va en playlists y en «Tus me gusta»; en álbumes no (Spotify tampoco lo ofrece).
+    readonly property bool mixable: (listKind === "playlist" || listKind === "liked") && !searchResults
     readonly property string kindLabel: listKind === "album" ? qsTr("Álbum") : listKind === "playlist" || listKind === "liked" ? qsTr("Playlist") : ""
     // Spotify URI of the open list, for its "…" menu and the save button ("" for «Tus me gusta»).
     readonly property string listUri: playlistId === "" ? ""
@@ -254,6 +256,7 @@ Item {
                 readonly property real buttonRun: 2 * Theme.library.cardWidth + Theme.space.lg
                     + (page.canSave ? Theme.size.titleBar + Theme.space.lg : 0)
                     + (page.listUri !== "" && !page.searchResults ? Theme.size.titleBar + Theme.space.lg : 0)
+                    + (page.mixable ? Theme.size.titleBar + Theme.space.lg : 0)
                 readonly property bool stacked: page.listTools
                     && width < buttonRun + Theme.space.lg + 2 * Theme.size.iconButton + tools.spacing
                 height: playButtons.height + (stacked ? Theme.size.titleBar + Theme.space.sm : 0)
@@ -269,7 +272,7 @@ Item {
                         primary: true
                         text: qsTr("Reproducir")
                         iconSource: Qt.resolvedUrl("../../icons/play_arrow_fill.svg")
-                        enabled: Backend.Player.canControl
+                        enabled: Backend.Player.canControl || (Backend.Account.signedIn && Backend.Account.isPremium)   // starting needs no active session
                         // v0.9.2: always in order; «Aleatorio» next to it plays shuffled.
                         onClicked: Backend.Library.playCurrent()
                     }
@@ -281,8 +284,27 @@ Item {
                         width: Theme.library.cardWidth
                         text: qsTr("Aleatorio")
                         iconSource: Qt.resolvedUrl("../../icons/shuffle.svg")
-                        enabled: Backend.Player.canControl
+                        enabled: Backend.Player.canControl || (Backend.Account.signedIn && Backend.Account.isPremium)
                         onClicked: Backend.Library.shuffleCurrent()
+                    }
+                    // v0.9.5 Mixear: crossfade between this playlist's songs. A toggle (green when on);
+                    // it needs gapless playback in Velo's own engine, otherwise it stays disabled.
+                    IconButton {
+                        objectName: "mixButton"
+                        visible: page.mixable
+                        width: Theme.size.titleBar
+                        height: Theme.size.titleBar
+                        enabled: Backend.Player.mixAvailable
+                        text: !Backend.Player.mixAvailable ? qsTr("Requiere reproducción sin pausas")
+                            : Backend.Library.mixCurrent ? qsTr("Desactivar Mixear") : qsTr("Activar Mixear")
+                        iconSource: Qt.resolvedUrl("../../icons/tune.svg")
+                        iconSize: Theme.icon.lg
+                        ink: Theme.textSecondary
+                        toggle: true
+                        active: Backend.Library.mixCurrent
+                        activeFill: hovered ? Theme.surface2 : Theme.library.clearPaint
+                        activeInk: Theme.accent
+                        onClicked: Backend.Library.toggleMixCurrent()
                     }
                     // R4 (P2-2): save the album / someone else's playlist, and the list's own menu
                     // (queue, radio, link), as on the artist page.
@@ -332,6 +354,9 @@ Item {
                         leftPadding: Theme.space.md + Theme.icon.sm + Theme.space.sm
                         placeholderText: page.kind === "liked" ? qsTr("Buscar en Tus me gusta") : qsTr("Buscar en la playlist")
                         Component.onCompleted: text = Backend.Library.filterQuery
+                        // G2 (A-L1): fades in when opened (fast, easeOut); closing is instant.
+                        onVisibleChanged: if (visible && Theme.motion.fast > 0) filterIn.restart()
+                        OpacityAnimator { id: filterIn; target: filterField; from: 0; to: 1; duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
                         onTextEdited: Backend.Library.setFilter(text)
                         Keys.onEscapePressed: {
                             if (text !== "") { text = ""; Backend.Library.setFilter("") }

@@ -60,7 +60,7 @@ impl CoverArtCache {
     async fn cached(&self, key: &str, blur: bool) -> Result<Option<CoverAssets>> {
         let dir = self.root.join("covers");
         let cover = dir.join(format!("{key}.jpg"));
-        let blurred = dir.join(format!("{key}.png"));
+        let blurred = dir.join(format!("{key}.{BLUR_TAG}.png"));
         if !tokio::fs::try_exists(&cover).await.map_err(error)?
             || (blur && !tokio::fs::try_exists(&blurred).await.map_err(error)?)
         {
@@ -74,11 +74,22 @@ impl CoverArtCache {
         let palette = tokio::task::spawn_blocking(move || serde_json::from_slice::<Palette>(&data))
             .await
             .map_err(error)?;
-        Ok(palette.ok().map(|palette| CoverAssets {
-            cover,
-            blurred: if blur { blurred } else { PathBuf::new() },
-            palette,
-        }))
+        // Serde accepts legacy palettes without cluster colors; rebuild them
+        // from the cached cover using the same offline upgrade path as scrims.
+        Ok(palette
+            .ok()
+            .filter(|palette| {
+                palette.colors.len() == 5
+                    && palette.veil_dark_moving_alpha > 0
+                    && palette.veil_light_moving_alpha > 0
+                    && palette.blob_dark_moving_alpha.is_some()
+                    && palette.blob_light_moving_alpha.is_some()
+            })
+            .map(|palette| CoverAssets {
+                cover,
+                blurred: if blur { blurred } else { PathBuf::new() },
+                palette,
+            }))
     }
     async fn build(&self, key: String, bytes: Vec<u8>, blur: bool) -> Result<CoverAssets> {
         let _guard = self.disk.lock().await;
@@ -293,6 +304,11 @@ fn jpeg(image: &DynamicImage) -> Result<Vec<u8>> {
         .map_err(error)?;
     Ok(bytes)
 }
+/// Box-blur rounds over the 96 px background (v0.9.2: 3 → 2, user: "un poquito menos
+/// difuminados"). BLUR_TAG names the cached file, so older, blurrier ones are rebuilt once.
+const BLUR_PASSES: usize = 2;
+const BLUR_TAG: &str = "b2";
+
 // Sliding windows give O(pixels) cost independent of radius, on the 96px image only.
 fn box_pass(input: &RgbImage, horizontal: bool) -> RgbImage {
     let (width, height) = input.dimensions();
@@ -345,7 +361,7 @@ fn build_assets(root: &Path, key: &str, bytes: &[u8], blur: bool) -> Result<Cove
     let assets = CoverAssets {
         cover: dir.join(format!("{key}.jpg")),
         blurred: if blur {
-            dir.join(format!("{key}.png"))
+            dir.join(format!("{key}.{BLUR_TAG}.png"))
         } else {
             PathBuf::new()
         },
@@ -354,7 +370,7 @@ fn build_assets(root: &Path, key: &str, bytes: &[u8], blur: bool) -> Result<Cove
     atomic_write(&assets.cover, &jpeg(&cover)?)?;
     if blur {
         let mut blurred = small.to_rgb8();
-        for _ in 0..3 {
+        for _ in 0..BLUR_PASSES {
             blurred = box_pass(&box_pass(&blurred, true), false);
         }
         let mut png = std::io::Cursor::new(Vec::new());

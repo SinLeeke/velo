@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Templates as T
+import QtQuick.Controls.impl
 import "../../theme"
 
 // Switch (ref_02: green pill with a round knob). Space/Enter toggle when focused.
@@ -81,6 +82,24 @@ T.AbstractButton {
                 opacity: control.checked ? 1 : 0
                 Behavior on opacity {
                     OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut }
+                }
+            }
+            // Regla 7: on is confirmed by shape too, not only by colour: a check mark in the knob.
+            // It grows in from dotFrom when the switch turns ON; turning OFF it only fades.
+            IconImage {
+                anchors.centerIn: parent
+                source: Qt.resolvedUrl("../../icons/check.svg")
+                sourceSize: Qt.size(width, width)
+                width: Math.round(parent.width * 0.7); height: width
+                color: Theme.accent
+                opacity: control.checked ? 1 : 0
+                scale: control.checked ? 1 : Theme.feel.dotFrom
+                Behavior on opacity {
+                    OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+                }
+                Behavior on scale {
+                    enabled: control.checked
+                    ScaleAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
                 }
             }
         }

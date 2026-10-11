@@ -25,6 +25,7 @@ T.Button {
     hoverEnabled: true
     focusPolicy: Qt.StrongFocus
     opacity: enabled ? 1 : Theme.library.disabledOpacity
+    Behavior on opacity { OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut } }
     Accessible.name: text
     // Space activates the focused button (T.Button), ahead of any window Shortcut.
     Keys.onShortcutOverride: event => { if (event.key === Qt.Key_Space) event.accepted = true }
@@ -38,7 +39,7 @@ T.Button {
     readonly property bool hoverShown: live && (primary || !selected)
     scale: down ? (width > Theme.size.coverMin ? Theme.feel.pressScaleWide : Theme.feel.pressScale) : 1
     Behavior on scale {
-        ScaleAnimator { duration: control.down ? Theme.motion.instant : Theme.motion.fast; easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        ScaleAnimator { duration: Math.max(1, control.down ? Theme.motion.instant : Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
     }
     background: Rectangle {
         radius: Theme.radius.md

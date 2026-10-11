@@ -28,13 +28,26 @@ T.AbstractButton {
         else if (uri !== "" && playable) Backend.Library.playContext(uri)
         else playRequested()
     }
-    readonly property bool canStart: Backend.Player.canControl || (Backend.Account.signedIn && Backend.Account.isPremium
-        && !Backend.Account.audioReady && !Backend.Player.hasSession)
+    // Starting something new never needs an active session: with Premium, Velo's own engine
+    // (or its one-time audio login) plays it. canControl alone left the disc disabled and faint
+    // right after launch, until something played (user 2026-10-10).
+    readonly property bool canStart: Backend.Player.canControl || (Backend.Account.signedIn && Backend.Account.isPremium)
     readonly property var window: card.Window.window
-    readonly property bool effectsAllowed: visible && Backend.Player.isPlaying && Theme.motion.scale > 0
+    // Movimiento de interacción (regla 1): no depende de que suene música, solo de que la
+    // ventana se vea.
+    readonly property bool effectsAllowed: visible && Theme.motion.scale > 0
         && (!window || (window.visible && window.visibility !== Window.Minimized
             && (window.active || !Theme.pauseEffectsInBackground)))
     readonly property bool playShown: playable && enabled && (hovered || visualFocus)
+    // Regla 4: la tarjeta de lo que suena (playlist, álbum, artista) usa el mismo acento.
+    readonly property bool playingHere: uri !== "" && uri === Backend.Player.contextUri
+    // Regla 2/M-1: presión visible en el propio elemento (scale, `instant` al presionar, `fast`
+    // al soltar). Se escala la tarjeta entera, nunca el texto por separado.
+    scale: down && enabled ? Theme.feel.pressScaleWide : 1
+    transformOrigin: Item.Center
+    Behavior on scale {
+        ScaleAnimator { duration: Math.max(1, card.down ? Theme.motion.instant : Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+    }
     implicitWidth: Theme.library.cardWidth
     // U4: as tall as its content plus the same Theme.space.sm inset as the top and the sides,
     // so the hover surface wraps the art and the text symmetrically.
@@ -111,7 +124,21 @@ T.AbstractButton {
             x: Theme.space.sm
             width: card.width - 2 * x
             spacing: Theme.space.xxs
-            LibraryLabel { width: parent.width; text: card.title; font.weight: Theme.type.semibold }
+            Item {
+                width: parent.width
+                height: titleBase.implicitHeight
+                LibraryLabel { id: titleBase; width: parent.width; text: card.title; font.weight: Theme.type.semibold; opacity: 1 - titleLit.opacity }
+                LibraryLabel {
+                    id: titleLit
+                    objectName: "cardTitleLit"
+                    width: parent.width; text: card.title; font.weight: Theme.type.semibold; color: Theme.accent
+                    opacity: card.playingHere ? 1 : 0
+                    visible: opacity > 0
+                    Behavior on opacity {
+                        OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeInOut }
+                    }
+                }
+            }
             LibraryLabel { width: parent.width; text: card.subtitle; color: Theme.textSecondary; font.pixelSize: Theme.type.caption }
         }
     }

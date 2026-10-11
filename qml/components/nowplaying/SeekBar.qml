@@ -152,9 +152,24 @@ Item {
             color: Theme.cover.inkFaint
         }
 
-        // Played part, paused: straight.
+        // A-N2: straight and wavy played parts crossfade (opacity only, `fast`, easeOut) instead
+        // of swapping on pause / drag / clock loss. Both stay built while one fades out; the wave
+        // polyline is only computed while it is on screen (waveShown), so the idle cost is the same.
+        // A-N4: while the bar is locked (DJ Livi speaks, nothing to seek) the track dims.
+        opacity: root.enabled ? 1 : Theme.library.disabledOpacity
+        Behavior on opacity {
+            OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        }
+        readonly property bool waveShown: wavy || waveLayer.opacity > 0
+
+        // Played part, paused / dragging: straight.
         Rectangle {
-            visible: !track.wavy
+            id: straightPlayed
+            visible: !track.wavy || opacity > 0
+            opacity: track.wavy ? 0 : 1
+            Behavior on opacity {
+                OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+            }
             width: track.headX
             height: Theme.stroke.progress
             radius: height / 2
@@ -166,42 +181,49 @@ Item {
         // [0, headX]; drifting only moves its Translate (no rebuild, no repaint of the geometry).
         // The clip cuts the stroke flat, so two dots redraw the round caps where it is cut.
         Item {
-            visible: track.wavy && track.headX > 0
-            width: track.headX
-            height: track.height
-            clip: true
-            Shape {
-                width: track.headX + Theme.nowPlaying.waveLength
+            id: waveLayer
+            objectName: "seekWaveLayer"
+            anchors.fill: parent
+            visible: track.headX > 0 && (track.wavy || opacity > 0)
+            opacity: track.wavy ? 1 : 0
+            Behavior on opacity {
+                OpacityAnimator { duration: Math.max(1, Theme.motion.fast); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+            }
+            Item {
+                width: track.headX
                 height: track.height
-                preferredRendererType: Shape.CurveRenderer
-                transform: Translate { x: root.waveOffset - Theme.nowPlaying.waveLength }
-                ShapePath {
-                    strokeColor: Theme.cover.ink
-                    strokeWidth: Theme.stroke.progressWave
-                    fillColor: Theme.library.clearPaint
-                    capStyle: ShapePath.RoundCap
-                    joinStyle: ShapePath.RoundJoin
-                    PathPolyline { path: track.wave }
+                clip: true
+                Shape {
+                    width: track.headX + Theme.nowPlaying.waveLength
+                    height: track.height
+                    preferredRendererType: Shape.CurveRenderer
+                    transform: Translate { x: root.waveOffset - Theme.nowPlaying.waveLength }
+                    ShapePath {
+                        strokeColor: Theme.cover.ink
+                        strokeWidth: Theme.stroke.progressWave
+                        fillColor: Theme.library.clearPaint
+                        capStyle: ShapePath.RoundCap
+                        joinStyle: ShapePath.RoundJoin
+                        PathPolyline { path: track.wave }
+                    }
                 }
             }
-        }
-        Rectangle {   // cap at the start
-            visible: track.wavy && track.headX > 0
-            width: Theme.stroke.progressWave
-            height: width
-            radius: width / 2
-            color: Theme.cover.ink
-            x: -width / 2
-            y: track.waveY(0) - height / 2
-        }
-        Rectangle {   // cap at the head
-            visible: track.wavy && track.headX > 0
-            width: Theme.stroke.progressWave
-            height: width
-            radius: width / 2
-            color: Theme.cover.ink
-            x: track.headX - width / 2
-            y: track.waveY(track.headX) - height / 2
+            Rectangle {   // cap at the start
+                width: Theme.stroke.progressWave
+                height: width
+                radius: width / 2
+                color: Theme.cover.ink
+                x: -width / 2
+                y: track.waveY(0) - height / 2
+            }
+            Rectangle {   // cap at the head
+                width: Theme.stroke.progressWave
+                height: width
+                radius: width / 2
+                color: Theme.cover.ink
+                x: track.headX - width / 2
+                y: track.waveY(track.headX) - height / 2
+            }
         }
         // Height of the drifted wave at x (track coordinates).
         function waveY(x) {
@@ -211,7 +233,7 @@ Item {
 
         // Rebuilt only when headX (width × progress) changes; the drift is the Translate above.
         property var wave: {
-            if (!wavy)
+            if (!waveShown)
                 return []
             const mid = height / 2, end = headX + Theme.nowPlaying.waveLength, step = 2, pts = []
             const k = 2 * Math.PI / Theme.nowPlaying.waveLength

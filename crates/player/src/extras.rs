@@ -6,6 +6,7 @@ use std::time::Duration;
 
 use bytes::Bytes;
 use http::{Method, Request};
+use http_body_util::BodyExt;
 use librespot_core::Session;
 use librespot_metadata::{Metadata, Track, artist::ArtistRole};
 use librespot_protocol::extension_kind::ExtensionKind;
@@ -224,17 +225,40 @@ fn dj_command() -> Value {
         "options": {"initially_paused": false}, "logging_params": {}}})
 }
 
-/// Ruta HTTP candidata basada en Connect/Dealer; falta confirmar en vivo.
-/// Nunca manda el DJ al motor Velo, que anuncia supports_dj=false.
-/// No reintenta comandos mutantes para evitar reiniciar el DJ dos veces.
-pub async fn start_dj(session: &Session, target_device: &str) -> Result<()> {
-    let source = session.device_id();
-    if !valid_device(target_device) || !valid_device(source) || source == target_device {
+/// Connect commands share the authenticated session HTTP client. Never change SpClient's
+/// retry strategy globally; mutations get one attempt (transfers at most two).
+pub async fn connect_command(session: &Session, target: &str, command: Value) -> Result<()> {
+    let path = command_path(session.device_id(), target)?;
+    connect_request(session, &path, json!({"command": command})).await
+}
+pub fn command_path(source: &str, target: &str) -> Result<String> {
+    if !valid_device(source) || !valid_device(target) {
         return Err(ExtrasError::InvalidInput);
     }
-    let path = format!("/connect-state/v1/player/command/from/{source}/to/{target_device}");
-    tokio::time::timeout(TIMEOUT, async {
-        // Usar HTTP de Session directamente: spclient reintenta hasta 10 veces.
+    Ok(format!(
+        "/connect-state/v1/player/command/from/{source}/to/{target}"
+    ))
+}
+pub fn transfer_request(source: &str, target: &str, play: bool) -> Result<(String, Value)> {
+    if !valid_device(source) || !valid_device(target) || source == target {
+        return Err(ExtrasError::InvalidInput);
+    }
+    Ok((
+        format!("/connect-state/v1/connect/transfer/from/{source}/to/{target}"),
+        json!({"transfer_options": {"restore_paused": if play { "resume" } else { "pause" }}}),
+    ))
+}
+pub async fn transfer(session: &Session, source: &str, target: &str, play: bool) -> Result<()> {
+    let (path, body) = transfer_request(source, target, play)?;
+    let first = connect_request(session, &path, body.clone()).await;
+    if first.is_ok() {
+        return first;
+    }
+    tokio::time::sleep(Duration::from_millis(350)).await;
+    connect_request(session, &path, body).await
+}
+async fn connect_request(session: &Session, path: &str, body: Value) -> Result<()> {
+    tokio::time::timeout(Duration::from_secs(5), async {
         let base = session
             .spclient()
             .base_url()
@@ -247,15 +271,27 @@ pub async fn start_dj(session: &Session, target_device: &str) -> Result<()> {
             .map_err(|_| ExtrasError::Unavailable)?;
         let authorization = format!("{} {}", token.token_type, token.access_token);
         let client_token = session.spclient().client_token().await.ok();
-        post_dj_request(
+        post_connect_request(
             &format!("{base}{path}"),
             &authorization,
             client_token,
+            body,
             |request| async {
-                session
+                // request_body retries 429 internally. Use one HTTP attempt for mutations.
+                let response = session
                     .http_client()
-                    .request_body(request)
+                    .request_fut(request)
+                    .map_err(|_| ExtrasError::Unavailable)?
                     .await
+                    .map_err(|_| ExtrasError::Unavailable)?;
+                if !response.status().is_success() {
+                    return Err(ExtrasError::Unavailable);
+                }
+                response
+                    .into_body()
+                    .collect()
+                    .await
+                    .map(|body| body.to_bytes())
                     .map_err(|_| ExtrasError::Unavailable)
             },
         )
@@ -265,6 +301,15 @@ pub async fn start_dj(session: &Session, target_device: &str) -> Result<()> {
     .map_err(|_| ExtrasError::Timeout)?
 }
 
+/// DJ still validates a remote target; HTTP acceptance does not certify playback.
+pub async fn start_dj(session: &Session, target_device: &str) -> Result<()> {
+    if session.device_id() == target_device {
+        return Err(ExtrasError::InvalidInput);
+    }
+    connect_command(session, target_device, dj_command()["command"].clone()).await
+}
+
+#[cfg(test)]
 async fn post_dj_request<F, Fut>(
     url: &str,
     authorization: &str,
@@ -275,7 +320,21 @@ where
     F: FnOnce(Request<Bytes>) -> Fut,
     Fut: std::future::Future<Output = Result<Bytes>>,
 {
-    let body = dj_command().to_string();
+    post_connect_request(url, authorization, client_token, dj_command(), send).await
+}
+
+async fn post_connect_request<F, Fut>(
+    url: &str,
+    authorization: &str,
+    client_token: Option<String>,
+    body: Value,
+    send: F,
+) -> Result<()>
+where
+    F: FnOnce(Request<Bytes>) -> Fut,
+    Fut: std::future::Future<Output = Result<Bytes>>,
+{
+    let body = body.to_string();
     let mut request = Request::builder()
         .method(Method::POST)
         .uri(url)
@@ -304,6 +363,27 @@ where
 mod tests {
     use super::*;
     use librespot_core::dealer::protocol::Command;
+
+    #[test]
+    fn transfer_and_player_command_paths_validate_ids_and_restore_transport() {
+        let (path, body) = transfer_request("phone", "velo", true).unwrap();
+        assert_eq!(
+            path,
+            "/connect-state/v1/connect/transfer/from/phone/to/velo"
+        );
+        assert_eq!(body["transfer_options"]["restore_paused"], "resume");
+        assert_eq!(
+            transfer_request("velo", "phone", false).unwrap().1["transfer_options"]["restore_paused"],
+            "pause"
+        );
+        assert_eq!(
+            command_path("velo", "phone").unwrap(),
+            "/connect-state/v1/player/command/from/velo/to/phone"
+        );
+        for (a, b) in [("", "phone"), ("velo", "bad/id"), ("same", "same")] {
+            assert!(transfer_request(a, b, true).is_err());
+        }
+    }
 
     #[tokio::test]
     async fn full_credits_do_not_poll_metadata_and_failures_keep_the_existing_fallback() {
@@ -470,6 +550,47 @@ mod tests {
                 expected
             );
         }
+        server.verify().await;
+    }
+
+    #[tokio::test]
+    async fn transfer_posts_the_session_request_to_a_local_mock() {
+        use wiremock::{
+            Mock, MockServer, ResponseTemplate,
+            matchers::{body_json, method, path},
+        };
+        let server = MockServer::start().await;
+        let (route, body) = transfer_request("phone", "velo", true).unwrap();
+        Mock::given(method("POST"))
+            .and(path(&route))
+            .and(body_json(body.clone()))
+            .respond_with(ResponseTemplate::new(204))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let client = reqwest::Client::builder()
+            .retry(reqwest::retry::never())
+            .build()
+            .unwrap();
+        post_connect_request(
+            &format!("{}{route}", server.uri()),
+            "Bearer fixture",
+            None,
+            body,
+            |request| async {
+                let request =
+                    reqwest::Request::try_from(request).map_err(|_| ExtrasError::Unavailable)?;
+                let response = client
+                    .execute(request)
+                    .await
+                    .map_err(|_| ExtrasError::Unavailable)?
+                    .error_for_status()
+                    .map_err(|_| ExtrasError::Unavailable)?;
+                response.bytes().await.map_err(|_| ExtrasError::Unavailable)
+            },
+        )
+        .await
+        .unwrap();
         server.verify().await;
     }
 

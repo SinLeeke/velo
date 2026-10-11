@@ -234,6 +234,7 @@ impl LocalSource {
             remote: false,
             own_engine: false,
             dj: velo_player::DjState::default(),
+            mixing: false,
         };
         drop(s);
         self.tx.send_replace(state);

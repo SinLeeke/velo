@@ -1,6 +1,6 @@
 """Generate the synthetic sample covers used by the QML preview (qml/mock only).
 
-Two abstract 600 px covers (teal and green) plus
+Two abstract 600 px covers (teal and green, echoing referencias/ref_01 and ref_06) plus
 their pre-blurred 96 px backgrounds, the way the Rust services crate will deliver them.
 Standard library only (zlib + struct for PNG). Run from anywhere:
 
@@ -166,7 +166,7 @@ def contrast(a, b):
     return (hi + 0.05) / (lo + 0.05)
 
 
-# Synthetic cover palettes; veil opacity is defined by Theme.cover.
+# Palettes mirrored in qml/preview/NowPlayingPreview.qml (veil opacity from Theme.cover).
 PALETTES = {
     "teal": {"veilDark": "#061B24", "veilLight": "#D7E8EE", "inkDark": "#F4FAFC", "inkLight": "#0D2129"},
     "green": {"veilDark": "#12301F", "veilLight": "#D9EEE1", "inkDark": "#F3FBF6", "inkLight": "#0C2417"},

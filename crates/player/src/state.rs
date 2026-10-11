@@ -55,6 +55,8 @@ pub struct EngineState {
     /// Errores del controlador, para el canal existente de errores de la app.
     pub dj_errors: u32,
     pub dj_error: Option<crate::dj::DjError>,
+    /// Mixear: fundido cruzado sonando en el motor local.
+    pub mix: crate::mix::MixState,
 }
 
 /// A song that could not be played to its end.
@@ -95,6 +97,7 @@ impl EngineState {
             dj_available: false,
             dj_errors: 0,
             dj_error: None,
+            mix: crate::mix::MixState::default(),
         }
     }
 }
@@ -243,8 +246,10 @@ pub fn apply_event(state: &mut EngineState, event: &PlayerEvent, now: Instant) -
                 .filter(|t| Some(&t.uri) == uri.as_ref())
             {
                 let position = crate::queue::position_now(state, now);
+                // Con la ventana de mezcla el decoder termina la pista antes de oírse su final.
+                let tolerance = END_TOLERANCE_MS + state.mix.ahead_ms;
                 if t.duration_ms > END_TOLERANCE_MS
-                    && position.saturating_add(END_TOLERANCE_MS) < t.duration_ms
+                    && position.saturating_add(tolerance) < t.duration_ms
                 {
                     let uri = t.uri.clone();
                     fail(state, uri, position, true);
@@ -257,6 +262,31 @@ pub fn apply_event(state: &mut EngineState, event: &PlayerEvent, now: Instant) -
             state.repeat = repeat_mode(*context, *track)
         }
         _ => return false,
+    }
+    *state != before
+}
+
+/// Mixear: refleja el fundido del sink. Cuando la pista siguiente a un fin natural (la que
+/// librespot decodifica, `request`) empieza a oírse, su posición empieza en ese instante: los
+/// eventos de librespot llegaron antes porque el decoder corre por delante del audio.
+pub(crate) fn apply_mix(
+    state: &mut EngineState,
+    status: &crate::mix::MixStatus,
+    request: Option<u64>,
+    applied: &mut Option<(u64, Instant)>,
+) -> bool {
+    let before = state.clone();
+    state.mix = crate::mix::MixState {
+        active: status.active,
+        remaining_ms: status.remaining_ms,
+        ahead_ms: status.ahead_ms,
+    };
+    if let Some(started) = status.started.filter(|s| Some(s.0) == request) {
+        if *applied != Some(started) {
+            *applied = Some(started);
+            state.position_ms = 0;
+            state.position_at = started.1;
+        }
     }
     *state != before
 }
@@ -446,6 +476,58 @@ mod tests {
         s.track.as_mut().unwrap().uri = "spotify:track:other".into();
         apply_event(&mut s, &end, now);
         assert_eq!(s.failures, 1);
+    }
+
+    #[test]
+    fn mix_window_end_is_not_a_cut_and_the_next_track_starts_when_heard() {
+        let now = Instant::now();
+        let id = parse_track_uri(URI).unwrap();
+        let end = PlayerEvent::EndOfTrack {
+            play_request_id: 1,
+            track_id: id,
+        };
+        for (ahead_ms, failures) in [(0, 1), (8_000, 0)] {
+            let mut s = EngineState::new(50, now);
+            apply_event(
+                &mut s,
+                &PlayerEvent::TrackChanged {
+                    audio_item: item(URI, &[]),
+                },
+                now,
+            );
+            // El decoder termina A 7 s antes de oírse su final (ventana de 6 s + margen).
+            s.position_ms = 116_000;
+            s.mix.ahead_ms = ahead_ms;
+            apply_event(&mut s, &end, now);
+            assert_eq!(s.failures, failures, "{ahead_ms}");
+        }
+        let mut s = EngineState::new(50, now);
+        s.position_ms = 900;
+        let heard = now + Duration::from_secs(1);
+        let status = crate::mix::MixStatus {
+            active: true,
+            remaining_ms: 6_000,
+            ahead_ms: 0,
+            started: Some((2, heard)),
+        };
+        let mut applied = None;
+        // Inicio de otra pista (un request viejo): no toca la posición.
+        assert!(apply_mix(&mut s, &status, Some(3), &mut applied));
+        assert_eq!(s.position_ms, 900);
+        assert!(s.mix.active && s.mix.remaining_ms == 6_000);
+        assert!(apply_mix(&mut s, &status, Some(2), &mut applied));
+        assert_eq!((s.position_ms, s.position_at), (0, heard));
+        // Un seek posterior no se pisa con el mismo inicio.
+        s.position_ms = 40_000;
+        let ended = crate::mix::MixStatus {
+            active: false,
+            remaining_ms: 0,
+            ..status
+        };
+        assert!(apply_mix(&mut s, &ended, Some(2), &mut applied));
+        assert_eq!(s.position_ms, 40_000);
+        assert!(!s.mix.active);
+        assert!(!apply_mix(&mut s, &ended, Some(2), &mut applied));
     }
 
     fn item(uri: &str, covers: &[(i32, &str)]) -> Box<AudioItem> {

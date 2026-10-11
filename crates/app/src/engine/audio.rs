@@ -6,7 +6,7 @@
 //! Everything runs on the tokio runtime. No timer: the forwarder waits on the engine's watch
 //! channels; the only sleeps are a short, bounded reconnection backoff after the engine died.
 
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
@@ -82,8 +82,10 @@ pub struct AudioCtl {
     /// Volumen que estaba sonando antes de una caída; nunca sustituir mute por 50 %.
     reconnect_volume: Mutex<Option<u8>>,
     preferences: RwLock<Option<Arc<super::prefs::Prefs>>>,
+    /// Mixear por contexto: la playlist marcada pide fundido cruzado.
+    mix_context: AtomicBool,
     hooks: RwLock<Option<EngineHooks>>,
-    hot_settings: Mutex<Option<(u64, velo_domain::EqConfig, u32)>>,
+    hot_settings: Mutex<Option<HotSettings>>,
     pub settings_runtime: Arc<SettingsRuntime>,
 }
 
@@ -146,6 +148,7 @@ impl AudioCtl {
             reconnects: Mutex::new(ReconnectBudget::default()),
             reconnect_volume: Mutex::new(None),
             preferences: RwLock::new(None),
+            mix_context: AtomicBool::new(false),
             hooks: RwLock::new(Some(EngineHooks::player())),
             hot_settings: Mutex::new(None),
             settings_runtime: Arc::new(SettingsRuntime::new()),
@@ -187,12 +190,29 @@ impl AudioCtl {
             .is_some()
     }
 
+    /// Reevalúa Mixear para el contexto que va a sonar y lo empuja al motor en caliente.
+    pub fn set_mix_context(&self, wanted: bool) {
+        if self.mix_context.swap(wanted, Ordering::SeqCst) == wanted {
+            return;
+        }
+        let prefs = self
+            .preferences
+            .read()
+            .unwrap_or_else(|e| e.into_inner())
+            .clone();
+        if let Some(prefs) = prefs {
+            self.publish_hot_settings(&prefs.settings());
+        }
+    }
+
     pub fn publish_hot_settings(&self, settings: &velo_domain::Settings) {
         let hooks = *self.hooks.read().unwrap_or_else(|e| e.into_inner());
         if let (Some(hooks), Some(engine)) = (hooks, self.engine()) {
             let generation = self.generation.load(Ordering::SeqCst);
             let eq = settings.equalizer.config();
             let buffer = settings.playback.output_buffer_ms;
+            let private = settings.playback.private_session;
+            let mix = self.mix_config(settings);
             let mut hot = self.hot_settings.lock().unwrap_or_else(|e| e.into_inner());
             if hot
                 .as_ref()
@@ -209,8 +229,38 @@ impl AudioCtl {
                     return;
                 }
             }
-            *hot = Some((generation, eq, buffer));
+            // The initial value travels in EngineConfig; here only changes (or a new engine
+            // generation) are forwarded to Spirc.
+            if private_session_needs_apply(hot.as_ref(), generation, private) {
+                if let Err(e) = (hooks.private_session)(&engine, private) {
+                    self.fail(&e);
+                    return;
+                }
+            }
+            // El valor inicial viaja en EngineOptions.mix; aquí solo cambios o motor nuevo.
+            if mix_needs_apply(hot.as_ref(), generation, mix) {
+                (hooks.mix)(&engine, mix);
+            }
+            *hot = Some((generation, eq, buffer, private, mix));
         }
+    }
+
+    /// El ajuste automático se lee en caliente; el contexto solo guarda la elección por lista.
+    pub(super) fn mix_config(&self, settings: &velo_domain::Settings) -> velo_domain::MixConfig {
+        let mut mix = settings.playback.mix();
+        mix.enabled |= self.mix_context.load(Ordering::SeqCst);
+        mix
+    }
+
+    fn engine_options(
+        &self,
+        settings: &velo_domain::Settings,
+        dir: std::path::PathBuf,
+    ) -> velo_domain::EngineOptions {
+        let mut options =
+            settings.engine_options(dir, velo_domain::proxy_route().borrow().url.clone());
+        options.mix = self.mix_config(settings);
+        options
     }
 
     /// Settings reconnect preserves the keyring login and rejects stale work after logout.
@@ -347,7 +397,9 @@ impl AudioCtl {
             .unwrap_or_else(|e| e.into_inner())
             .as_ref()
         {
-            config.name = prefs.settings().playback.device_name;
+            let playback = prefs.settings().playback;
+            config.name = playback.device_name;
+            config.private_session = playback.private_session;
         }
         if let Some(volume) = *self
             .reconnect_volume
@@ -409,8 +461,7 @@ impl AudioCtl {
             // Encrypted audio cache: absolute and scoped by the stable device id of this account.
             let owner = settings_runtime::read_audio_owner().await;
             let dir = settings_runtime::audio_cache_dir(&config.device_id, owner.as_deref());
-            let mut built =
-                settings.engine_options(dir, velo_domain::proxy_route().borrow().url.clone());
+            let mut built = self.engine_options(settings, dir);
             config.name = settings.playback.device_name.clone();
             (hooks.configure)(&mut config, &built);
             built.device_name = config.name.clone();
@@ -669,9 +720,70 @@ impl AudioCtl {
     }
 }
 
+/// Last hot settings pushed to an engine: (generation, eq, output buffer, private session, mix).
+type HotSettings = (
+    u64,
+    velo_domain::EqConfig,
+    u32,
+    bool,
+    velo_domain::MixConfig,
+);
+
+/// Mixear: se empuja al motor una vez por cambio (o por motor nuevo), nunca en cada ajuste.
+fn mix_needs_apply(
+    previous: Option<&HotSettings>,
+    generation: u64,
+    mix: velo_domain::MixConfig,
+) -> bool {
+    previous.is_none_or(|p| p.0 != generation || p.4 != mix)
+}
+
+/// A new engine generation starts from `EngineConfig.private_session`, so it only needs a push
+/// when the value differs from what that engine already got; within a generation, on change.
+fn private_session_needs_apply(
+    previous: Option<&HotSettings>,
+    generation: u64,
+    private: bool,
+) -> bool {
+    match previous {
+        Some(p) if p.0 == generation => p.3 != private,
+        _ => true,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn mix_marked_context_reaches_initial_options_before_an_engine_exists() {
+        let audio = AudioCtl::new(
+            tokio::runtime::Handle::current(),
+            broadcast::channel(1).0,
+            "Velo",
+        );
+        let mut settings = velo_domain::Settings::default();
+        settings.playback.mix_seconds = 9;
+        audio.set_mix_context(true);
+        assert!(!audio.is_ready());
+        let options = audio.engine_options(&settings, "encrypted-audio".into());
+        assert!(options.mix.enabled);
+        assert_eq!(options.mix.seconds, 9);
+        audio.set_mix_context(false);
+        assert!(
+            !audio
+                .engine_options(&settings, "encrypted-audio".into())
+                .mix
+                .enabled
+        );
+        settings.playback.mix_auto = true;
+        assert!(
+            audio
+                .engine_options(&settings, "encrypted-audio".into())
+                .mix
+                .enabled
+        );
+    }
 
     #[tokio::test]
     async fn s9_name_changes_keep_device_id_and_hooks_are_an_explicit_boundary() {
@@ -690,10 +802,15 @@ mod tests {
         prefs.update_settings(|s| s.playback.device_name = "Kitchen".into());
         assert_eq!(audio.config().name, "Kitchen");
         assert_eq!(audio.config().device_id, old_id);
+        assert!(!audio.config().private_session);
+        prefs.update_settings(|s| s.playback.private_session = true);
+        assert!(audio.config().private_session);
         audio.set_engine_hooks(EngineHooks {
             configure: |_, _| {},
             equalizer: |_, _| {},
             output_buffer: |_, _| Ok(()),
+            private_session: |_, _| Ok(()),
+            mix: |_, _| {},
         });
         assert!(audio.settings_supported());
         // A late reconnect ticket is rejected before touching keyring or the network.
@@ -701,6 +818,39 @@ mod tests {
         audio.detach();
         audio.launch_if_current(false, Some(stale)).await.unwrap();
         assert!(!audio.is_ready());
+    }
+
+    #[test]
+    fn private_session_change_is_pushed_hot_once_per_change() {
+        let eq = velo_domain::EqConfig::default();
+        assert!(private_session_needs_apply(None, 1, false));
+        let same = (1, eq, 0, true, velo_domain::MixConfig::default());
+        assert!(!private_session_needs_apply(Some(&same), 1, true));
+        assert!(private_session_needs_apply(Some(&same), 1, false));
+        // A reconnected engine (new generation) is re-synced.
+        assert!(private_session_needs_apply(Some(&same), 2, true));
+    }
+
+    #[test]
+    fn mix_change_is_pushed_hot_once_per_change_and_per_engine() {
+        let eq = velo_domain::EqConfig::default();
+        let off = velo_domain::MixConfig::default();
+        let on = velo_domain::Settings {
+            playback: velo_domain::PlaybackSettings {
+                mix_auto: true,
+                mix_seconds: 9,
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+        .playback
+        .mix();
+        assert!(on.enabled && on.seconds == 9);
+        assert!(mix_needs_apply(None, 1, off));
+        let applied = (1, eq, 100, false, off);
+        assert!(!mix_needs_apply(Some(&applied), 1, off));
+        assert!(mix_needs_apply(Some(&applied), 1, on));
+        assert!(mix_needs_apply(Some(&applied), 2, off));
     }
 
     #[test]

@@ -33,8 +33,23 @@ Column {
     }
     Column {
         width: parent.width
+        id: steps
+        objectName: "personalAppSteps"
         spacing: Theme.space.md
         visible: root.expanded
+        // Opening (rare): fade + small rise, transform/opacity only (the height is not animated).
+        // Closing is instant. Interruptible: closing mid-way just hides it.
+        transform: Translate { id: rise }
+        onVisibleChanged: {
+            open.stop()
+            if (visible && Theme.motion.base > 0 && Theme.interactionAllowed) { steps.opacity = 0; rise.y = Theme.space.sm; open.start() }
+            else { steps.opacity = 1; rise.y = 0 }
+        }
+        ParallelAnimation {
+            id: open
+            OpacityAnimator { target: steps; from: 0; to: 1; duration: Math.max(1, Theme.motion.base); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+            NumberAnimation { target: rise; property: "y"; to: 0; duration: Math.max(1, Theme.motion.base); easing.type: Easing.Bezier; easing.bezierCurve: Theme.motion.easeOut }
+        }
         LibraryLabel {
             width: parent.width
             color: Theme.textSecondary

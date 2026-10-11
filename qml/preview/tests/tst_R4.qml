@@ -220,7 +220,8 @@ TestCase {
         keyClick(Qt.Key_Space)
         compare(plays, 2)
         compare(globalSpaces, 0)
-        for (let i = 0; i < 40; ++i) keyClick(Qt.Key_Tab)
+        // 2 more Tabs: the header now has two stops (Reproducir, «…») that the chain passes once.
+        for (let i = 0; i < 42; ++i) keyClick(Qt.Key_Tab)
         compare(view.currentIndex, 20)
         compare(page.durationText(3600000), "1 h 0 min")
     }

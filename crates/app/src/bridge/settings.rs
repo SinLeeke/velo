@@ -1,4 +1,4 @@
-//! `Settings` singleton: user preferences, saved by themselves with debounce.
+//! `Settings` singleton (docs/CONTRATO.md): user preferences, saved by themselves with debounce.
 //! Values are read once at construction; QML writes flow to `engine::prefs` (which debounces
 //! on the runtime / the settings writer thread).
 
@@ -25,8 +25,11 @@ pub mod ffi {
         #[qproperty(bool, performance_keep_visualizer)]
         #[qproperty(bool, cover_blur)]
         #[qproperty(bool, drift)]
+        #[qproperty(i32, hypnotic_speed)]
+        #[qproperty(i32, hypnotic_intensity)]
         #[qproperty(bool, tint_ui)]
         #[qproperty(bool, show_lyrics)]
+        #[qproperty(bool, private_session)]
         #[qproperty(bool, close_to_tray)]
         #[qproperty(bool, check_updates)]
         #[qproperty(QString, window_controls)]
@@ -41,6 +44,8 @@ pub mod ffi {
         #[qproperty(bool, autoplay)]
         #[qproperty(bool, gapless)]
         #[qproperty(i32, output_buffer_ms)]
+        #[qproperty(i32, mix_seconds)]
+        #[qproperty(bool, mix_auto)]
         #[qproperty(bool, audio_cache_enabled)]
         #[qproperty(bool, sidebar_compact)]
         #[qproperty(bool, compact_tracks)]
@@ -113,8 +118,11 @@ pub struct SettingsRust {
     performance_keep_visualizer: bool,
     cover_blur: bool,
     drift: bool,
+    hypnotic_speed: i32,
+    hypnotic_intensity: i32,
     tint_ui: bool,
     show_lyrics: bool,
+    private_session: bool,
     close_to_tray: bool,
     check_updates: bool,
     window_controls: QString,
@@ -129,6 +137,8 @@ pub struct SettingsRust {
     autoplay: bool,
     gapless: bool,
     output_buffer_ms: i32,
+    mix_seconds: i32,
+    mix_auto: bool,
     audio_cache_enabled: bool,
     sidebar_compact: bool,
     compact_tracks: bool,
@@ -168,8 +178,11 @@ impl Default for SettingsRust {
             performance_keep_visualizer: s.appearance.performance_keep_visualizer,
             cover_blur: s.background.cover_blur,
             drift: s.background.drift,
+            hypnotic_speed: s.background.hypnotic_speed,
+            hypnotic_intensity: s.background.hypnotic_intensity,
             tint_ui: s.background.tint_ui,
             show_lyrics: s.playback.show_lyrics,
+            private_session: s.playback.private_session,
             close_to_tray: prefs.extras().close_to_tray,
             check_updates: s.updates.check_updates,
             window_controls: QString::from(prefs.extras().window_controls.as_str()),
@@ -184,6 +197,8 @@ impl Default for SettingsRust {
             autoplay: s.playback.autoplay,
             gapless: s.playback.gapless,
             output_buffer_ms: s.playback.output_buffer_ms as i32,
+            mix_seconds: s.playback.mix_seconds as i32,
+            mix_auto: s.playback.mix_auto,
             audio_cache_enabled: s.cache.audio_enabled,
             sidebar_compact: s.appearance.sidebar_compact,
             compact_tracks: s.appearance.compact_tracks,
@@ -236,8 +251,11 @@ fn persist(q: &ffi::Settings) {
         s.appearance.performance_keep_visualizer = *q.performance_keep_visualizer();
         s.background.cover_blur = *q.cover_blur();
         s.background.drift = *q.drift();
+        s.background.hypnotic_speed = (*q.hypnotic_speed()).clamp(0, 100);
+        s.background.hypnotic_intensity = (*q.hypnotic_intensity()).clamp(0, 100);
         s.background.tint_ui = *q.tint_ui();
         s.playback.show_lyrics = *q.show_lyrics();
+        s.playback.private_session = *q.private_session();
         s.cache.cover_limit_mb = (*q.cover_cache_limit_mb()).clamp(1, 500) as u32;
         s.cache.audio_limit_mb =
             velo_domain::audio_cache_limit((*q.audio_cache_limit_mb()).max(0) as u32);
@@ -248,6 +266,11 @@ fn persist(q: &ffi::Settings) {
         s.playback.autoplay = *q.autoplay();
         s.playback.gapless = *q.gapless();
         s.playback.output_buffer_ms = (*q.output_buffer_ms()).max(0) as u32;
+        s.playback.mix_seconds = (*q.mix_seconds()).clamp(
+            velo_domain::MixConfig::MIN_SECONDS as i32,
+            velo_domain::MixConfig::MAX_SECONDS as i32,
+        ) as u32;
+        s.playback.mix_auto = *q.mix_auto();
         s.cache.audio_enabled = *q.audio_cache_enabled();
         s.appearance.sidebar_compact = *q.sidebar_compact();
         s.appearance.compact_tracks = *q.compact_tracks();
@@ -312,6 +335,12 @@ impl cxx_qt::Initialize for ffi::Settings {
             .on_output_buffer_ms_changed(persist_and_sync)
             .release();
         self.as_mut()
+            .on_mix_seconds_changed(persist_and_sync)
+            .release();
+        self.as_mut()
+            .on_mix_auto_changed(persist_and_sync)
+            .release();
+        self.as_mut()
             .on_audio_cache_enabled_changed(persist_and_sync)
             .release();
         self.as_mut()
@@ -351,9 +380,18 @@ impl cxx_qt::Initialize for ffi::Settings {
             .on_cover_blur_changed(|q| persist(&q))
             .release();
         self.as_mut().on_drift_changed(|q| persist(&q)).release();
+        self.as_mut()
+            .on_hypnotic_speed_changed(|q| persist(&q))
+            .release();
+        self.as_mut()
+            .on_hypnotic_intensity_changed(|q| persist(&q))
+            .release();
         self.as_mut().on_tint_ui_changed(|q| persist(&q)).release();
         self.as_mut()
             .on_show_lyrics_changed(|q| persist(&q))
+            .release();
+        self.as_mut()
+            .on_private_session_changed(persist_and_sync)
             .release();
         self.as_mut()
             .on_window_controls_changed(|q| persist(&q))
@@ -407,8 +445,14 @@ impl ffi::Settings {
     fn sync_preferences(mut self: Pin<&mut Self>, s: &velo_domain::Settings) {
         self.as_mut().rust_mut().refreshing = true;
         self.as_mut().set_check_updates(s.updates.check_updates);
+        self.as_mut()
+            .set_private_session(s.playback.private_session);
         self.as_mut().set_cover_blur(s.background.cover_blur);
         self.as_mut().set_drift(s.background.drift);
+        self.as_mut()
+            .set_hypnotic_speed(s.background.hypnotic_speed);
+        self.as_mut()
+            .set_hypnotic_intensity(s.background.hypnotic_intensity);
         self.as_mut().set_tint_ui(s.background.tint_ui);
         self.as_mut()
             .set_player_bar_visualizer(QString::from(s.visualizer.player_bar_mode.as_str()));
@@ -421,6 +465,8 @@ impl ffi::Settings {
         self.as_mut().set_gapless(s.playback.gapless);
         self.as_mut()
             .set_output_buffer_ms(s.playback.output_buffer_ms as i32);
+        self.as_mut().set_mix_seconds(s.playback.mix_seconds as i32);
+        self.as_mut().set_mix_auto(s.playback.mix_auto);
         self.as_mut().set_audio_cache_enabled(s.cache.audio_enabled);
         self.as_mut()
             .set_audio_cache_limit_mb(s.cache.audio_limit_mb as i32);
